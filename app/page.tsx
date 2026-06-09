@@ -5,17 +5,20 @@ import {
   ArrowRight,
   Bot,
   Building2,
+  Camera,
   Clock3,
   Compass,
-  LocateFixed,
+  ExternalLink,
+  Map,
   MapPinned,
   Navigation,
   Search,
   ShieldCheck,
   Sparkles,
-  Star
+  Star,
+  Trash2
 } from "lucide-react";
-import { FormEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Mesh } from "three";
 import { categories, CategoryKey, cities, directory } from "@/data/city-directory";
 
@@ -23,6 +26,121 @@ type ChatMessage = {
   role: "user" | "assistant";
   content: string;
 };
+
+const starterMessage =
+  "Tell me the city, vibe, budget, and time you have. I will map the spots, backup services, and time-saving route. Yes, an actual plan, not a 47-tab research spiral.";
+
+const knownChatCities = [
+  "Agra",
+  "Ahmedabad",
+  "Amritsar",
+  "Bhopal",
+  "Chandigarh",
+  "Chennai",
+  "Delhi",
+  "Goa",
+  "Guwahati",
+  "Indore",
+  "Jaipur",
+  "Kanpur",
+  "Kochi",
+  "Kolkata",
+  "Lucknow",
+  "Mumbai",
+  "Mysuru",
+  "Pune",
+  "Prayagraj",
+  "Rishikesh",
+  "Shimla",
+  "Shillong",
+  "Varanasi"
+];
+
+const cityAliases: Record<string, string> = {
+  allahabad: "Prayagraj",
+  bangalore: "Bengaluru",
+  benaras: "Varanasi",
+  bombay: "Mumbai",
+  calcutta: "Kolkata"
+};
+
+const cityVisuals: Record<string, { image: string; label: string; position: string }> = {
+  Delhi: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Red%20Fort%20in%20Delhi%2003-2016%20img1.jpg",
+    label: "Delhi markets",
+    position: "center"
+  },
+  Mumbai: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Gateway%20Of%20India.jpg",
+    label: "Mumbai streets",
+    position: "center"
+  },
+  Bengaluru: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Vidhana%20Soudha-1-bangalore-India.jpg",
+    label: "Bengaluru city",
+    position: "center"
+  },
+  Jaipur: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Hawa%20Mahal%20Jaipur%20front%20view.jpg",
+    label: "Jaipur bazaar",
+    position: "center"
+  },
+  Surat: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Surat%20Clock%20Tower.jpg",
+    label: "Surat trade",
+    position: "center"
+  },
+  Hyderabad: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Charminar%20Hyderabad%201.jpg",
+    label: "Hyderabad heritage",
+    position: "center"
+  },
+  Leh: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Leh%20Palace%2C%20Leh%2C%20Ladakh.jpg",
+    label: "Leh Ladakh",
+    position: "center"
+  },
+  Prayagraj: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Sangam-Prayagraj.jpg",
+    label: "Prayagraj ghats",
+    position: "center"
+  }
+};
+
+function titleCaseCity(value: string) {
+  return value
+    .trim()
+    .replace(/[^a-zA-Z\s]/g, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function detectCityFromMessage(message: string) {
+  const lowerMessage = message.toLowerCase();
+  const aliasMatch = Object.entries(cityAliases).find(([alias]) => new RegExp(`\\b${alias}\\b`, "i").test(message));
+
+  if (aliasMatch) return aliasMatch[1];
+
+  const knownMatch = knownChatCities.find((knownCity) => new RegExp(`\\b${knownCity}\\b`, "i").test(message));
+
+  if (knownMatch) return knownMatch;
+
+  const patternMatch = lowerMessage.match(
+    /\b(?:city|in|to|for|at|near|around|visit|visiting|trip to|going to)\s+([a-z]+(?:\s+[a-z]+){0,2})/
+  );
+
+  if (!patternMatch) return null;
+
+  const stopWords = new Set(["the", "a", "an", "my", "this", "that", "nearby", "food", "hotel", "hotels", "trip"]);
+  const cityGuess = patternMatch[1]
+    .split(/\s+/)
+    .filter((part) => !stopWords.has(part))
+    .join(" ");
+
+  return cityGuess.length > 2 ? titleCaseCity(cityGuess) : null;
+}
 
 function CityBlocks() {
   const group = useRef<Mesh>(null);
@@ -85,12 +203,13 @@ export default function Home() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      content:
-        "Tell me the city, vibe, budget, and time you have. I will map the spots, backup services, and time-saving route."
+      content: starterMessage
     }
   ]);
   const [loading, setLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
+  const visibleCities = useMemo(() => (cities.includes(city as (typeof cities)[number]) ? cities : [city, ...cities]), [city]);
   const selectedItems = directory.filter((item) => item.city === city && item.category === category).slice(0, 6);
   const citySuggestions = directory
     .filter((item) => item.city === city && item.category !== category)
@@ -98,12 +217,63 @@ export default function Home() {
   const categorySuggestions = directory
     .filter((item) => item.city !== city && item.category === category)
     .slice(0, 3);
+  const nearbyItems = (selectedItems.length > 0 ? selectedItems : citySuggestions).slice(0, 5);
   const selectedCategory = categories.find((item) => item.key === category);
+  const cityVisual = cityVisuals[city] || {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/India%20Gate%20in%20New%20Delhi%2003-2016%20img3.jpg",
+    label: `${city} city`,
+    position: "center"
+  };
+  const photoBlocks = [
+    {
+      title: "Hotels",
+      text: "Stays near the route",
+      image: cityVisual.image,
+      query: `best hotels in ${city}`
+    },
+    {
+      title: "Places",
+      text: "Must-cover spots",
+      image: cityVisual.image,
+      query: `best places to visit in ${city}`
+    },
+    {
+      title: "Fine Dining",
+      text: "Dinner without guesswork",
+      image: cityVisual.image,
+      query: `fine dining restaurants in ${city}`
+    },
+    {
+      title: selectedCategory?.label || "Category",
+      text: "Selected category nearby",
+      image: cityVisual.image,
+      query: `${selectedCategory?.label || category} near ${city}`
+    }
+  ];
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, loading]);
+
+  function mapSearchUrl(query: string) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  }
+
+  function clearChat() {
+    setMessages([{ role: "assistant", content: starterMessage }]);
+    setQuestion("");
+  }
 
   async function askGuide(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion || loading) return;
+    const detectedCity = detectCityFromMessage(trimmedQuestion);
+    const activeCity = detectedCity || city;
+
+    if (detectedCity && detectedCity !== city) {
+      setCity(detectedCity);
+    }
 
     const nextMessages: ChatMessage[] = [
       ...messages,
@@ -121,7 +291,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: trimmedQuestion,
-          city,
+          city: activeCity,
           category,
           messages: nextMessages.slice(0, -1)
         })
@@ -182,7 +352,13 @@ export default function Home() {
 
   return (
     <main>
-      <section className="hero">
+      <section
+        className="hero"
+        style={{
+          backgroundImage: `linear-gradient(110deg, rgba(246, 244, 238, 0.97), rgba(246, 244, 238, 0.58)), url("${cityVisual.image}")`,
+          backgroundPosition: cityVisual.position
+        }}
+      >
         <div className="heroContent">
           <nav className="topbar">
             <a className="brand" href="#top" aria-label="CityMitra home">
@@ -231,9 +407,13 @@ export default function Home() {
             </div>
             <div className="sceneWrap" aria-label="Animated 3D city directory map">
               <CityScene />
+              <div className="photoChip">
+                <Camera size={15} />
+                {cityVisual.label}
+              </div>
               <div className="sceneBadge">
-                <LocateFixed size={16} />
-                Smart area picking
+                <Map size={16} />
+                Maps, location & photos
               </div>
             </div>
           </div>
@@ -251,7 +431,7 @@ export default function Home() {
 
         <div className="filters">
           <div className="filterGroup" aria-label="City selector">
-            {cities.map((item) => (
+            {visibleCities.map((item) => (
               <button className={city === item ? "active" : ""} key={item} onClick={() => setCity(item)}>
                 {item}
               </button>
@@ -364,10 +544,24 @@ export default function Home() {
           </div>
 
           <form className="askBox" onSubmit={askGuide}>
-            <label htmlFor="question">Ask about {selectedCategory?.label.toLowerCase()} in {city}</label>
+            <div className="chatHeader">
+              <div>
+                <span className="liveDot" />
+                <label htmlFor="question">Ask about {selectedCategory?.label.toLowerCase()} in {city}</label>
+              </div>
+              <div className="chatHeaderActions">
+                <strong>{loading ? "Planning live" : "Ready"}</strong>
+                <button className="iconButton" type="button" onClick={clearChat} title="Clear chat" aria-label="Clear chat">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
             <div className="quickPrompts">
               {[
                 "Plan Leh for 3 days",
+                "Prayagraj hotels and food",
+                "Tell me about Indore food",
+                "Shillong cafes and viewpoints",
                 "Best dinner under 45 minutes",
                 "Shopping plus hospital backup",
                 "Petrol and repair before a road trip"
@@ -377,24 +571,87 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <div className="chatWindow" aria-live="polite">
-              {messages.map((message, index) => (
-                <div className={message.role === "user" ? "chatBubble userBubble" : "chatBubble assistantBubble"} key={index}>
-                  <span>{message.role === "user" ? "You" : "CityMitra"}</span>
-                  <p>{message.content || "Thinking..."}</p>
+            <div className="chatMapGrid">
+              <div className="chatColumn">
+                <div className="chatWindow" aria-live="polite">
+                  {messages.map((message, index) => (
+                    <div className={message.role === "user" ? "chatBubble userBubble" : "chatBubble assistantBubble"} key={index}>
+                      <span>{message.role === "user" ? "You" : "CityMitra"}</span>
+                      <p>{message.content || "Thinking..."}</p>
+                    </div>
+                  ))}
+                  {loading && (
+                    <div className="typingRow" aria-label="CityMitra is typing">
+                      <i />
+                      <i />
+                      <i />
+                    </div>
+                  )}
+                  <div ref={chatEndRef} />
                 </div>
-              ))}
+
+                <div className="composerRow">
+                  <textarea
+                    id="question"
+                    value={question}
+                    onChange={(event) => setQuestion(event.target.value)}
+                    onKeyDown={handleQuestionKeyDown}
+                    placeholder="Ask anything city-related. Press Enter to send, Shift+Enter for a new line."
+                  />
+                  <button className="primaryButton" disabled={loading} type="submit">
+                    {loading ? "Mapping..." : "Send"} <ArrowRight size={18} />
+                  </button>
+                </div>
+
+                <span className="inputHint">Enter sends. Shift+Enter adds a new line.</span>
+              </div>
+
+              <aside className="nearbyPanel" aria-label="Nearby map and places">
+                <div className="miniMap">
+                  <MapPinned size={22} />
+                  <span>{city}</span>
+                  <strong>{selectedCategory?.label}</strong>
+                </div>
+                <a className="mapPrimaryLink" href={mapSearchUrl(`${selectedCategory?.label || category} near ${city}`)} target="_blank" rel="noreferrer">
+                  Open nearby on Maps <ExternalLink size={15} />
+                </a>
+                <div className="nearbyList">
+                  <h3>Nearby picks</h3>
+                  {nearbyItems.length > 0 ? (
+                    nearbyItems.map((item) => (
+                      <a href={mapSearchUrl(`${item.name} ${item.area} ${item.city}`)} key={item.name} target="_blank" rel="noreferrer">
+                        <span>{item.name}</span>
+                        <small>{item.area} · {item.eta}</small>
+                      </a>
+                    ))
+                  ) : (
+                    <p>Ask CityMitra for live-style suggestions, then open the map search for that city.</p>
+                  )}
+                </div>
+                <div className="photoBlocks">
+                  {photoBlocks.map((item) => (
+                    <a
+                      className="photoBlock"
+                      href={mapSearchUrl(item.query)}
+                      key={item.title}
+                      style={{ backgroundImage: `linear-gradient(180deg, rgba(18, 20, 23, 0.05), rgba(18, 20, 23, 0.76)), url("${item.image}")` }}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <span>{item.title}</span>
+                      <small>{item.text}</small>
+                    </a>
+                  ))}
+                </div>
+                <div className="nearbyActions">
+                  {["hospitals", "petrol pumps", "vehicle repair", "hotels"].map((item) => (
+                    <a href={mapSearchUrl(`${item} near ${city}`)} key={item} target="_blank" rel="noreferrer">
+                      {item}
+                    </a>
+                  ))}
+                </div>
+              </aside>
             </div>
-            <textarea
-              id="question"
-              value={question}
-              onChange={(event) => setQuestion(event.target.value)}
-              onKeyDown={handleQuestionKeyDown}
-              placeholder="Ask anything city-related. Press Enter to send, Shift+Enter for a new line."
-            />
-            <button className="primaryButton" disabled={loading} type="submit">
-              {loading ? "Mapping..." : "Send"} <ArrowRight size={18} />
-            </button>
           </form>
         </div>
       </section>
