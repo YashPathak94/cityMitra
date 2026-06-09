@@ -24,10 +24,11 @@ function localGuideAnswer(question: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const { question, city, category } = (await request.json()) as {
+  const { question, city, category, messages } = (await request.json()) as {
     question?: string;
     city?: string;
     category?: string;
+    messages?: Array<{ role: "user" | "assistant"; content: string }>;
   };
 
   if (!question?.trim()) {
@@ -51,11 +52,17 @@ export async function POST(request: NextRequest) {
             {
               role: "developer",
               content:
-                "You are CityMitra, a fast Indian city navigation agent. Recommend destinations from provided directory data first. Keep answers practical: destination, area, why it fits, time-saving route advice, and what to verify before going. If the directory is insufficient, say what data is missing."
+                "You are CityMitra, a fast Indian city navigation agent for Gen Z users and minimal planners. Tone: crisp, cool, friendly, practical, no fluff. Use short headings and scannable bullets. Recommend destinations from the provided directory first, then add AI-suggested public-knowledge options when the user needs more coverage. Clearly mark AI-suggested options as 'extra picks to verify' if they are not in the directory. Always answer city/category questions with multiple usable options, route order, best time to go, and what to verify before leaving. For Leh or Ladakh planning, include altitude, acclimatization, time blocks, sightseeing areas, shopping areas, hospitals, vehicle repair, petrol pumps, hotels, and safety notes for high-altitude travel. Do not claim live availability, current opening hours, or medical certainty."
             },
+            ...(messages || [])
+              .slice(-8)
+              .map((message) => ({
+                role: message.role,
+                content: message.content
+              })),
             {
               role: "user",
-              content: `City filter: ${city || "any"}\nCategory filter: ${category || "any"}\nDirectory:\n${scopedDirectory}\n\nUser question: ${question}`
+              content: `Selected city: ${city || "any"}\nSelected category: ${category || "any"}\nSeed directory:\n${scopedDirectory}\n\nCurrent user question: ${question}`
             }
           ],
           max_output_tokens: 1200,

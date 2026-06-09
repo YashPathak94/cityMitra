@@ -358,6 +358,64 @@ h3 {
   line-height: 1.45;
 }
 
+.altitude {
+  display: inline-flex;
+  margin-top: 14px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: #eef3f1;
+  color: var(--blue);
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.emptyState {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px dashed rgba(18, 20, 23, 0.26);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.68);
+}
+
+.emptyState p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.suggestionRows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.suggestionRows > div {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.suggestionRows button {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  padding: 10px 12px;
+  color: var(--ink);
+  font-weight: 800;
+  text-align: left;
+}
+
+.suggestionRows button span {
+  color: var(--teal);
+  font-size: 0.85rem;
+}
+
 .aiBand {
   width: 100%;
   background: #e5e9e8;
@@ -401,6 +459,70 @@ h3 {
 
 .askBox label {
   font-weight: 900;
+}
+
+.quickPrompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quickPrompts button {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 0 10px;
+  color: var(--blue);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.chatWindow {
+  display: flex;
+  max-height: 360px;
+  min-height: 220px;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f9faf7;
+  padding: 14px;
+}
+
+.chatBubble {
+  max-width: min(92%, 680px);
+  border-radius: 8px;
+  padding: 12px 13px;
+}
+
+.chatBubble span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: inherit;
+}
+
+.chatBubble p {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.assistantBubble {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.userBubble {
+  align-self: flex-end;
+  background: var(--ink);
+  color: var(--white);
 }
 
 textarea {
@@ -471,6 +593,7 @@ textarea {
   .heroGrid,
   .aiPanel,
   .directoryGrid,
+  .suggestionRows,
   .roadmap {
     grid-template-columns: 1fr;
   }

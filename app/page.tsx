@@ -15,9 +15,14 @@ import {
   Sparkles,
   Star
 } from "lucide-react";
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
 import { Mesh } from "three";
 import { categories, CategoryKey, cities, directory } from "@/data/city-directory";
+
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
 
 function CityBlocks() {
   const group = useRef<Mesh>(null);
@@ -76,27 +81,59 @@ function CityScene() {
 export default function Home() {
   const [city, setCity] = useState<string>("Delhi");
   const [category, setCategory] = useState<CategoryKey>("markets");
-  const [question, setQuestion] = useState("Where should I go for wholesale wedding shopping without wasting time?");
-  const [answer, setAnswer] = useState("");
+  const [question, setQuestion] = useState("Plan a Leh trip with places, altitude, hospitals, petrol, repairs, hotels and shopping.");
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      role: "assistant",
+      content:
+        "Tell me the city, vibe, budget, and time you have. I will map the spots, backup services, and time-saving route."
+    }
+  ]);
   const [loading, setLoading] = useState(false);
 
-  const selectedItems = directory.filter((item) => item.city === city || item.category === category).slice(0, 6);
+  const selectedItems = directory.filter((item) => item.city === city && item.category === category).slice(0, 6);
+  const citySuggestions = directory
+    .filter((item) => item.city === city && item.category !== category)
+    .slice(0, 3);
+  const categorySuggestions = directory
+    .filter((item) => item.city !== city && item.category === category)
+    .slice(0, 3);
   const selectedCategory = categories.find((item) => item.key === category);
 
   async function askGuide(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const trimmedQuestion = question.trim();
+    if (!trimmedQuestion || loading) return;
+
+    const nextMessages: ChatMessage[] = [
+      ...messages,
+      { role: "user", content: trimmedQuestion },
+      { role: "assistant", content: "" }
+    ];
+
     setLoading(true);
-    setAnswer("");
+    setQuestion("");
+    setMessages(nextMessages);
 
     try {
       const response = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, city, category })
+        body: JSON.stringify({
+          question: trimmedQuestion,
+          city,
+          category,
+          messages: nextMessages.slice(0, -1)
+        })
       });
 
       if (!response.body) {
-        setAnswer(await response.text());
+        const fallbackText = await response.text();
+        setMessages((current) =>
+          current.map((message, index) =>
+            index === current.length - 1 ? { ...message, content: fallbackText } : message
+          )
+        );
         return;
       }
 
@@ -108,15 +145,38 @@ export default function Home() {
         const { done, value } = await reader.read();
         if (done) break;
         streamedAnswer += decoder.decode(value, { stream: true });
-        setAnswer(streamedAnswer);
+        setMessages((current) =>
+          current.map((message, index) =>
+            index === current.length - 1 ? { ...message, content: streamedAnswer } : message
+          )
+        );
       }
 
       streamedAnswer += decoder.decode();
-      setAnswer(streamedAnswer || "CityMitra could not answer that yet.");
+      setMessages((current) =>
+        current.map((message, index) =>
+          index === current.length - 1
+            ? { ...message, content: streamedAnswer || "CityMitra could not answer that yet." }
+            : message
+        )
+      );
     } catch {
-      setAnswer("CityMitra is offline right now. Try again once the server is running.");
+      setMessages((current) =>
+        current.map((message, index) =>
+          index === current.length - 1
+            ? { ...message, content: "CityMitra is offline right now. Try again once the server is running." }
+            : message
+        )
+      );
     } finally {
       setLoading(false);
+    }
+  }
+
+  function handleQuestionKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      event.currentTarget.form?.requestSubmit();
     }
   }
 
@@ -159,10 +219,10 @@ export default function Home() {
               </div>
               <div className="metrics">
                 <span>
-                  <b>12</b> categories
+                  <b>{categories.length}</b> categories
                 </span>
                 <span>
-                  <b>6</b> launch cities
+                  <b>{cities.length}</b> launch cities
                 </span>
                 <span>
                   <b>AI</b> route advice
@@ -240,10 +300,42 @@ export default function Home() {
                   {item.volume}
                 </span>
               </div>
+              {item.altitude && <span className="altitude">{item.altitude}</span>}
               <strong>{item.tip}</strong>
             </article>
           ))}
         </div>
+
+        {selectedItems.length === 0 && (
+          <div className="emptyState">
+            <h3>No exact {selectedCategory?.label.toLowerCase()} listing in {city} yet</h3>
+            <p>
+              The directory will not mix unrelated city/category results. Use the AI guide for expanded options, or try
+              one of these nearby matches.
+            </p>
+          </div>
+        )}
+
+        {selectedItems.length === 0 && (
+          <div className="suggestionRows">
+            <div>
+              <h3>More in {city}</h3>
+              {citySuggestions.map((item) => (
+                <button key={item.name} onClick={() => setCategory(item.category)}>
+                  {item.name} <span>{categories.find((cat) => cat.key === item.category)?.label}</span>
+                </button>
+              ))}
+            </div>
+            <div>
+              <h3>{selectedCategory?.label} in other cities</h3>
+              {categorySuggestions.map((item) => (
+                <button key={item.name} onClick={() => setCity(item.city)}>
+                  {item.name} <span>{item.city}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="aiBand" id="ai">
@@ -252,8 +344,8 @@ export default function Home() {
             <span className="sectionKicker">AI Agent</span>
             <h2>Ask CityMitra before you leave</h2>
             <p>
-              The AI guide combines city, category, popularity, area, time-saving tips, and local intent so people can
-              move directly toward a useful destination.
+              A clean city chat for trip plans, market runs, hospitals, fuel stops, hotels, repairs, food, and quick
+              backup options when your plan changes.
             </p>
             <div className="agentStack">
               <span>
@@ -273,11 +365,36 @@ export default function Home() {
 
           <form className="askBox" onSubmit={askGuide}>
             <label htmlFor="question">Ask about {selectedCategory?.label.toLowerCase()} in {city}</label>
-            <textarea id="question" value={question} onChange={(event) => setQuestion(event.target.value)} />
+            <div className="quickPrompts">
+              {[
+                "Plan Leh for 3 days",
+                "Best dinner under 45 minutes",
+                "Shopping plus hospital backup",
+                "Petrol and repair before a road trip"
+              ].map((prompt) => (
+                <button key={prompt} type="button" onClick={() => setQuestion(prompt)}>
+                  {prompt}
+                </button>
+              ))}
+            </div>
+            <div className="chatWindow" aria-live="polite">
+              {messages.map((message, index) => (
+                <div className={message.role === "user" ? "chatBubble userBubble" : "chatBubble assistantBubble"} key={index}>
+                  <span>{message.role === "user" ? "You" : "CityMitra"}</span>
+                  <p>{message.content || "Thinking..."}</p>
+                </div>
+              ))}
+            </div>
+            <textarea
+              id="question"
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              onKeyDown={handleQuestionKeyDown}
+              placeholder="Ask anything city-related. Press Enter to send, Shift+Enter for a new line."
+            />
             <button className="primaryButton" disabled={loading} type="submit">
-              {loading ? "Finding..." : "Get answer"} <ArrowRight size={18} />
+              {loading ? "Mapping..." : "Send"} <ArrowRight size={18} />
             </button>
-            {answer && <pre className="answer">{answer}</pre>}
           </form>
         </div>
       </section>

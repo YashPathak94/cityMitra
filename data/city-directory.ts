@@ -3,8 +3,10 @@ import {
   CarFront,
   GraduationCap,
   HeartPulse,
+  Hotel,
   Landmark,
   MapPin,
+  Fuel,
   ShoppingBag,
   Utensils,
   Volleyball
@@ -21,6 +23,8 @@ export type CategoryKey =
   | "food"
   | "grooming"
   | "repair"
+  | "petrol"
+  | "hotels"
   | "dinner"
   | "sightseeing";
 
@@ -29,6 +33,7 @@ export type DirectoryItem = {
   city: string;
   category: CategoryKey;
   area: string;
+  altitude?: string;
   volume: "High" | "Very High" | "Premium" | "Local Favorite";
   bestFor: string;
   eta: string;
@@ -47,11 +52,13 @@ export const categories = [
   { key: "food", label: "Eateries", icon: Utensils },
   { key: "grooming", label: "Grooming", icon: ShoppingBag },
   { key: "repair", label: "Vehicle Repair", icon: CarFront },
+  { key: "petrol", label: "Petrol Pumps", icon: Fuel },
+  { key: "hotels", label: "Hotels", icon: Hotel },
   { key: "dinner", label: "Dinner", icon: Utensils },
   { key: "sightseeing", label: "Sightseeing", icon: MapPin }
 ] as const;
 
-export const cities = ["Delhi", "Mumbai", "Bengaluru", "Jaipur", "Surat", "Hyderabad"] as const;
+export const cities = ["Delhi", "Mumbai", "Bengaluru", "Jaipur", "Surat", "Hyderabad", "Leh"] as const;
 
 export const directory: DirectoryItem[] = [
   {
@@ -185,11 +192,122 @@ export const directory: DirectoryItem[] = [
     eta: "Best by cab plus walking",
     trust: 95,
     tip: "Start early evening and keep the shopping route one-way."
+  },
+  {
+    name: "Leh Main Bazaar",
+    city: "Leh",
+    category: "markets",
+    area: "Main Bazaar Road",
+    altitude: "Approx. 3,500 m",
+    volume: "Very High",
+    bestFor: "warm layers, dry fruits, souvenirs, cafes, SIM and travel basics",
+    eta: "Central walkable zone",
+    trust: 94,
+    tip: "Shop after acclimatization walks; keep the first day light and hydrated."
+  },
+  {
+    name: "Tibetan Market",
+    city: "Leh",
+    category: "sightseeing",
+    area: "Near Main Bazaar",
+    altitude: "Approx. 3,500 m",
+    volume: "High",
+    bestFor: "handicrafts, woollens, local browsing, slow evening walks",
+    eta: "5-10 min from Main Bazaar",
+    trust: 88,
+    tip: "Pair it with Main Bazaar instead of making a separate trip."
+  },
+  {
+    name: "Leh Palace Viewpoint",
+    city: "Leh",
+    category: "sightseeing",
+    area: "Old Leh",
+    altitude: "Approx. 3,600 m",
+    volume: "Very High",
+    bestFor: "history, city views, sunset photos, first sightseeing loop",
+    eta: "20-30 min slow climb or short cab",
+    trust: 92,
+    tip: "Do this after one acclimatization day if you feel breathless."
+  },
+  {
+    name: "Shanti Stupa",
+    city: "Leh",
+    category: "sightseeing",
+    area: "Changspa",
+    altitude: "Approx. 3,600 m",
+    volume: "Very High",
+    bestFor: "sunset, panoramic Leh views, calm first-evening plan",
+    eta: "15 min cab from Main Bazaar",
+    trust: 93,
+    tip: "Carry a layer; wind picks up fast after sunset."
+  },
+  {
+    name: "SNM Hospital",
+    city: "Leh",
+    category: "hospitals",
+    area: "Leh town",
+    altitude: "Approx. 3,500 m",
+    volume: "High",
+    bestFor: "altitude sickness checks, emergency care, general medical help",
+    eta: "10-15 min from Main Bazaar",
+    trust: 90,
+    tip: "For headache, nausea, or breathlessness at altitude, do not wait it out."
+  },
+  {
+    name: "Leh Manali Highway Service Belt",
+    city: "Leh",
+    category: "repair",
+    area: "Skalzangling and highway access roads",
+    altitude: "Approx. 3,500 m",
+    volume: "High",
+    bestFor: "bike checks, puncture repair, brake inspection, road-trip prep",
+    eta: "15-20 min from Main Bazaar",
+    trust: 86,
+    tip: "Check brakes, clutch, tyres, coolant, and spare fuel before high passes."
+  },
+  {
+    name: "HP Petrol Pump Leh",
+    city: "Leh",
+    category: "petrol",
+    area: "Leh town",
+    altitude: "Approx. 3,500 m",
+    volume: "Very High",
+    bestFor: "fuel top-up before Nubra, Pangong, Khardung La, and long loops",
+    eta: "Central access",
+    trust: 91,
+    tip: "Top up in Leh even if the tank looks comfortable; distances are deceptive."
+  },
+  {
+    name: "The Grand Dragon Ladakh",
+    city: "Leh",
+    category: "hotels",
+    area: "Old Road",
+    altitude: "Approx. 3,500 m",
+    volume: "Premium",
+    bestFor: "premium stay, family comfort, acclimatization base",
+    eta: "10 min from airport",
+    trust: 92,
+    tip: "Keep day one free for rest even if the hotel feels comfortable."
+  },
+  {
+    name: "Hotel Omasila",
+    city: "Leh",
+    category: "hotels",
+    area: "Changspa",
+    altitude: "Approx. 3,500 m",
+    volume: "Local Favorite",
+    bestFor: "quiet stays, walkable cafes, relaxed acclimatization",
+    eta: "10 min from Main Bazaar",
+    trust: 87,
+    tip: "Choose Changspa if you want calmer evenings near cafe lanes."
   }
 ];
 
 export function summarizeDirectory() {
   return directory
-    .map((item) => `${item.name} in ${item.city} (${item.area}) for ${item.bestFor}. Tip: ${item.tip}`)
+    .map(
+      (item) =>
+        `${item.name} in ${item.city} (${item.area}${item.altitude ? `, ${item.altitude}` : ""}) for ${item.bestFor}. Category: ${item.category}. Tip: ${item.tip}`
+    )
     .join("\n");
 }
