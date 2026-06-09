@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
               content: `City filter: ${city || "any"}\nCategory filter: ${category || "any"}\nDirectory:\n${scopedDirectory}\n\nUser question: ${question}`
             }
           ],
-          max_output_tokens: 420,
+          max_output_tokens: 1200,
+          reasoning: { effort: "minimal" },
           store: false,
           stream: true
         });
@@ -68,8 +69,9 @@ export async function POST(request: NextRequest) {
             controller.enqueue(encoder.encode(event.delta));
           }
         }
-      } catch {
-        controller.enqueue(encoder.encode("CityMitra could not reach the AI service right now."));
+      } catch (error) {
+        console.error("CityMitra AI route failed", error);
+        controller.enqueue(encoder.encode("CityMitra could not reach the AI service right now. Please check the API key, model, and billing status."));
       } finally {
         controller.close();
       }
