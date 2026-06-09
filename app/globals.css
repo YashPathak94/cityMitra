@@ -62,6 +62,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   min-height: 76px;
 }
 
@@ -98,6 +99,51 @@ button {
   gap: 22px;
   color: var(--muted);
   font-weight: 700;
+}
+
+.topSearch {
+  display: flex;
+  min-width: min(420px, 38vw);
+  height: 42px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(18, 20, 23, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.82);
+  padding: 0 6px 0 12px;
+  box-shadow: 0 12px 34px rgba(18, 20, 23, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.topSearch svg {
+  flex: 0 0 auto;
+  color: var(--blue);
+}
+
+.topSearch input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+}
+
+.topSearch input::placeholder {
+  color: rgba(90, 98, 110, 0.86);
+}
+
+.topSearch button {
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--white);
+  padding: 0 11px;
+  font-size: 0.82rem;
+  font-weight: 900;
 }
 
 .heroGrid {
@@ -220,6 +266,9 @@ h3 {
 
 .sceneWrap {
   position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(270px, 0.78fr);
+  gap: 14px;
   min-height: 520px;
   overflow: hidden;
   border: 1px solid rgba(18, 20, 23, 0.18);
@@ -228,18 +277,137 @@ h3 {
     radial-gradient(circle at 20% 20%, rgba(242, 183, 5, 0.22), transparent 34%),
     linear-gradient(135deg, rgba(255, 253, 248, 0.86), rgba(215, 221, 225, 0.82));
   box-shadow: var(--shadow);
+  isolation: isolate;
+  padding: 14px;
 }
 
-.sceneWrap canvas {
+.sceneCanvasPane {
+  position: relative;
+  min-height: 492px;
+  overflow: hidden;
+  border: 1px solid rgba(18, 20, 23, 0.12);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(242, 183, 5, 0.16), transparent 34%),
+    rgba(255, 253, 248, 0.44);
+}
+
+.sceneCanvasPane::before,
+.sceneCanvasPane::after {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  content: "";
+}
+
+.sceneCanvasPane::before {
+  inset: 18px;
+  border: 1px solid rgba(31, 122, 140, 0.2);
+  border-radius: 8px;
+  animation: routeScan 4.8s ease-in-out infinite;
+}
+
+.sceneCanvasPane::after {
+  width: 52%;
+  height: 2px;
+  left: 24%;
+  top: 52%;
+  background: linear-gradient(90deg, transparent, rgba(191, 67, 66, 0.75), rgba(242, 183, 5, 0.85), transparent);
+  transform: rotate(-18deg);
+  animation: livePulse 2.8s ease-in-out infinite;
+}
+
+.sceneCanvasPane canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
 }
 
+.sceneMediaRail {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  min-height: 492px;
+  width: 100%;
+  gap: 12px;
+  grid-template-rows: minmax(190px, 0.85fr) minmax(240px, 1fr);
+}
+
+.cityImageCard,
+.mapPreviewCard {
+  overflow: hidden;
+  border: 1px solid rgba(18, 20, 23, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.9);
+  box-shadow: 0 18px 48px rgba(18, 20, 23, 0.2);
+  backdrop-filter: blur(14px);
+}
+
+.cityImageCard {
+  position: relative;
+  display: block;
+  min-height: 190px;
+}
+
+.cityImageCard img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 190px;
+  object-fit: cover;
+}
+
+.cityImageCard::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 32%, rgba(18, 20, 23, 0.72));
+  content: "";
+}
+
+.cityImageCard span,
+.mapPreviewCard a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.cityImageCard span {
+  position: absolute;
+  z-index: 1;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  color: var(--white);
+}
+
+.mapPreviewCard {
+  display: grid;
+  grid-template-rows: minmax(220px, 1fr) 48px;
+}
+
+.mapPreviewCard iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  border: 0;
+  background: #d8dee4;
+}
+
+.mapPreviewCard a {
+  min-height: 38px;
+  justify-content: center;
+  background: rgba(255, 253, 248, 0.94);
+  color: var(--blue);
+}
+
 .sceneBadge {
   position: absolute;
-  right: 18px;
-  bottom: 18px;
+  z-index: 4;
+  left: 28px;
+  right: auto;
+  bottom: 28px;
   gap: 8px;
   padding: 10px 12px;
   border-radius: 8px;
@@ -250,6 +418,7 @@ h3 {
 
 .photoChip {
   position: absolute;
+  z-index: 2;
   left: 18px;
   top: 18px;
   display: flex;
@@ -262,6 +431,58 @@ h3 {
   color: var(--ink);
   font-size: 0.86rem;
   font-weight: 900;
+}
+
+.liveRoutePills {
+  position: absolute;
+  z-index: 2;
+  left: 18px;
+  right: 18px;
+  bottom: 72px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.liveRoutePills span {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(18, 20, 23, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.84);
+  color: var(--blue);
+  padding: 0 10px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  backdrop-filter: blur(14px);
+}
+
+@keyframes routeScan {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.82;
+    transform: scale(0.975);
+  }
+}
+
+@keyframes livePulse {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: translateY(14px) rotate(-18deg);
+  }
+
+  50% {
+    opacity: 0.86;
+    transform: translateY(-12px) rotate(-18deg);
+  }
 }
 
 .controlBand,
@@ -580,20 +801,59 @@ h3 {
   gap: 12px;
 }
 
-.chatWindow {
-  flex: 1;
+.exportBar {
   display: flex;
-  max-height: none;
-  min-height: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.exportBar button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--blue);
+  padding: 0 10px;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.chatWindow {
+  display: flex;
+  height: clamp(360px, 48vh, 540px);
+  min-height: 360px;
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(40, 75, 99, 0.62) rgba(216, 222, 228, 0.68);
+  scrollbar-width: thin;
   border: 1px solid var(--line);
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(255, 253, 248, 0.92), rgba(239, 244, 242, 0.9)),
     radial-gradient(circle at top right, rgba(242, 183, 5, 0.16), transparent 38%);
   padding: 14px;
+}
+
+.chatWindow::-webkit-scrollbar {
+  width: 10px;
+}
+
+.chatWindow::-webkit-scrollbar-track {
+  background: rgba(216, 222, 228, 0.68);
+  border-radius: 999px;
+}
+
+.chatWindow::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(216, 222, 228, 0.68);
+  border-radius: 999px;
+  background: rgba(40, 75, 99, 0.72);
 }
 
 .chatBubble {
@@ -937,7 +1197,28 @@ textarea {
   }
 
   .sceneWrap {
+    grid-template-columns: 1fr;
     min-height: 420px;
+  }
+
+  .sceneCanvasPane,
+  .sceneMediaRail {
+    min-height: 380px;
+  }
+
+  .sceneMediaRail {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+  }
+
+  .topSearch {
+    order: 3;
+    width: 100%;
+    min-width: 0;
   }
 
   .filterGroup,
@@ -967,6 +1248,11 @@ textarea {
     gap: 10px;
   }
 
+  .topSearch {
+    height: auto;
+    min-height: 42px;
+  }
+
   .heroGrid {
     padding-top: 24px;
   }
@@ -988,12 +1274,31 @@ textarea {
     min-height: 340px;
   }
 
+  .sceneCanvasPane,
+  .sceneMediaRail {
+    min-height: 320px;
+  }
+
+  .sceneMediaRail {
+    grid-template-columns: 1fr;
+  }
+
+  .cityImageCard img,
+  .mapPreviewCard iframe {
+    min-height: 170px;
+  }
+
+  .liveRoutePills {
+    bottom: 62px;
+  }
+
   .chatHeader {
     align-items: flex-start;
     flex-direction: column;
   }
 
   .chatWindow {
+    height: 420px;
     min-height: 340px;
   }
 

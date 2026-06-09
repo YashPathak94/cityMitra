@@ -6,9 +6,12 @@ import {
   Bot,
   Building2,
   Camera,
+  ChevronDown,
+  ChevronUp,
   Clock3,
   Compass,
   ExternalLink,
+  FileText,
   Map,
   MapPinned,
   Navigation,
@@ -16,6 +19,7 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Table,
   Trash2
 } from "lucide-react";
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
@@ -27,6 +31,13 @@ type ChatMessage = {
   content: string;
 };
 
+type NearbyCard = {
+  name: string;
+  area: string;
+  eta: string;
+  query: string;
+};
+
 const starterMessage =
   "Tell me the city, vibe, budget, and time you have. I will map the spots, backup services, and time-saving route. Yes, an actual plan, not a 47-tab research spiral.";
 
@@ -34,6 +45,7 @@ const knownChatCities = [
   "Agra",
   "Ahmedabad",
   "Amritsar",
+  "Ayodhya",
   "Bhopal",
   "Chandigarh",
   "Chennai",
@@ -45,6 +57,7 @@ const knownChatCities = [
   "Kanpur",
   "Kochi",
   "Kolkata",
+  "Leh",
   "Lucknow",
   "Mumbai",
   "Mysuru",
@@ -65,6 +78,21 @@ const cityAliases: Record<string, string> = {
 };
 
 const cityVisuals: Record<string, { image: string; label: string; position: string }> = {
+  Agra: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Taj%20Mahal%20in%20March%202004.jpg",
+    label: "Agra heritage",
+    position: "center"
+  },
+  Ayodhya: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Ram%20Mandir%2C%20Ayodhya%20Dham.jpg",
+    label: "Ayodhya dham",
+    position: "center"
+  },
+  Indore: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Rajwada%2C%20Indore.jpg",
+    label: "Indore city",
+    position: "center"
+  },
   Delhi: {
     image: "https://commons.wikimedia.org/wiki/Special:FilePath/Red%20Fort%20in%20Delhi%2003-2016%20img1.jpg",
     label: "Delhi markets",
@@ -104,6 +132,21 @@ const cityVisuals: Record<string, { image: string; label: string; position: stri
     image: "https://commons.wikimedia.org/wiki/Special:FilePath/Sangam-Prayagraj.jpg",
     label: "Prayagraj ghats",
     position: "center"
+  },
+  Varanasi: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Varanasi%20Ghats%20on%20the%20Ganges.jpg",
+    label: "Varanasi ghats",
+    position: "center"
+  },
+  Kolkata: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Victoria%20Memorial%20situated%20in%20Kolkata.jpg",
+    label: "Kolkata city",
+    position: "center"
+  },
+  Pune: {
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Shaniwar%20wada%20Pune.jpg",
+    label: "Pune city",
+    position: "center"
   }
 };
 
@@ -117,6 +160,93 @@ function titleCaseCity(value: string) {
     .join(" ");
 }
 
+const cityIntentWords = new Set([
+  "about",
+  "area",
+  "areas",
+  "best",
+  "budget",
+  "cafes",
+  "category",
+  "city",
+  "dining",
+  "dinner",
+  "electronics",
+  "eateries",
+  "food",
+  "fuel",
+  "guide",
+  "hospital",
+  "hospitals",
+  "hotel",
+  "hotels",
+  "market",
+  "markets",
+  "mall",
+  "malls",
+  "map",
+  "near",
+  "nearby",
+  "petrol",
+  "places",
+  "planner",
+  "repair",
+  "route",
+  "saree",
+  "sarees",
+  "school",
+  "schools",
+  "shopping",
+  "sightseeing",
+  "spots",
+  "store",
+  "stores",
+  "tour",
+  "travel",
+  "trip",
+  "vehicle",
+  "visit",
+  "with",
+  "wholesale"
+]);
+
+const cityDetectorPatterns = [
+  /\b(?:about|city|in|to|near|around|at|for|visit|visiting)\s+([a-z][a-z\s]{2,44}?)(?=\s+(?:for|with|trip|travel|planner|hotels?|food|eateries|map|places?|route|shopping|markets?|hospital|petrol|repair|dinner|sightseeing|cafes?|mall|stores?)\b|[?.!,]|$)/i,
+  /\b(?:plan|make|create|build|suggest|show|find)\s+(?:a\s+)?(?:trip|travel|planner|route|guide|places?)?\s*(?:for|to|in)?\s+([a-z][a-z\s]{2,44}?)(?=\s+(?:trip|travel|planner|route|guide|with|for|hotels?|food|places?|map)\b|[?.!,]|$)/i,
+  /^([a-z][a-z\s]{2,44}?)(?=\s+(?:trip|travel|planner|hotels?|food|eateries|map|places?|tour|guide|route|shopping|markets?|hospital|petrol|repair|dinner|sightseeing|cafes?|mall)\b|[?.!,]|$)/i
+];
+
+const categoryKeywords: Array<{ key: CategoryKey; words: string[] }> = [
+  { key: "markets", words: ["wholesale", "market", "markets", "shopkeeper", "stores", "shopping"] },
+  { key: "sarees", words: ["saree", "sarees", "silk"] },
+  { key: "electronics", words: ["electronics", "mobile", "laptop", "computer"] },
+  { key: "hospitals", words: ["hospital", "hospitals", "clinic", "medical"] },
+  { key: "malls", words: ["mall", "malls"] },
+  { key: "play", words: ["play", "arena", "games", "sports"] },
+  { key: "schools", words: ["school", "schools", "college", "education"] },
+  { key: "food", words: ["food", "eateries", "cafe", "cafes", "snacks"] },
+  { key: "grooming", words: ["groom", "grooming", "salon", "barber"] },
+  { key: "repair", words: ["repair", "mechanic", "garage", "vehicle", "auto"] },
+  { key: "petrol", words: ["petrol", "fuel", "pump", "pumps"] },
+  { key: "hotels", words: ["hotel", "hotels", "stay", "stays"] },
+  { key: "dinner", words: ["dinner", "dining", "restaurant", "restaurants"] },
+  { key: "sightseeing", words: ["sightseeing", "places", "tour", "viewpoint", "viewpoints"] }
+];
+
+function cleanCityCandidate(value: string) {
+  const words = value
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((word) => !cityIntentWords.has(word));
+
+  if (words.length === 0 || words.length > 4) return null;
+
+  const cityGuess = titleCaseCity(words.join(" "));
+  return cityGuess.length > 2 ? cityGuess : null;
+}
+
 function detectCityFromMessage(message: string) {
   const lowerMessage = message.toLowerCase();
   const aliasMatch = Object.entries(cityAliases).find(([alias]) => new RegExp(`\\b${alias}\\b`, "i").test(message));
@@ -127,19 +257,22 @@ function detectCityFromMessage(message: string) {
 
   if (knownMatch) return knownMatch;
 
-  const patternMatch = lowerMessage.match(
-    /\b(?:city|in|to|for|at|near|around|visit|visiting|trip to|going to)\s+([a-z]+(?:\s+[a-z]+){0,2})/
-  );
+  const patternMatch = cityDetectorPatterns.map((pattern) => lowerMessage.match(pattern)).find(Boolean);
 
   if (!patternMatch) return null;
 
-  const stopWords = new Set(["the", "a", "an", "my", "this", "that", "nearby", "food", "hotel", "hotels", "trip"]);
-  const cityGuess = patternMatch[1]
-    .split(/\s+/)
-    .filter((part) => !stopWords.has(part))
-    .join(" ");
+  return cleanCityCandidate(patternMatch[1]);
+}
 
-  return cityGuess.length > 2 ? titleCaseCity(cityGuess) : null;
+function detectCategoryFromText(value: string) {
+  const lowerValue = value.toLowerCase();
+  const directMatch = categories.find(
+    (item) => lowerValue.includes(item.key) || lowerValue.includes(item.label.toLowerCase())
+  );
+
+  if (directMatch) return directMatch.key;
+
+  return categoryKeywords.find((item) => item.words.some((word) => new RegExp(`\\b${word}\\b`, "i").test(value)))?.key || null;
 }
 
 function CityBlocks() {
@@ -199,6 +332,7 @@ function CityScene() {
 export default function Home() {
   const [city, setCity] = useState<string>("Delhi");
   const [category, setCategory] = useState<CategoryKey>("markets");
+  const [searchText, setSearchText] = useState("");
   const [question, setQuestion] = useState("Plan a Leh trip with places, altitude, hospitals, petrol, repairs, hotels and shopping.");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -207,6 +341,7 @@ export default function Home() {
     }
   ]);
   const [loading, setLoading] = useState(false);
+  const chatWindowRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const visibleCities = useMemo(() => (cities.includes(city as (typeof cities)[number]) ? cities : [city, ...cities]), [city]);
@@ -217,7 +352,7 @@ export default function Home() {
   const categorySuggestions = directory
     .filter((item) => item.city !== city && item.category === category)
     .slice(0, 3);
-  const nearbyItems = (selectedItems.length > 0 ? selectedItems : citySuggestions).slice(0, 5);
+  const seededNearbyItems = (selectedItems.length > 0 ? selectedItems : citySuggestions).slice(0, 5);
   const selectedCategory = categories.find((item) => item.key === category);
   const cityVisual = cityVisuals[city] || {
     image: "https://commons.wikimedia.org/wiki/Special:FilePath/India%20Gate%20in%20New%20Delhi%2003-2016%20img3.jpg",
@@ -250,6 +385,47 @@ export default function Home() {
       query: `${selectedCategory?.label || category} near ${city}`
     }
   ];
+  const generatedNearbyItems: NearbyCard[] = [
+    {
+      name: `${selectedCategory?.label || "Places"} near ${city}`,
+      area: "Selected category",
+      eta: "Map search",
+      query: `${selectedCategory?.label || category} near ${city}`
+    },
+    {
+      name: `Hotels in ${city}`,
+      area: "Stay options",
+      eta: "Map search",
+      query: `best hotels in ${city}`
+    },
+    {
+      name: `Places to visit in ${city}`,
+      area: "Sightseeing",
+      eta: "Map search",
+      query: `best places to visit in ${city}`
+    },
+    {
+      name: `Fine dining in ${city}`,
+      area: "Dinner",
+      eta: "Map search",
+      query: `fine dining restaurants in ${city}`
+    },
+    {
+      name: `Hospitals, fuel and repair in ${city}`,
+      area: "Backup layer",
+      eta: "Map search",
+      query: `hospitals petrol pumps vehicle repair near ${city}`
+    }
+  ];
+  const nearbyCards: NearbyCard[] =
+    seededNearbyItems.length > 0
+      ? seededNearbyItems.map((item) => ({
+          name: item.name,
+          area: item.area,
+          eta: item.eta,
+          query: `${item.name} ${item.area} ${item.city}`
+        }))
+      : generatedNearbyItems;
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -259,9 +435,117 @@ export default function Home() {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
   }
 
+  function mapEmbedUrl(query: string) {
+    return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=12&output=embed`;
+  }
+
   function clearChat() {
     setMessages([{ role: "assistant", content: starterMessage }]);
     setQuestion("");
+  }
+
+  function applySearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedSearch = searchText.trim();
+    if (!trimmedSearch) return;
+
+    const detectedCategory = detectCategoryFromText(trimmedSearch);
+    const cityFromText =
+      detectCityFromMessage(trimmedSearch) ||
+      cleanCityCandidate(
+        categoryKeywords.reduce(
+          (current, item) => item.words.reduce((text, word) => text.replace(new RegExp(`\\b${word}\\b`, "gi"), " "), current),
+          trimmedSearch
+        )
+      );
+
+    if (cityFromText) {
+      setCity(cityAliases[cityFromText.toLowerCase()] || cityFromText);
+    }
+
+    if (detectedCategory) {
+      setCategory(detectedCategory);
+    }
+
+    const activeCity = cityFromText || city;
+    const activeCategory = detectedCategory
+      ? categories.find((item) => item.key === detectedCategory)?.label
+      : selectedCategory?.label;
+    setQuestion(`Plan ${activeCity} ${activeCategory || "city"} options with nearby maps, photos, route timing, and backup stops.`);
+    setSearchText("");
+  }
+
+  function scrollChat(position: "top" | "bottom") {
+    const chatWindow = chatWindowRef.current;
+    if (!chatWindow) return;
+
+    chatWindow.scrollTo({
+      top: position === "top" ? 0 : chatWindow.scrollHeight,
+      behavior: "smooth"
+    });
+  }
+
+  function latestAssistantPlan() {
+    return [...messages].reverse().find((message) => message.role === "assistant" && message.content.trim())?.content || starterMessage;
+  }
+
+  function openPdfPlan() {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const plan = latestAssistantPlan();
+    const routeRows = nearbyCards
+      .map(
+        (item) =>
+          `<tr><td>${item.name}</td><td>${item.area}</td><td>${item.eta}</td><td>${item.query}</td></tr>`
+      )
+      .join("");
+
+    printWindow.document.write(`<!doctype html>
+      <html>
+        <head>
+          <title>CityMitra ${city} plan</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 32px; color: #121417; }
+            h1 { margin-bottom: 4px; }
+            pre { white-space: pre-wrap; line-height: 1.5; background: #f6f4ee; padding: 16px; border-radius: 8px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+            th, td { border: 1px solid #d8dee4; padding: 8px; text-align: left; vertical-align: top; }
+            th { background: #eef3f1; }
+          </style>
+        </head>
+        <body>
+          <h1>CityMitra ${city} Travel Plan</h1>
+          <p>Category: ${selectedCategory?.label || category}</p>
+          <pre>${plan.replace(/[<>&]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[char] || char)}</pre>
+          <h2>Map Route Sheet</h2>
+          <table>
+            <thead><tr><th>Stop</th><th>Area</th><th>Distance/Time</th><th>Map Search</th></tr></thead>
+            <tbody>${routeRows}</tbody>
+          </table>
+        </body>
+      </html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  }
+
+  function downloadCsvPlan() {
+    const rows = [
+      ["City", "Category", "Stop", "Area", "Distance/Time", "Map Search"],
+      ...nearbyCards.map((item) => [city, selectedCategory?.label || category, item.name, item.area, item.eta, item.query])
+    ];
+    const chatRows = [["Chat Plan"], [latestAssistantPlan()]];
+    const csv = [...rows, [], ...chatRows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `citymitra-${city.toLowerCase().replace(/\s+/g, "-")}-plan.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   async function askGuide(event: FormEvent<HTMLFormElement>) {
@@ -367,6 +651,16 @@ export default function Home() {
               </span>
               CityMitra
             </a>
+            <form className="topSearch" onSubmit={applySearch} role="search">
+              <Search size={16} />
+              <input
+                aria-label="Search any city or category"
+                onChange={(event) => setSearchText(event.target.value)}
+                placeholder="Search city, food, hotels, repair..."
+                value={searchText}
+              />
+              <button type="submit">Search</button>
+            </form>
             <div className="navActions">
               <a href="#directory">Directory</a>
               <a href="#ai">AI Guide</a>
@@ -406,10 +700,52 @@ export default function Home() {
               </div>
             </div>
             <div className="sceneWrap" aria-label="Animated 3D city directory map">
-              <CityScene />
-              <div className="photoChip">
-                <Camera size={15} />
-                {cityVisual.label}
+              <div className="sceneCanvasPane">
+                <CityScene />
+                <div className="photoChip">
+                  <Camera size={15} />
+                  {cityVisual.label}
+                </div>
+                <div className="liveRoutePills" aria-label="Live 3D features">
+                  <span>
+                    <Sparkles size={14} />
+                    City sync
+                  </span>
+                  <span>
+                    <MapPinned size={14} />
+                    Map picks
+                  </span>
+                  <span>
+                    <Compass size={14} />
+                    Route mode
+                  </span>
+                </div>
+              </div>
+              <div className="sceneMediaRail" aria-label={`${city} photo and map preview`}>
+                <a
+                  className="cityImageCard"
+                  href={mapSearchUrl(`photos of ${city} ${selectedCategory?.label || ""}`)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <img alt={`${city} city visual`} src={cityVisual.image} />
+                  <span>
+                    <Camera size={14} />
+                    {city} photos
+                  </span>
+                </a>
+                <div className="mapPreviewCard">
+                  <iframe
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={mapEmbedUrl(`${city} India ${selectedCategory?.label || ""}`)}
+                    title={`${city} map preview`}
+                  />
+                  <a href={mapSearchUrl(`${selectedCategory?.label || category} near ${city}`)} target="_blank" rel="noreferrer">
+                    <MapPinned size={14} />
+                    Open live map
+                  </a>
+                </div>
               </div>
               <div className="sceneBadge">
                 <Map size={16} />
@@ -558,9 +894,11 @@ export default function Home() {
             </div>
             <div className="quickPrompts">
               {[
-                "Plan Leh for 3 days",
+                "Plan Leh for 3 days with route table",
                 "Prayagraj hotels and food",
+                "Ayodhya trip planner",
                 "Tell me about Indore food",
+                "Darjeeling route planner",
                 "Shillong cafes and viewpoints",
                 "Best dinner under 45 minutes",
                 "Shopping plus hospital backup",
@@ -573,7 +911,23 @@ export default function Home() {
             </div>
             <div className="chatMapGrid">
               <div className="chatColumn">
-                <div className="chatWindow" aria-live="polite">
+                <div className="exportBar">
+                  <button type="button" onClick={openPdfPlan}>
+                    <FileText size={15} />
+                    PDF
+                  </button>
+                  <button type="button" onClick={downloadCsvPlan}>
+                    <Table size={15} />
+                    Excel
+                  </button>
+                  <button type="button" onClick={() => scrollChat("top")} title="Scroll chat up" aria-label="Scroll chat up">
+                    <ChevronUp size={15} />
+                  </button>
+                  <button type="button" onClick={() => scrollChat("bottom")} title="Scroll chat down" aria-label="Scroll chat down">
+                    <ChevronDown size={15} />
+                  </button>
+                </div>
+                <div className="chatWindow" ref={chatWindowRef} aria-live="polite">
                   {messages.map((message, index) => (
                     <div className={message.role === "user" ? "chatBubble userBubble" : "chatBubble assistantBubble"} key={index}>
                       <span>{message.role === "user" ? "You" : "CityMitra"}</span>
@@ -617,9 +971,9 @@ export default function Home() {
                 </a>
                 <div className="nearbyList">
                   <h3>Nearby picks</h3>
-                  {nearbyItems.length > 0 ? (
-                    nearbyItems.map((item) => (
-                      <a href={mapSearchUrl(`${item.name} ${item.area} ${item.city}`)} key={item.name} target="_blank" rel="noreferrer">
+                  {nearbyCards.length > 0 ? (
+                    nearbyCards.map((item) => (
+                      <a href={mapSearchUrl(item.query)} key={item.name} target="_blank" rel="noreferrer">
                         <span>{item.name}</span>
                         <small>{item.area} · {item.eta}</small>
                       </a>
