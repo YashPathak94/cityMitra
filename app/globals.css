@@ -293,6 +293,9 @@ h3 {
   background:
     radial-gradient(circle at 20% 20%, rgba(242, 183, 5, 0.16), transparent 34%),
     rgba(255, 253, 248, 0.44);
+  background-position: center;
+  background-size: cover;
+  box-shadow: inset 0 0 120px rgba(255, 253, 248, 0.52);
 }
 
 .sceneCanvasPane::before,
@@ -435,6 +438,35 @@ h3 {
   color: var(--ink);
   font-size: 0.86rem;
   font-weight: 900;
+}
+
+.routeStory {
+  position: absolute;
+  z-index: 2;
+  top: 76px;
+  left: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.routeStory span {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 30px;
+  align-items: center;
+  border: 1px solid rgba(18, 20, 23, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.78);
+  color: var(--ink);
+  padding: 0 10px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  box-shadow: 0 12px 30px rgba(18, 20, 23, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.routeStory span:nth-child(2) {
+  color: var(--red);
 }
 
 .liveRoutePills {
@@ -1629,6 +1661,11 @@ textarea {
 
   .liveRoutePills {
     bottom: 62px;
+  }
+
+  .routeStory {
+    top: 64px;
+    gap: 6px;
   }
 
   .chatHeader {

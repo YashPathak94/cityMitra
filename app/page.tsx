@@ -25,7 +25,7 @@ import {
   Trash2
 } from "lucide-react";
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Mesh } from "three";
+import { CatmullRomCurve3, Group, Mesh, Vector3 } from "three";
 import { categories, CategoryKey, cities, directory } from "@/data/city-directory";
 
 type ChatMessage = {
@@ -321,14 +321,50 @@ function trackActivity(event: ActivityEvent) {
   }).catch(() => undefined);
 }
 
-function CityBlocks() {
-  const group = useRef<Mesh>(null);
+const categorySceneColors: Record<CategoryKey, string> = {
+  markets: "#1f7a8c",
+  sarees: "#bf4342",
+  electronics: "#4f7cac",
+  hospitals: "#456b56",
+  malls: "#f2b705",
+  play: "#00838f",
+  schools: "#52616b",
+  food: "#d06f1a",
+  grooming: "#8f4f7a",
+  repair: "#2f4858",
+  petrol: "#0f766e",
+  hotels: "#284b63",
+  dinner: "#bf4342",
+  sightseeing: "#7c6f33"
+};
+
+function CityBlocks({ category }: { category: CategoryKey }) {
+  const group = useRef<Group>(null);
+  const travelerRef = useRef<Mesh>(null);
+  const pulseRef = useRef<Group>(null);
+  const routeColor = categorySceneColors[category] || "#1f7a8c";
+  const routeCurve = useMemo(
+    () =>
+      new CatmullRomCurve3([
+        new Vector3(-3.35, 0.14, 2.55),
+        new Vector3(-1.8, 0.18, 1.2),
+        new Vector3(-0.2, 0.22, 0.25),
+        new Vector3(1.35, 0.2, -0.75),
+        new Vector3(3.2, 0.18, -2.25)
+      ]),
+    []
+  );
+  const routeStops = useMemo(
+    () => [0, 0.28, 0.56, 0.82, 1].map((point) => routeCurve.getPointAt(point)),
+    [routeCurve]
+  );
   const blocks = useMemo(
     () =>
       Array.from({ length: 42 }, (_, index) => ({
         x: (index % 7) * 1.1 - 3.3,
         z: Math.floor(index / 7) * 1.1 - 3.2,
         h: 0.35 + ((index * 7) % 9) * 0.12,
+        isRouteBlock: [2, 10, 18, 26, 34].includes(index),
         color: ["#1f7a8c", "#bf4342", "#f2b705", "#52616b", "#2f4858", "#4f7cac"][index % 6]
       })),
     []
@@ -336,7 +372,17 @@ function CityBlocks() {
 
   useFrame(({ clock }) => {
     if (group.current) {
-      group.current.rotation.y = Math.sin(clock.elapsedTime * 0.18) * 0.08;
+      group.current.rotation.y = Math.sin(clock.elapsedTime * 0.16) * 0.07;
+    }
+
+    if (travelerRef.current) {
+      const point = routeCurve.getPointAt((clock.elapsedTime * 0.12) % 1);
+      travelerRef.current.position.set(point.x, point.y + 0.35, point.z);
+    }
+
+    if (pulseRef.current) {
+      const pulse = 1 + Math.sin(clock.elapsedTime * 2.3) * 0.08;
+      pulseRef.current.scale.set(pulse, pulse, pulse);
     }
   });
 
@@ -349,28 +395,53 @@ function CityBlocks() {
       {blocks.map((block, index) => (
         <mesh key={index} position={[block.x, block.h / 2, block.z]} castShadow receiveShadow>
           <boxGeometry args={[0.78, block.h, 0.78]} />
-          <meshStandardMaterial color={block.color} roughness={0.48} metalness={0.05} />
+          <meshStandardMaterial
+            color={block.isRouteBlock ? routeColor : block.color}
+            emissive={block.isRouteBlock ? routeColor : "#000000"}
+            emissiveIntensity={block.isRouteBlock ? 0.18 : 0}
+            roughness={0.48}
+            metalness={0.05}
+          />
         </mesh>
       ))}
-      <mesh position={[0.25, 1.4, -0.2]}>
-        <torusGeometry args={[2.9, 0.018, 8, 80]} />
-        <meshStandardMaterial color="#111827" emissive="#f2b705" emissiveIntensity={0.6} />
+      <mesh position={[0, 0.2, 0]}>
+        <tubeGeometry args={[routeCurve, 80, 0.035, 8, false]} />
+        <meshStandardMaterial color={routeColor} emissive={routeColor} emissiveIntensity={0.75} />
       </mesh>
-      <mesh position={[1.6, 1.95, -1.15]}>
-        <sphereGeometry args={[0.12, 24, 24]} />
-        <meshStandardMaterial color="#f2b705" emissive="#f2b705" emissiveIntensity={1.2} />
+      <group ref={pulseRef}>
+        {routeStops.map((stop, index) => (
+          <group key={`${stop.x}-${index}`} position={[stop.x, stop.y + 0.08, stop.z]}>
+            <mesh>
+              <cylinderGeometry args={[0.1, 0.1, 0.32, 20]} />
+              <meshStandardMaterial color={index === 0 ? "#111827" : routeColor} emissive={routeColor} emissiveIntensity={0.38} />
+            </mesh>
+            <mesh position={[0, 0.25, 0]}>
+              <sphereGeometry args={[0.17, 24, 24]} />
+              <meshStandardMaterial color={index === 0 ? "#f2b705" : "#fffdf8"} emissive={routeColor} emissiveIntensity={0.55} />
+            </mesh>
+          </group>
+        ))}
+      </group>
+      <mesh ref={travelerRef} position={[-3.35, 0.45, 2.55]}>
+        <sphereGeometry args={[0.16, 32, 32]} />
+        <meshStandardMaterial color="#f2b705" emissive="#f2b705" emissiveIntensity={1.35} />
+      </mesh>
+      <mesh position={[0.15, 0.11, 0.1]} rotation={[0, 0, 0]}>
+        <torusGeometry args={[3.45, 0.012, 8, 96]} />
+        <meshStandardMaterial color="#111827" emissive="#f2b705" emissiveIntensity={0.35} transparent opacity={0.68} />
       </mesh>
     </group>
   );
 }
 
-function CityScene() {
+function CityScene({ category }: { category: CategoryKey }) {
   return (
     <Canvas camera={{ position: [0, 5.4, 7.2], fov: 45 }} shadows style={{ height: "100%", inset: 0, position: "absolute", width: "100%" }}>
-      <ambientLight intensity={0.9} />
-      <directionalLight position={[4, 7, 5]} intensity={1.8} castShadow />
+      <ambientLight intensity={1.05} />
+      <directionalLight position={[4, 7, 5]} intensity={1.9} castShadow />
       <pointLight position={[-3, 3, 2]} intensity={0.8} color="#f2b705" />
-      <CityBlocks />
+      <pointLight position={[2.5, 2.6, -2]} intensity={0.75} color={categorySceneColors[category]} />
+      <CityBlocks category={category} />
     </Canvas>
   );
 }
@@ -798,11 +869,22 @@ export default function Home() {
               </div>
             </div>
             <div className="sceneWrap" aria-label="Animated 3D city directory map">
-              <div className="sceneCanvasPane">
-                <CityScene />
+              <div
+                className="sceneCanvasPane"
+                style={{
+                  backgroundImage: `linear-gradient(180deg, rgba(255, 253, 248, 0.76), rgba(229, 233, 232, 0.84)), url("${cityVisual.image}")`
+                }}
+              >
+                <CityScene category={category} />
                 <div className="photoChip">
                   <Camera size={15} />
                   {cityVisual.label}
+                </div>
+                <div className="routeStory" aria-label={`${city} animated route story`}>
+                  <span>Start</span>
+                  <span>{selectedCategory?.label || "Category"}</span>
+                  <span>Food</span>
+                  <span>Backup</span>
                 </div>
                 <div className="liveRoutePills" aria-label="Live 3D features">
                   <button type="button" onClick={() => handleSceneAction("sync")}>

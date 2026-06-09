@@ -3,7 +3,7 @@
 ## Fastest Hosting Path
 
 1. Push the repository to GitHub.
-2. Import the repo in Vercel.
+2. Import the repo in Vercel from the Vercel dashboard.
 3. Set environment variables:
    - `OPENAI_API_KEY`
    - `ADMIN_PASSWORD`
@@ -18,6 +18,10 @@
 The current `/api/activity` route stores activity in `.citymitra/activity.json` for local development.
 
 The `/admin` route is protected by an HTTP-only admin session cookie. In local development, the fallback password is `admin123`, but production must set `ADMIN_PASSWORD` and `ADMIN_SESSION_TOKEN`.
+
+Unique visitor counting is server-issued through an HTTP-only `citymitra_visitor` cookie. The public website can write activity events, but only logged-in admins can read totals from `GET /api/activity`.
+
+Important: local JSON storage is not durable on serverless hosting. For a real hosted visitor count, connect `app/api/activity/route.ts` to a durable database before launch.
 
 For production, replace the file write in `app/api/activity/route.ts` with one of:
 

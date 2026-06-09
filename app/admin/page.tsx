@@ -11,6 +11,8 @@ type ChartItem = {
 type ActivitySummary = {
   totals: {
     events: number;
+    pageViews?: number;
+    uniqueVisitors?: number;
     sessions: number;
     timeSpentSeconds: number;
     monetizableEvents: number;
@@ -141,9 +143,9 @@ export default function AdminPage() {
       <section className="adminStatGrid">
         {[
           { icon: BarChart3, label: "Total events", value: summary.totals.events },
-          { icon: Users, label: "Sessions", value: summary.totals.sessions },
+          { icon: Users, label: "Unique visitors", value: summary.totals.uniqueVisitors ?? summary.totals.sessions },
+          { icon: MousePointerClick, label: "Page views", value: summary.totals.pageViews ?? 0 },
           { icon: Clock3, label: "Time spent", value: formatDuration(summary.totals.timeSpentSeconds) },
-          { icon: MousePointerClick, label: "Lead actions", value: summary.totals.monetizableEvents },
           { icon: IndianRupee, label: "Est. lead value", value: `₹${summary.totals.estimatedLeadValue}` }
         ].map((item) => {
           const Icon = item.icon;

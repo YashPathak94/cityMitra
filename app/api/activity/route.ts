@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
+import { randomUUID } from "crypto";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE, isAdminCookie } from "@/lib/admin-auth";
@@ -19,6 +20,7 @@ type ActivityRecord = {
 const activityDir = path.join(process.cwd(), ".citymitra");
 const activityFile = path.join(activityDir, "activity.json");
 const settingsFile = path.join(activityDir, "admin-settings.json");
+const visitorCookie = "citymitra_visitor";
 
 type AdminSettings = {
   leadValue: number;
@@ -63,7 +65,9 @@ export async function GET(request: NextRequest) {
 
   const records = await readActivity();
   const settings = await readSettings();
+  const visitors = new Set(records.filter((record) => record.type === "page_view").map((record) => record.sessionId).filter(Boolean));
   const sessions = new Set(records.map((record) => record.sessionId).filter(Boolean));
+  const pageViews = records.filter((record) => record.type === "page_view").length;
   const totalTime = records
     .filter((record) => record.type === "time_spent")
     .reduce((total, record) => total + (record.value || 0), 0);
@@ -74,6 +78,8 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     totals: {
       events: records.length,
+      pageViews,
+      uniqueVisitors: visitors.size,
       sessions: sessions.size,
       timeSpentSeconds: totalTime,
       monetizableEvents,
@@ -97,6 +103,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing event type" }, { status: 400 });
   }
 
+  const existingVisitorId = request.cookies.get(visitorCookie)?.value;
+  const visitorId = existingVisitorId || randomUUID();
   const nextRecord: ActivityRecord = {
     type: String(payload.type).slice(0, 80),
     city: payload.city ? String(payload.city).slice(0, 80) : undefined,
@@ -104,7 +112,7 @@ export async function POST(request: NextRequest) {
     label: payload.label ? String(payload.label).slice(0, 160) : undefined,
     value: typeof payload.value === "number" ? payload.value : undefined,
     path: payload.path ? String(payload.path).slice(0, 120) : undefined,
-    sessionId: payload.sessionId ? String(payload.sessionId).slice(0, 120) : undefined,
+    sessionId: visitorId,
     timestamp: payload.timestamp || new Date().toISOString()
   };
 
@@ -113,5 +121,17 @@ export async function POST(request: NextRequest) {
   const nextRecords = [...records.slice(-980), nextRecord];
   await writeFile(activityFile, JSON.stringify(nextRecords, null, 2));
 
-  return NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true });
+
+  if (!existingVisitorId) {
+    response.cookies.set(visitorCookie, visitorId, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365
+    });
+  }
+
+  return response;
 }
