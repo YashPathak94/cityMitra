@@ -34,6 +34,7 @@ a {
 }
 
 button,
+input,
 textarea {
   font: inherit;
 }
@@ -52,6 +53,8 @@ button {
 
 .heroContent,
 .controlBand,
+.platformBand,
+.monetizeBand,
 .aiBand,
 .coverage {
   width: min(1180px, calc(100% - 32px));
@@ -365,7 +368,7 @@ h3 {
 }
 
 .cityImageCard span,
-.mapPreviewCard a {
+.mapPreviewCard button {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -395,8 +398,9 @@ h3 {
   background: #d8dee4;
 }
 
-.mapPreviewCard a {
+.mapPreviewCard button {
   min-height: 38px;
+  border: 0;
   justify-content: center;
   background: rgba(255, 253, 248, 0.94);
   color: var(--blue);
@@ -444,7 +448,7 @@ h3 {
   gap: 8px;
 }
 
-.liveRoutePills span {
+.liveRoutePills button {
   display: inline-flex;
   min-height: 34px;
   align-items: center;
@@ -457,6 +461,14 @@ h3 {
   font-size: 0.8rem;
   font-weight: 900;
   backdrop-filter: blur(14px);
+}
+
+.liveRoutePills button:hover,
+.mapPreviewCard button:hover,
+.mapPrimaryLink:hover,
+.nearbyList button:hover,
+.nearbyActions button:hover {
+  transform: translateY(-1px);
 }
 
 @keyframes routeScan {
@@ -486,6 +498,8 @@ h3 {
 }
 
 .controlBand,
+.platformBand,
+.monetizeBand,
 .aiBand,
 .coverage {
   padding: 74px 0;
@@ -556,6 +570,8 @@ h3 {
 
 .listing,
 .askBox,
+.platformGrid article,
+.monetizeGrid article,
 .roadmap article {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -649,6 +665,35 @@ h3 {
 .suggestionRows button span {
   color: var(--teal);
   font-size: 0.85rem;
+}
+
+.platformBand {
+  padding-top: 34px;
+}
+
+.platformGrid,
+.monetizeGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.platformGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.platformGrid article,
+.monetizeGrid article {
+  padding: 20px;
+}
+
+.platformGrid svg {
+  color: var(--teal);
+}
+
+.platformGrid p,
+.monetizeGrid p {
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .aiBand {
@@ -1040,6 +1085,7 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  border: 0;
   border-radius: 8px;
   background: var(--ink);
   color: var(--white);
@@ -1057,7 +1103,7 @@ textarea {
   margin-bottom: 2px;
 }
 
-.nearbyList a {
+.nearbyList button {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1065,13 +1111,15 @@ textarea {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.78);
   padding: 10px;
+  color: var(--ink);
+  text-align: left;
 }
 
-.nearbyList a span {
+.nearbyList button span {
   font-weight: 900;
 }
 
-.nearbyList a small,
+.nearbyList button small,
 .nearbyList p {
   color: var(--muted);
   line-height: 1.45;
@@ -1092,8 +1140,10 @@ textarea {
   border-radius: 8px;
   background-position: center;
   background-size: cover;
+  border: 0;
   color: #fff;
   padding: 10px;
+  text-align: left;
 }
 
 .photoBlock span {
@@ -1112,7 +1162,7 @@ textarea {
   margin-top: auto;
 }
 
-.nearbyActions a {
+.nearbyActions button {
   display: inline-flex;
   min-height: 36px;
   align-items: center;
@@ -1124,6 +1174,30 @@ textarea {
   font-size: 0.84rem;
   font-weight: 900;
   text-transform: capitalize;
+}
+
+.monetizeBand {
+  width: min(1180px, calc(100% - 32px));
+}
+
+.monetizeGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.monetizeGrid article {
+  min-height: 220px;
+}
+
+.monetizeGrid article span {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 24px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--gold);
+  font-weight: 900;
 }
 
 .primaryButton:disabled {
@@ -1175,12 +1249,277 @@ textarea {
   justify-self: center;
 }
 
+.adminPage {
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(246, 244, 238, 0.96), rgba(229, 233, 232, 0.92)),
+    radial-gradient(circle at 80% 0%, rgba(31, 122, 140, 0.16), transparent 34%);
+  padding: 24px;
+}
+
+.adminTopbar,
+.adminHero,
+.adminStatGrid,
+.adminGrid {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+
+.adminTopbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 42px;
+}
+
+.adminTopbar button {
+  border-color: var(--line);
+}
+
+.adminHero {
+  margin-bottom: 24px;
+}
+
+.adminHero h1 {
+  max-width: 880px;
+  margin-bottom: 14px;
+  font-size: clamp(3.2rem, 8vw, 7.2rem);
+}
+
+.adminHero p {
+  max-width: 690px;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.6;
+}
+
+.adminStatGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.adminStatGrid article,
+.adminCard {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.88);
+  box-shadow: 0 18px 60px rgba(18, 20, 23, 0.08);
+}
+
+.adminStatGrid article {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.adminStatGrid svg {
+  color: var(--teal);
+}
+
+.adminStatGrid span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.adminStatGrid strong {
+  font-size: clamp(1.55rem, 3vw, 2.3rem);
+}
+
+.adminGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.adminCard {
+  padding: 18px;
+}
+
+.adminCard h2 {
+  font-size: 1.35rem;
+}
+
+.settingsCard {
+  grid-column: 1 / -1;
+}
+
+.settingsForm {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.settingsForm label,
+.adminLoginCard label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.settingsForm input,
+.adminLoginCard input {
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  padding: 0 12px;
+  font-weight: 800;
+}
+
+.barList,
+.recentList {
+  display: grid;
+  gap: 10px;
+}
+
+.barList div {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(216, 222, 228, 0.8);
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px;
+}
+
+.barList span,
+.barList b {
+  position: relative;
+  z-index: 1;
+  font-weight: 900;
+}
+
+.barList b {
+  color: var(--blue);
+}
+
+.barList i {
+  position: absolute;
+  inset: auto auto 0 0;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+}
+
+.recentCard {
+  grid-column: 1 / -1;
+}
+
+.recentList div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px;
+}
+
+.recentList svg {
+  color: var(--red);
+}
+
+.recentList span {
+  display: grid;
+  gap: 3px;
+}
+
+.recentList small,
+.recentList time,
+.recentList p {
+  color: var(--muted);
+}
+
+.recentList time {
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.adminLoginPage {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  gap: 18px;
+  background:
+    linear-gradient(135deg, rgba(246, 244, 238, 0.98), rgba(229, 233, 232, 0.9)),
+    radial-gradient(circle at top right, rgba(31, 122, 140, 0.18), transparent 34%);
+  padding: 24px;
+}
+
+.adminLoginPage > a {
+  width: fit-content;
+}
+
+.adminLoginCard {
+  display: grid;
+  width: min(460px, calc(100vw - 48px));
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.92);
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.adminLoginCard h1 {
+  margin-bottom: 0;
+  font-size: clamp(2.5rem, 8vw, 4.4rem);
+}
+
+.adminLoginCard p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.adminLock {
+  display: inline-grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--gold);
+}
+
+.loginError {
+  border: 1px solid rgba(191, 67, 66, 0.28);
+  border-radius: 8px;
+  background: rgba(191, 67, 66, 0.08);
+  color: var(--red);
+  padding: 10px 12px;
+}
+
 @media (max-width: 960px) {
   .heroGrid,
   .aiPanel,
   .directoryGrid,
   .suggestionRows,
+  .platformGrid,
+  .monetizeGrid,
+  .adminGrid,
   .roadmap {
+    grid-template-columns: 1fr;
+  }
+
+  .adminStatGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settingsForm {
     grid-template-columns: 1fr;
   }
 

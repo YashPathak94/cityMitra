@@ -3,6 +3,7 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   ArrowRight,
+  BarChart3,
   Bot,
   Building2,
   Camera,
@@ -12,6 +13,7 @@ import {
   Compass,
   ExternalLink,
   FileText,
+  Layers3,
   Map,
   MapPinned,
   Navigation,
@@ -36,6 +38,14 @@ type NearbyCard = {
   area: string;
   eta: string;
   query: string;
+};
+
+type ActivityEvent = {
+  type: string;
+  city?: string;
+  category?: string;
+  label?: string;
+  value?: number;
 };
 
 const starterMessage =
@@ -275,6 +285,42 @@ function detectCategoryFromText(value: string) {
   return categoryKeywords.find((item) => item.words.some((word) => new RegExp(`\\b${word}\\b`, "i").test(value)))?.key || null;
 }
 
+function getSessionId() {
+  if (typeof window === "undefined") return "server";
+
+  const existingSession = window.localStorage.getItem("citymitra-session-id");
+  if (existingSession) return existingSession;
+
+  const nextSession = crypto.randomUUID();
+  window.localStorage.setItem("citymitra-session-id", nextSession);
+  return nextSession;
+}
+
+function trackActivity(event: ActivityEvent) {
+  if (typeof window === "undefined") return;
+
+  const payload = {
+    ...event,
+    path: window.location.pathname,
+    sessionId: getSessionId(),
+    timestamp: new Date().toISOString()
+  };
+
+  const body = JSON.stringify(payload);
+
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon("/api/activity", new Blob([body], { type: "application/json" }));
+    return;
+  }
+
+  fetch("/api/activity", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+    keepalive: true
+  }).catch(() => undefined);
+}
+
 function CityBlocks() {
   const group = useRef<Mesh>(null);
   const blocks = useMemo(
@@ -431,6 +477,20 @@ export default function Home() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading]);
 
+  useEffect(() => {
+    const startedAt = Date.now();
+    trackActivity({ type: "page_view", city, category });
+
+    return () => {
+      trackActivity({
+        type: "time_spent",
+        city,
+        category,
+        value: Math.max(1, Math.round((Date.now() - startedAt) / 1000))
+      });
+    };
+  }, []);
+
   function mapSearchUrl(query: string) {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
   }
@@ -442,6 +502,39 @@ export default function Home() {
   function clearChat() {
     setMessages([{ role: "assistant", content: starterMessage }]);
     setQuestion("");
+    trackActivity({ type: "chat_clear", city, category });
+  }
+
+  function selectCity(nextCity: string, label = "selector") {
+    setCity(nextCity);
+    trackActivity({ type: "city_change", city: nextCity, category, label });
+  }
+
+  function selectCategory(nextCategory: CategoryKey, label = "selector") {
+    setCategory(nextCategory);
+    trackActivity({ type: "category_change", city, category: nextCategory, label });
+  }
+
+  function openTrackedMap(query: string, label: string) {
+    trackActivity({ type: "map_open", city, category, label });
+    window.open(mapSearchUrl(query), "_blank", "noreferrer");
+  }
+
+  function handleSceneAction(action: "sync" | "map" | "route") {
+    if (action === "sync") {
+      document.getElementById("directory")?.scrollIntoView({ behavior: "smooth" });
+      trackActivity({ type: "scene_action", city, category, label: "city_sync" });
+      return;
+    }
+
+    if (action === "map") {
+      openTrackedMap(`${selectedCategory?.label || category} near ${city}`, "scene_map_picks");
+      return;
+    }
+
+    setQuestion(`Build a route plan for ${city} with ${selectedCategory?.label || "city"} stops, distance, map links, and backup services.`);
+    document.getElementById("ai")?.scrollIntoView({ behavior: "smooth" });
+    trackActivity({ type: "scene_action", city, category, label: "route_mode" });
   }
 
   function applySearch(event: FormEvent<HTMLFormElement>) {
@@ -460,11 +553,11 @@ export default function Home() {
       );
 
     if (cityFromText) {
-      setCity(cityAliases[cityFromText.toLowerCase()] || cityFromText);
+      selectCity(cityAliases[cityFromText.toLowerCase()] || cityFromText, "top_search");
     }
 
     if (detectedCategory) {
-      setCategory(detectedCategory);
+      selectCategory(detectedCategory, "top_search");
     }
 
     const activeCity = cityFromText || city;
@@ -473,6 +566,7 @@ export default function Home() {
       : selectedCategory?.label;
     setQuestion(`Plan ${activeCity} ${activeCategory || "city"} options with nearby maps, photos, route timing, and backup stops.`);
     setSearchText("");
+    trackActivity({ type: "search_submit", city: activeCity, category: detectedCategory || category, label: trimmedSearch });
   }
 
   function scrollChat(position: "top" | "bottom") {
@@ -490,6 +584,7 @@ export default function Home() {
   }
 
   function openPdfPlan() {
+    trackActivity({ type: "export_pdf", city, category });
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
@@ -531,6 +626,7 @@ export default function Home() {
   }
 
   function downloadCsvPlan() {
+    trackActivity({ type: "export_csv", city, category });
     const rows = [
       ["City", "Category", "Stop", "Area", "Distance/Time", "Map Search"],
       ...nearbyCards.map((item) => [city, selectedCategory?.label || category, item.name, item.area, item.eta, item.query])
@@ -556,7 +652,7 @@ export default function Home() {
     const activeCity = detectedCity || city;
 
     if (detectedCity && detectedCity !== city) {
-      setCity(detectedCity);
+      selectCity(detectedCity, "chat_detected");
     }
 
     const nextMessages: ChatMessage[] = [
@@ -568,6 +664,7 @@ export default function Home() {
     setLoading(true);
     setQuestion("");
     setMessages(nextMessages);
+    trackActivity({ type: "chat_submit", city: activeCity, category, label: trimmedQuestion.slice(0, 80) });
 
     try {
       const response = await fetch("/api/ask", {
@@ -664,6 +761,7 @@ export default function Home() {
             <div className="navActions">
               <a href="#directory">Directory</a>
               <a href="#ai">AI Guide</a>
+              <a href="#monetize">Monetize</a>
               <a href="#coverage">Coverage</a>
             </div>
           </nav>
@@ -707,18 +805,18 @@ export default function Home() {
                   {cityVisual.label}
                 </div>
                 <div className="liveRoutePills" aria-label="Live 3D features">
-                  <span>
+                  <button type="button" onClick={() => handleSceneAction("sync")}>
                     <Sparkles size={14} />
                     City sync
-                  </span>
-                  <span>
+                  </button>
+                  <button type="button" onClick={() => handleSceneAction("map")}>
                     <MapPinned size={14} />
                     Map picks
-                  </span>
-                  <span>
+                  </button>
+                  <button type="button" onClick={() => handleSceneAction("route")}>
                     <Compass size={14} />
                     Route mode
-                  </span>
+                  </button>
                 </div>
               </div>
               <div className="sceneMediaRail" aria-label={`${city} photo and map preview`}>
@@ -741,10 +839,10 @@ export default function Home() {
                     src={mapEmbedUrl(`${city} India ${selectedCategory?.label || ""}`)}
                     title={`${city} map preview`}
                   />
-                  <a href={mapSearchUrl(`${selectedCategory?.label || category} near ${city}`)} target="_blank" rel="noreferrer">
+                  <button type="button" onClick={() => openTrackedMap(`${selectedCategory?.label || category} near ${city}`, "hero_map_preview")}>
                     <MapPinned size={14} />
                     Open live map
-                  </a>
+                  </button>
                 </div>
               </div>
               <div className="sceneBadge">
@@ -768,7 +866,7 @@ export default function Home() {
         <div className="filters">
           <div className="filterGroup" aria-label="City selector">
             {visibleCities.map((item) => (
-              <button className={city === item ? "active" : ""} key={item} onClick={() => setCity(item)}>
+              <button className={city === item ? "active" : ""} key={item} onClick={() => selectCity(item)}>
                 {item}
               </button>
             ))}
@@ -780,7 +878,7 @@ export default function Home() {
                 <button
                   className={category === item.key ? "category active" : "category"}
                   key={item.key}
-                  onClick={() => setCategory(item.key)}
+                  onClick={() => selectCategory(item.key)}
                   title={item.label}
                 >
                   <Icon size={18} />
@@ -837,7 +935,7 @@ export default function Home() {
             <div>
               <h3>More in {city}</h3>
               {citySuggestions.map((item) => (
-                <button key={item.name} onClick={() => setCategory(item.category)}>
+                <button key={item.name} onClick={() => selectCategory(item.category, "suggested_city_category")}>
                   {item.name} <span>{categories.find((cat) => cat.key === item.category)?.label}</span>
                 </button>
               ))}
@@ -845,13 +943,51 @@ export default function Home() {
             <div>
               <h3>{selectedCategory?.label} in other cities</h3>
               {categorySuggestions.map((item) => (
-                <button key={item.name} onClick={() => setCity(item.city)}>
+                <button key={item.name} onClick={() => selectCity(item.city, "suggested_category_city")}>
                   {item.name} <span>{item.city}</span>
                 </button>
               ))}
             </div>
           </div>
         )}
+      </section>
+
+      <section className="platformBand" id="platform">
+        <div className="sectionHeader">
+          <div>
+            <span className="sectionKicker">Production Layer</span>
+            <h2>One city graph for discovery, maps, agents, and commerce</h2>
+          </div>
+          <p>CityMitra connects what people ask, where they click, and which local categories drive intent.</p>
+        </div>
+        <div className="platformGrid">
+          {[
+            {
+              icon: Layers3,
+              title: "City graph",
+              text: "Cities, categories, nearby picks, photos, maps, and backup services update together."
+            },
+            {
+              icon: Bot,
+              title: "AI concierge",
+              text: "The chat can answer route plans, shopping runs, trip timing, hospitals, fuel, repairs, and hotels."
+            },
+            {
+              icon: BarChart3,
+              title: "Activity intelligence",
+              text: "Page views, searches, map opens, city changes, exports, and chat intent flow into admin analytics."
+            }
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <article key={item.title}>
+                <Icon size={22} />
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </article>
+            );
+          })}
+        </div>
       </section>
 
       <section className="aiBand" id="ai">
@@ -904,7 +1040,14 @@ export default function Home() {
                 "Shopping plus hospital backup",
                 "Petrol and repair before a road trip"
               ].map((prompt) => (
-                <button key={prompt} type="button" onClick={() => setQuestion(prompt)}>
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => {
+                    setQuestion(prompt);
+                    trackActivity({ type: "quick_prompt", city, category, label: prompt });
+                  }}
+                >
                   {prompt}
                 </button>
               ))}
@@ -966,17 +1109,17 @@ export default function Home() {
                   <span>{city}</span>
                   <strong>{selectedCategory?.label}</strong>
                 </div>
-                <a className="mapPrimaryLink" href={mapSearchUrl(`${selectedCategory?.label || category} near ${city}`)} target="_blank" rel="noreferrer">
+                <button className="mapPrimaryLink" type="button" onClick={() => openTrackedMap(`${selectedCategory?.label || category} near ${city}`, "nearby_primary")}>
                   Open nearby on Maps <ExternalLink size={15} />
-                </a>
+                </button>
                 <div className="nearbyList">
                   <h3>Nearby picks</h3>
                   {nearbyCards.length > 0 ? (
                     nearbyCards.map((item) => (
-                      <a href={mapSearchUrl(item.query)} key={item.name} target="_blank" rel="noreferrer">
+                      <button type="button" onClick={() => openTrackedMap(item.query, `nearby_${item.name}`)} key={item.name}>
                         <span>{item.name}</span>
                         <small>{item.area} · {item.eta}</small>
-                      </a>
+                      </button>
                     ))
                   ) : (
                     <p>Ask CityMitra for live-style suggestions, then open the map search for that city.</p>
@@ -984,29 +1127,52 @@ export default function Home() {
                 </div>
                 <div className="photoBlocks">
                   {photoBlocks.map((item) => (
-                    <a
+                    <button
                       className="photoBlock"
-                      href={mapSearchUrl(item.query)}
-                      key={item.title}
+                      key={`${item.title}-${item.query}`}
+                      onClick={() => openTrackedMap(item.query, `photo_${item.title}`)}
                       style={{ backgroundImage: `linear-gradient(180deg, rgba(18, 20, 23, 0.05), rgba(18, 20, 23, 0.76)), url("${item.image}")` }}
-                      target="_blank"
-                      rel="noreferrer"
+                      type="button"
                     >
                       <span>{item.title}</span>
                       <small>{item.text}</small>
-                    </a>
+                    </button>
                   ))}
                 </div>
                 <div className="nearbyActions">
                   {["hospitals", "petrol pumps", "vehicle repair", "hotels"].map((item) => (
-                    <a href={mapSearchUrl(`${item} near ${city}`)} key={item} target="_blank" rel="noreferrer">
+                    <button type="button" onClick={() => openTrackedMap(`${item} near ${city}`, `backup_${item}`)} key={item}>
                       {item}
-                    </a>
+                    </button>
                   ))}
                 </div>
               </aside>
             </div>
           </form>
+        </div>
+      </section>
+
+      <section className="monetizeBand" id="monetize">
+        <div className="sectionHeader">
+          <div>
+            <span className="sectionKicker">Revenue Engine</span>
+            <h2>Monetize local intent without making the app noisy</h2>
+          </div>
+          <p>Keep the user experience minimal, then charge businesses for useful placement, trust, and analytics.</p>
+        </div>
+        <div className="monetizeGrid">
+          {[
+            ["Featured listings", "Shopkeepers pay for verified placement, photos, offers, and peak-hour visibility."],
+            ["Lead routing", "Hotels, repair shops, clinics, and stores receive qualified clicks from high-intent searches."],
+            ["Vendor dashboard", "Paid partners track views, map opens, category demand, and chat-driven leads."],
+            ["City sponsorships", "Local brands sponsor categories like food trails, shopping routes, and travel plans."]
+          ].map(([title, text], index) => (
+            <article key={title}>
+              <span>{index + 1}</span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
         </div>
       </section>
 
