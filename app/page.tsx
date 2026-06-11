@@ -1,6 +1,5 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
 import {
   ArrowRight,
   BarChart3,
@@ -13,11 +12,15 @@ import {
   Compass,
   ExternalLink,
   FileText,
+  Instagram,
   Layers3,
+  Linkedin,
+  Mail,
   Map,
   MapPinned,
   Navigation,
   Search,
+  Send,
   ShieldCheck,
   Sparkles,
   Star,
@@ -25,7 +28,6 @@ import {
   Trash2
 } from "lucide-react";
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
-import { CatmullRomCurve3, Group, Mesh, Vector3 } from "three";
 import { categories, CategoryKey, cities, directory } from "@/data/city-directory";
 
 type ChatMessage = {
@@ -38,6 +40,14 @@ type NearbyCard = {
   area: string;
   eta: string;
   query: string;
+  category?: CategoryKey;
+  image?: string;
+  why?: string;
+};
+
+type UserLocation = {
+  lat: number;
+  lng: number;
 };
 
 type ActivityEvent = {
@@ -158,6 +168,23 @@ const cityVisuals: Record<string, { image: string; label: string; position: stri
     label: "Pune city",
     position: "center"
   }
+};
+
+const categoryResultBlueprints: Record<CategoryKey, string[]> = {
+  markets: ["main wholesale market", "old city bazaar", "textile market", "daily trade lanes", "wedding goods market", "spice market", "hardware market", "paper market", "commercial street", "bulk buying area"],
+  sarees: ["silk saree store", "wedding saree showroom", "handloom saree market", "designer saree boutique", "traditional saree lane", "lehenga saree stores", "cotton saree shop", "bridal shopping area", "family saree showroom", "ethnic wear market"],
+  electronics: ["electronics market", "mobile repair market", "computer parts store", "camera shop", "gadget mall", "laptop repair center", "appliance showroom", "component market", "authorized electronics store", "gaming accessories shop"],
+  hospitals: ["multi specialty hospital", "emergency hospital", "diagnostic center", "children hospital", "orthopedic hospital", "eye hospital", "dental clinic", "cardiac hospital", "pharmacy near hospital", "urgent care clinic"],
+  malls: ["shopping mall", "cinema mall", "family mall", "premium mall", "food court mall", "kids activity mall", "brand outlet mall", "lifestyle mall", "parking friendly mall", "late evening mall"],
+  play: ["play arena", "bowling arcade", "trampoline park", "sports complex", "kids play zone", "go karting", "gaming cafe", "football turf", "badminton court", "adventure park"],
+  schools: ["CBSE school", "ICSE school", "international school", "boarding school", "primary school", "senior secondary school", "preschool", "coaching hub", "music school", "sports academy"],
+  food: ["street food market", "breakfast place", "local snacks", "famous sweets", "cafe street", "family restaurant", "quick bites", "chaat corner", "bakery", "late night food"],
+  grooming: ["premium salon", "men grooming salon", "bridal makeup studio", "spa", "barber shop", "skin clinic", "nail studio", "wedding grooming package", "unisex salon", "hair treatment salon"],
+  repair: ["car repair workshop", "bike service center", "puncture repair", "authorized service center", "highway mechanic", "battery shop", "tyre shop", "washing service", "emergency mechanic", "spare parts market"],
+  petrol: ["petrol pump", "CNG station", "EV charging station", "highway fuel station", "24 hour petrol pump", "diesel pump", "fuel station with air", "petrol pump near market", "fuel station near hotel", "fuel station near route"],
+  hotels: ["business hotel", "budget hotel", "family hotel", "premium hotel", "boutique stay", "hotel near railway station", "hotel near airport", "homestay", "resort", "hotel with parking"],
+  dinner: ["fine dining restaurant", "rooftop restaurant", "family dinner restaurant", "date night restaurant", "local cuisine dinner", "buffet restaurant", "late night dinner", "veg restaurant", "non veg restaurant", "river view restaurant"],
+  sightseeing: ["heritage site", "viewpoint", "museum", "temple", "fort", "lake", "garden", "walking tour", "photo spot", "sunset point"]
 };
 
 function titleCaseCity(value: string) {
@@ -285,6 +312,40 @@ function detectCategoryFromText(value: string) {
   return categoryKeywords.find((item) => item.words.some((word) => new RegExp(`\\b${word}\\b`, "i").test(value)))?.key || null;
 }
 
+function cityImageUrl(cityName: string, topic = "city") {
+  return `https://source.unsplash.com/900x700/?${encodeURIComponent(`${cityName} India ${topic}`)}`;
+}
+
+function photoSearchImage(cityName: string, topic: string, index = 0) {
+  return `https://source.unsplash.com/720x520/?${encodeURIComponent(`${cityName} India ${topic}`)}&sig=${encodeURIComponent(`${cityName}-${topic}-${index}`)}`;
+}
+
+function buildGeneratedResults(cityName: string, categoryKey: CategoryKey, count = 10): NearbyCard[] {
+  const selected = categories.find((item) => item.key === categoryKey);
+  const blueprints = categoryResultBlueprints[categoryKey] || categoryResultBlueprints.sightseeing;
+
+  return blueprints.slice(0, count).map((topic, index) => ({
+    name: `${titleCaseCity(topic)} in ${cityName}`,
+    area: index < 3 ? "Top city zone" : index < 7 ? "Nearby cluster" : "Backup option",
+    eta: index < 4 ? "15-30 min map check" : index < 8 ? "30-45 min map check" : "Verify traffic",
+    query: `${topic} in ${cityName}`,
+    category: categoryKey,
+    image: photoSearchImage(cityName, topic, index),
+    why: `${selected?.label || "City"} option curated for quick comparison, maps, photos, and fallback planning.`
+  }));
+}
+
+function buildCategoryMatrix(cityName: string) {
+  return categories.map((item) => ({
+    ...item,
+    results: buildGeneratedResults(cityName, item.key, 10)
+  }));
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[<>&"]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[char] || char);
+}
+
 function getSessionId() {
   if (typeof window === "undefined") return "server";
 
@@ -321,135 +382,15 @@ function trackActivity(event: ActivityEvent) {
   }).catch(() => undefined);
 }
 
-const categorySceneColors: Record<CategoryKey, string> = {
-  markets: "#1f7a8c",
-  sarees: "#bf4342",
-  electronics: "#4f7cac",
-  hospitals: "#456b56",
-  malls: "#f2b705",
-  play: "#00838f",
-  schools: "#52616b",
-  food: "#d06f1a",
-  grooming: "#8f4f7a",
-  repair: "#2f4858",
-  petrol: "#0f766e",
-  hotels: "#284b63",
-  dinner: "#bf4342",
-  sightseeing: "#7c6f33"
-};
-
-function CityBlocks({ category }: { category: CategoryKey }) {
-  const group = useRef<Group>(null);
-  const travelerRef = useRef<Mesh>(null);
-  const pulseRef = useRef<Group>(null);
-  const routeColor = categorySceneColors[category] || "#1f7a8c";
-  const routeCurve = useMemo(
-    () =>
-      new CatmullRomCurve3([
-        new Vector3(-3.35, 0.14, 2.55),
-        new Vector3(-1.8, 0.18, 1.2),
-        new Vector3(-0.2, 0.22, 0.25),
-        new Vector3(1.35, 0.2, -0.75),
-        new Vector3(3.2, 0.18, -2.25)
-      ]),
-    []
-  );
-  const routeStops = useMemo(
-    () => [0, 0.28, 0.56, 0.82, 1].map((point) => routeCurve.getPointAt(point)),
-    [routeCurve]
-  );
-  const blocks = useMemo(
-    () =>
-      Array.from({ length: 42 }, (_, index) => ({
-        x: (index % 7) * 1.1 - 3.3,
-        z: Math.floor(index / 7) * 1.1 - 3.2,
-        h: 0.35 + ((index * 7) % 9) * 0.12,
-        isRouteBlock: [2, 10, 18, 26, 34].includes(index),
-        color: ["#1f7a8c", "#bf4342", "#f2b705", "#52616b", "#2f4858", "#4f7cac"][index % 6]
-      })),
-    []
-  );
-
-  useFrame(({ clock }) => {
-    if (group.current) {
-      group.current.rotation.y = Math.sin(clock.elapsedTime * 0.16) * 0.07;
-    }
-
-    if (travelerRef.current) {
-      const point = routeCurve.getPointAt((clock.elapsedTime * 0.12) % 1);
-      travelerRef.current.position.set(point.x, point.y + 0.35, point.z);
-    }
-
-    if (pulseRef.current) {
-      const pulse = 1 + Math.sin(clock.elapsedTime * 2.3) * 0.08;
-      pulseRef.current.scale.set(pulse, pulse, pulse);
-    }
-  });
-
-  return (
-    <group ref={group} rotation={[0.42, -0.55, 0]}>
-      <mesh position={[0, -0.08, 0]} receiveShadow>
-        <boxGeometry args={[9.4, 0.12, 7.8]} />
-        <meshStandardMaterial color="#d7dde1" roughness={0.72} />
-      </mesh>
-      {blocks.map((block, index) => (
-        <mesh key={index} position={[block.x, block.h / 2, block.z]} castShadow receiveShadow>
-          <boxGeometry args={[0.78, block.h, 0.78]} />
-          <meshStandardMaterial
-            color={block.isRouteBlock ? routeColor : block.color}
-            emissive={block.isRouteBlock ? routeColor : "#000000"}
-            emissiveIntensity={block.isRouteBlock ? 0.18 : 0}
-            roughness={0.48}
-            metalness={0.05}
-          />
-        </mesh>
-      ))}
-      <mesh position={[0, 0.2, 0]}>
-        <tubeGeometry args={[routeCurve, 80, 0.035, 8, false]} />
-        <meshStandardMaterial color={routeColor} emissive={routeColor} emissiveIntensity={0.75} />
-      </mesh>
-      <group ref={pulseRef}>
-        {routeStops.map((stop, index) => (
-          <group key={`${stop.x}-${index}`} position={[stop.x, stop.y + 0.08, stop.z]}>
-            <mesh>
-              <cylinderGeometry args={[0.1, 0.1, 0.32, 20]} />
-              <meshStandardMaterial color={index === 0 ? "#111827" : routeColor} emissive={routeColor} emissiveIntensity={0.38} />
-            </mesh>
-            <mesh position={[0, 0.25, 0]}>
-              <sphereGeometry args={[0.17, 24, 24]} />
-              <meshStandardMaterial color={index === 0 ? "#f2b705" : "#fffdf8"} emissive={routeColor} emissiveIntensity={0.55} />
-            </mesh>
-          </group>
-        ))}
-      </group>
-      <mesh ref={travelerRef} position={[-3.35, 0.45, 2.55]}>
-        <sphereGeometry args={[0.16, 32, 32]} />
-        <meshStandardMaterial color="#f2b705" emissive="#f2b705" emissiveIntensity={1.35} />
-      </mesh>
-      <mesh position={[0.15, 0.11, 0.1]} rotation={[0, 0, 0]}>
-        <torusGeometry args={[3.45, 0.012, 8, 96]} />
-        <meshStandardMaterial color="#111827" emissive="#f2b705" emissiveIntensity={0.35} transparent opacity={0.68} />
-      </mesh>
-    </group>
-  );
-}
-
-function CityScene({ category }: { category: CategoryKey }) {
-  return (
-    <Canvas camera={{ position: [0, 5.4, 7.2], fov: 45 }} shadows style={{ height: "100%", inset: 0, position: "absolute", width: "100%" }}>
-      <ambientLight intensity={1.05} />
-      <directionalLight position={[4, 7, 5]} intensity={1.9} castShadow />
-      <pointLight position={[-3, 3, 2]} intensity={0.8} color="#f2b705" />
-      <pointLight position={[2.5, 2.6, -2]} intensity={0.75} color={categorySceneColors[category]} />
-      <CityBlocks category={category} />
-    </Canvas>
-  );
-}
-
 export default function Home() {
   const [city, setCity] = useState<string>("Delhi");
   const [category, setCategory] = useState<CategoryKey>("markets");
   const [searchText, setSearchText] = useState("");
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState("");
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [locationStatus, setLocationStatus] = useState("Use nearby location for smarter map routes.");
+  const [intelCategory, setIntelCategory] = useState<CategoryKey>("markets");
   const [question, setQuestion] = useState("Plan a Leh trip with places, altitude, hospitals, petrol, repairs, hotels and shopping.");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -462,17 +403,46 @@ export default function Home() {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const visibleCities = useMemo(() => (cities.includes(city as (typeof cities)[number]) ? cities : [city, ...cities]), [city]);
-  const selectedItems = directory.filter((item) => item.city === city && item.category === category).slice(0, 6);
+  const exactDirectoryItems = directory.filter((item) => item.city === city && item.category === category);
+  const categoryMatrix = useMemo(() => buildCategoryMatrix(city), [city]);
+  const activeIntelIndex = Math.max(0, categoryMatrix.findIndex((item) => item.key === intelCategory));
+  const activeIntelGroup = categoryMatrix[activeIntelIndex] || categoryMatrix[0];
+  const generatedCategoryResults = useMemo(() => buildGeneratedResults(city, category, 10), [city, category]);
+  const selectedItems: NearbyCard[] = [
+    ...exactDirectoryItems.map((item) => ({
+      name: item.name,
+      area: item.area,
+      eta: item.eta,
+      query: `${item.name} ${item.area} ${item.city}`,
+      category: item.category,
+      why: item.tip
+    })),
+    ...generatedCategoryResults.filter(
+      (generated) => !exactDirectoryItems.some((item) => generated.query.toLowerCase().includes(item.name.toLowerCase()))
+    )
+  ].slice(0, 10);
+  const topTwentyPicks = categoryMatrix.flatMap((item) => item.results.slice(0, 2)).slice(0, 20);
   const citySuggestions = directory
     .filter((item) => item.city === city && item.category !== category)
     .slice(0, 3);
   const categorySuggestions = directory
     .filter((item) => item.city !== city && item.category === category)
     .slice(0, 3);
-  const seededNearbyItems = (selectedItems.length > 0 ? selectedItems : citySuggestions).slice(0, 5);
+  const seededNearbyItems: NearbyCard[] = (
+    selectedItems.length > 0
+      ? selectedItems
+      : citySuggestions.map((item) => ({
+          name: item.name,
+          area: item.area,
+          eta: item.eta,
+          query: `${item.name} ${item.area} ${item.city}`,
+          category: item.category,
+          why: item.tip
+        }))
+  ).slice(0, 5);
   const selectedCategory = categories.find((item) => item.key === category);
   const cityVisual = cityVisuals[city] || {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/India%20Gate%20in%20New%20Delhi%2003-2016%20img3.jpg",
+    image: cityImageUrl(city),
     label: `${city} city`,
     position: "center"
   };
@@ -480,73 +450,37 @@ export default function Home() {
     {
       title: "Hotels",
       text: "Stays near the route",
-      image: cityVisual.image,
+      image: photoSearchImage(city, "hotels", 1),
       query: `best hotels in ${city}`
     },
     {
       title: "Places",
       text: "Must-cover spots",
-      image: cityVisual.image,
+      image: photoSearchImage(city, "tourist places", 2),
       query: `best places to visit in ${city}`
     },
     {
       title: "Fine Dining",
       text: "Dinner without guesswork",
-      image: cityVisual.image,
+      image: photoSearchImage(city, "fine dining", 3),
       query: `fine dining restaurants in ${city}`
     },
     {
       title: selectedCategory?.label || "Category",
       text: "Selected category nearby",
-      image: cityVisual.image,
+      image: photoSearchImage(city, selectedCategory?.label || category, 4),
       query: `${selectedCategory?.label || category} near ${city}`
     }
   ];
-  const generatedNearbyItems: NearbyCard[] = [
-    {
-      name: `${selectedCategory?.label || "Places"} near ${city}`,
-      area: "Selected category",
-      eta: "Map search",
-      query: `${selectedCategory?.label || category} near ${city}`
-    },
-    {
-      name: `Hotels in ${city}`,
-      area: "Stay options",
-      eta: "Map search",
-      query: `best hotels in ${city}`
-    },
-    {
-      name: `Places to visit in ${city}`,
-      area: "Sightseeing",
-      eta: "Map search",
-      query: `best places to visit in ${city}`
-    },
-    {
-      name: `Fine dining in ${city}`,
-      area: "Dinner",
-      eta: "Map search",
-      query: `fine dining restaurants in ${city}`
-    },
-    {
-      name: `Hospitals, fuel and repair in ${city}`,
-      area: "Backup layer",
-      eta: "Map search",
-      query: `hospitals petrol pumps vehicle repair near ${city}`
-    }
-  ];
-  const nearbyCards: NearbyCard[] =
-    seededNearbyItems.length > 0
-      ? seededNearbyItems.map((item) => ({
-          name: item.name,
-          area: item.area,
-          eta: item.eta,
-          query: `${item.name} ${item.area} ${item.city}`
-        }))
-      : generatedNearbyItems;
+  const nearbyCards: NearbyCard[] = [...seededNearbyItems, ...topTwentyPicks].slice(0, 20);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading]);
+
+  useEffect(() => {
+    setIntelCategory(category);
+  }, [category]);
 
   useEffect(() => {
     const startedAt = Date.now();
@@ -563,7 +497,17 @@ export default function Home() {
   }, []);
 
   function mapSearchUrl(query: string) {
+    if (userLocation) {
+      return `https://www.google.com/maps/search/${encodeURIComponent(query)}/@${userLocation.lat},${userLocation.lng},13z`;
+    }
+
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  }
+
+  function mapDirectionsUrl(query: string) {
+    if (!userLocation) return mapSearchUrl(query);
+
+    return `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${encodeURIComponent(query)}&travelmode=driving`;
   }
 
   function mapEmbedUrl(query: string) {
@@ -583,12 +527,47 @@ export default function Home() {
 
   function selectCategory(nextCategory: CategoryKey, label = "selector") {
     setCategory(nextCategory);
+    setIntelCategory(nextCategory);
     trackActivity({ type: "category_change", city, category: nextCategory, label });
+  }
+
+  function moveIntelCategory(direction: -1 | 1) {
+    const nextIndex = (activeIntelIndex + direction + categoryMatrix.length) % categoryMatrix.length;
+    const nextCategory = categoryMatrix[nextIndex]?.key;
+    if (!nextCategory) return;
+
+    setIntelCategory(nextCategory);
+    trackActivity({ type: "city_intel_category", city, category: nextCategory, label: direction > 0 ? "next" : "previous" });
   }
 
   function openTrackedMap(query: string, label: string) {
     trackActivity({ type: "map_open", city, category, label });
-    window.open(mapSearchUrl(query), "_blank", "noreferrer");
+    window.open(mapDirectionsUrl(query), "_blank", "noreferrer");
+  }
+
+  function requestNearbyLocation() {
+    if (!navigator.geolocation) {
+      setLocationStatus("Location is not supported in this browser. Maps will use city search instead.");
+      return;
+    }
+
+    setLocationStatus("Asking browser for location permission...");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nextLocation = {
+          lat: Number(position.coords.latitude.toFixed(6)),
+          lng: Number(position.coords.longitude.toFixed(6))
+        };
+        setUserLocation(nextLocation);
+        setLocationStatus("Nearby mode on. Maps and PDF routes now start from your current location.");
+        trackActivity({ type: "location_enabled", city, category, label: `${nextLocation.lat},${nextLocation.lng}` });
+      },
+      () => {
+        setLocationStatus("Location permission was not enabled. CityMitra will still use city-level map searches.");
+        trackActivity({ type: "location_denied", city, category });
+      },
+      { enableHighAccuracy: true, maximumAge: 300000, timeout: 10000 }
+    );
   }
 
   function handleSceneAction(action: "sync" | "map" | "route") {
@@ -660,10 +639,28 @@ export default function Home() {
     if (!printWindow) return;
 
     const plan = latestAssistantPlan();
+    const sourceText = userLocation ? `${userLocation.lat}, ${userLocation.lng}` : "Current location not enabled";
+    const mapPreview = mapEmbedUrl(`${city} India ${selectedCategory?.label || category}`);
     const routeRows = nearbyCards
       .map(
         (item) =>
-          `<tr><td>${item.name}</td><td>${item.area}</td><td>${item.eta}</td><td>${item.query}</td></tr>`
+          `<tr>
+            <td><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(categories.find((cat) => cat.key === item.category)?.label || "City")}</small></td>
+            <td>${escapeHtml(item.area)}</td>
+            <td>${escapeHtml(item.eta)}<small>${userLocation ? "From current location: open Maps for live time" : "Enable nearby location in CityMitra for current-location routing"}</small></td>
+            <td><a href="${mapDirectionsUrl(item.query)}">${escapeHtml(item.query)}</a></td>
+          </tr>`
+      )
+      .join("");
+    const selectedRows = generatedCategoryResults
+      .map(
+        (item, index) =>
+          `<tr>
+            <td>${index + 1}</td>
+            <td>${escapeHtml(item.name)}</td>
+            <td>${escapeHtml(item.area)}</td>
+            <td><a href="${mapDirectionsUrl(item.query)}">Open route</a></td>
+          </tr>`
       )
       .join("");
 
@@ -672,23 +669,74 @@ export default function Home() {
         <head>
           <title>CityMitra ${city} plan</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 32px; color: #121417; }
-            h1 { margin-bottom: 4px; }
-            pre { white-space: pre-wrap; line-height: 1.5; background: #f6f4ee; padding: 16px; border-radius: 8px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 18px; }
-            th, td { border: 1px solid #d8dee4; padding: 8px; text-align: left; vertical-align: top; }
-            th { background: #eef3f1; }
+            * { box-sizing: border-box; }
+            body { margin: 0; background: #fff7ed; color: #0f172a; font-family: Arial, sans-serif; }
+            .cover { min-height: 280px; padding: 34px; color: #fff; background: linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(234, 88, 12, 0.78)), url("${cityVisual.image}"); background-size: cover; background-position: ${cityVisual.position}; }
+            .kicker { color: #fed7aa; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+            h1 { max-width: 760px; margin: 10px 0; font-size: 48px; line-height: 0.95; }
+            h2 { margin: 0 0 12px; font-size: 24px; }
+            p { line-height: 1.55; }
+            .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+            .chips span { border: 1px solid rgba(255,255,255,0.35); border-radius: 999px; background: rgba(255,255,255,0.12); padding: 8px 11px; font-size: 12px; font-weight: 800; }
+            main { padding: 24px; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+            .card { border: 1px solid #fed7aa; border-radius: 12px; background: #fff; padding: 14px; box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08); }
+            .card b { display: block; color: #ea580c; font-size: 22px; }
+            .mapFrame { overflow: hidden; border: 4px solid #fff; border-radius: 14px; box-shadow: 0 18px 50px rgba(15, 23, 42, 0.18); }
+            iframe { width: 100%; height: 300px; border: 0; }
+            .plan { white-space: pre-wrap; line-height: 1.55; border-left: 5px solid #2563eb; background: #eff6ff; padding: 16px; border-radius: 12px; }
+            table { width: 100%; border-collapse: collapse; margin: 16px 0 28px; overflow: hidden; border-radius: 12px; background: #fff; }
+            th, td { border: 1px solid #fed7aa; padding: 10px; text-align: left; vertical-align: top; font-size: 12px; }
+            th { background: linear-gradient(135deg, #ea580c, #2563eb); color: #fff; }
+            td small { display: block; margin-top: 5px; color: #64748b; line-height: 1.35; }
+            a { color: #2563eb; font-weight: 800; }
+            .note { border: 1px dashed #fb923c; border-radius: 12px; background: #fff7ed; padding: 14px; color: #64748b; }
+            @page { margin: 14mm; }
+            @media print { .cover { break-after: avoid; } a { color: #0f172a; } }
           </style>
         </head>
         <body>
-          <h1>CityMitra ${city} Travel Plan</h1>
-          <p>Category: ${selectedCategory?.label || category}</p>
-          <pre>${plan.replace(/[<>&]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[char] || char)}</pre>
-          <h2>Map Route Sheet</h2>
+          <section class="cover">
+            <span class="kicker">CityMitra mature planner PDF</span>
+            <h1>${escapeHtml(city)} ${escapeHtml(selectedCategory?.label || category)} Route Plan</h1>
+            <p>Vibrant planner for route decisions, nearby categories, map links, photos, backup services, and time checks.</p>
+            <div class="chips">
+              <span>From: ${escapeHtml(sourceText)}</span>
+              <span>City: ${escapeHtml(city)}</span>
+              <span>Category: ${escapeHtml(selectedCategory?.label || category)}</span>
+              <span>Top picks: ${nearbyCards.length}</span>
+            </div>
+          </section>
+          <main>
+            <section class="grid">
+              <div class="card"><b>${categories.length}</b>categories covered</div>
+              <div class="card"><b>${nearbyCards.length}</b>curated route stops</div>
+              <div class="card"><b>${userLocation ? "Live" : "City"}</b>${userLocation ? "current-location routing" : "map-search routing"}</div>
+            </section>
+            <section class="card">
+              <h2>Map Preview</h2>
+              <div class="mapFrame"><iframe src="${mapPreview}" title="${escapeHtml(city)} map preview"></iframe></div>
+              <p><a href="${mapDirectionsUrl(`${selectedCategory?.label || category} near ${city}`)}">Open route from ${escapeHtml(sourceText)}</a></p>
+            </section>
+            <section class="card">
+              <h2>AI Planner Notes</h2>
+              <div class="plan">${escapeHtml(plan)}</div>
+            </section>
+            <h2>Top 20 Curated Route Sheet</h2>
           <table>
-            <thead><tr><th>Stop</th><th>Area</th><th>Distance/Time</th><th>Map Search</th></tr></thead>
+            <thead><tr><th>Stop</th><th>Area</th><th>Time</th><th>Map Route</th></tr></thead>
             <tbody>${routeRows}</tbody>
           </table>
+            <h2>Selected Category: 10 More Options</h2>
+            <table>
+              <thead><tr><th>#</th><th>Option</th><th>Area Type</th><th>Route</th></tr></thead>
+              <tbody>${selectedRows}</tbody>
+            </table>
+            <div class="note">
+              <strong>Planner maturity check:</strong> map time, opening hours, rush, road closures, medical availability,
+              parking, and altitude safety must be verified in live Maps or by calling the venue before leaving.
+            </div>
+          </main>
         </body>
       </html>`);
     printWindow.document.close();
@@ -802,6 +850,20 @@ export default function Home() {
     }
   }
 
+  function subscribeNewsletter(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const email = newsletterEmail.trim();
+
+    if (!email || !email.includes("@")) {
+      setNewsletterStatus("Drop a valid email so the city intel lands in the right inbox.");
+      return;
+    }
+
+    setNewsletterEmail("");
+    setNewsletterStatus("You are on the CityMitra list. Clean city intel, no spam parade.");
+    trackActivity({ type: "newsletter_subscribe", city, category, label: email.split("@")[1] });
+  }
+
   return (
     <main>
       <section
@@ -833,6 +895,7 @@ export default function Home() {
               <a href="#directory">Directory</a>
               <a href="#ai">AI Guide</a>
               <a href="#monetize">Monetize</a>
+              <a href="#about">About</a>
               <a href="#coverage">Coverage</a>
             </div>
           </nav>
@@ -867,24 +930,93 @@ export default function Home() {
                   <b>AI</b> route advice
                 </span>
               </div>
+              <div className="demoFlow" aria-label="CityMitra product flow">
+                {[
+                  ["01", "Choose city"],
+                  ["02", "Pick category"],
+                  ["03", "Ask AI"],
+                  ["04", "Open map"]
+                ].map(([step, label]) => (
+                  <span key={step}>
+                    <b>{step}</b>
+                    {label}
+                  </span>
+                ))}
+              </div>
             </div>
             <div className="sceneWrap" aria-label="Animated 3D city directory map">
               <div
-                className="sceneCanvasPane"
+                className="motionBackdrop"
                 style={{
-                  backgroundImage: `linear-gradient(180deg, rgba(255, 253, 248, 0.76), rgba(229, 233, 232, 0.84)), url("${cityVisual.image}")`
+                  backgroundImage: `linear-gradient(120deg, rgba(15, 23, 42, 0.32), rgba(255, 247, 237, 0.2)), url("${cityVisual.image}")`
                 }}
               >
-                <CityScene category={category} />
-                <div className="photoChip">
-                  <Camera size={15} />
-                  {cityVisual.label}
+                <span className="mountainLayer mountainLayerOne" />
+                <span className="mountainLayer mountainLayerTwo" />
+                <span className="citySkyline" />
+                <span className="motionRouteLine" />
+                <span className="motionTraveler" />
+              </div>
+              <div
+                className="sceneCanvasPane"
+                style={{
+                  backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.12), rgba(255, 247, 237, 0.7)), url("${cityVisual.image}")`
+                }}
+              >
+                <div className="motionSceneHeader">
+                  <span>
+                    <Sparkles size={14} />
+                    City sync active
+                  </span>
+                  <strong>{cityVisual.label}</strong>
                 </div>
-                <div className="routeStory" aria-label={`${city} animated route story`}>
-                  <span>Start</span>
-                  <span>{selectedCategory?.label || "Category"}</span>
-                  <span>Food</span>
-                  <span>Backup</span>
+                <a
+                  className="motionScenePhoto"
+                  href={mapSearchUrl(`${city} ${selectedCategory?.label || category} places photos`)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <img alt={`${city} ${selectedCategory?.label || category} motion frame`} src={cityVisual.image} />
+                  <span>
+                    <Camera size={14} />
+                    View city photos
+                  </span>
+                </a>
+                <div className="motionRouteBoard" aria-label={`${city} route motion frame`}>
+                  <div className="routeNodes">
+                    {[
+                      ["01", "Start"],
+                      ["02", selectedCategory?.label || "Pick"],
+                      ["03", "Nearby"],
+                      ["04", "Backup"]
+                    ].map(([step, label]) => (
+                      <span key={step}>
+                        <b>{step}</b>
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="placeTicket">
+                    <MapPinned size={15} />
+                    <span>
+                      <b>{city}</b>
+                      {selectedCategory?.label || "City"} route, maps, photos, and fallback stops.
+                    </span>
+                  </div>
+                </div>
+                <div className="motionStats" aria-label="CityMitra live route stats">
+                  <span>
+                    <b>{nearbyCards.length}</b>
+                    nearby picks
+                  </span>
+                  <span>
+                    <b>Maps</b>
+                    one tap
+                  </span>
+                  <span>
+                    <b>AI</b>
+                    planner
+                  </span>
                 </div>
                 <div className="liveRoutePills" aria-label="Live 3D features">
                   <button type="button" onClick={() => handleSceneAction("sync")}>
@@ -914,6 +1046,14 @@ export default function Home() {
                     {city} photos
                   </span>
                 </a>
+                <div className="routePulseCard" aria-label={`${city} smart route highlights`}>
+                  <span>
+                    <Navigation size={14} />
+                    Live route mood
+                  </span>
+                  <b>{city}</b>
+                  <p>{selectedCategory?.label || "City"} picks, photo proof, map route, and backup stops synced in one frame.</p>
+                </div>
                 <div className="mapPreviewCard">
                   <iframe
                     loading="lazy"
@@ -973,7 +1113,7 @@ export default function Home() {
 
         <div className="directoryGrid">
           {selectedItems.map((item) => (
-            <article className="listing" key={`${item.name}-${item.city}`}>
+            <article className="listing" key={`${item.name}-${item.query}`}>
               <div className="listingTop">
                 <span className="pin">
                   <MapPinned size={16} />
@@ -981,11 +1121,11 @@ export default function Home() {
                 </span>
                 <span className="score">
                   <Star size={15} />
-                  {item.trust}
+                  {exactDirectoryItems.some((exact) => exact.name === item.name) ? "Verified" : "Smart"}
                 </span>
               </div>
               <h3>{item.name}</h3>
-              <p>{item.bestFor}</p>
+              <p>{item.why || `Curated ${selectedCategory?.label.toLowerCase() || "city"} option for ${city} with maps, photos, and route checks.`}</p>
               <div className="listingMeta">
                 <span>
                   <Clock3 size={15} />
@@ -993,32 +1133,34 @@ export default function Home() {
                 </span>
                 <span>
                   <ShieldCheck size={15} />
-                  {item.volume}
+                  {exactDirectoryItems.some((exact) => exact.name === item.name) ? "Seed listing" : "AI-ready"}
                 </span>
               </div>
-              {item.altitude && <span className="altitude">{item.altitude}</span>}
-              <strong>{item.tip}</strong>
+              <button className="inlineMapButton" type="button" onClick={() => openTrackedMap(item.query, `directory_${item.name}`)}>
+                Open route <ExternalLink size={14} />
+              </button>
+              <strong>{userLocation ? "Route starts from your current location." : "Enable nearby mode for current-location routing."}</strong>
             </article>
           ))}
         </div>
 
-        {selectedItems.length === 0 && (
+        {exactDirectoryItems.length === 0 && (
           <div className="emptyState">
             <h3>No exact {selectedCategory?.label.toLowerCase()} listing in {city} yet</h3>
             <p>
-              The directory will not mix unrelated city/category results. Use the AI guide for expanded options, or try
-              one of these nearby matches.
+              Showing smart generated map-ready results for this city/category. Verify photos, distance, and timings in
+              Maps before leaving.
             </p>
           </div>
         )}
 
-        {selectedItems.length === 0 && (
+        {exactDirectoryItems.length === 0 && (
           <div className="suggestionRows">
             <div>
               <h3>More in {city}</h3>
-              {citySuggestions.map((item) => (
-                <button key={item.name} onClick={() => selectCategory(item.category, "suggested_city_category")}>
-                  {item.name} <span>{categories.find((cat) => cat.key === item.category)?.label}</span>
+              {categoryMatrix.slice(0, 7).map((item) => (
+                <button key={item.key} onClick={() => selectCategory(item.key, "suggested_city_category")}>
+                  {item.results[0]?.name} <span>{item.label}</span>
                 </button>
               ))}
             </div>
@@ -1032,6 +1174,101 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        <div className="categoryMatrix" aria-label={`10 category results for ${city}`}>
+          <div className="sectionHeader compactHeader">
+            <div>
+              <span className="sectionKicker">City Intelligence</span>
+              <h2>Browse 10 smart results per category for {city}</h2>
+            </div>
+            <p>Use category tabs or next/previous to scan one focused set at a time. Open any item to verify photos, distance, traffic, and hours.</p>
+          </div>
+
+          <div className="intelBrowser">
+            <div className="intelControls">
+              <button type="button" onClick={() => moveIntelCategory(-1)} aria-label="Previous category">
+                <ChevronUp size={16} />
+                Previous
+              </button>
+              <div>
+                <span>{activeIntelIndex + 1} / {categoryMatrix.length}</span>
+                <strong>{activeIntelGroup.label}</strong>
+              </div>
+              <button type="button" onClick={() => moveIntelCategory(1)} aria-label="Next category">
+                Next
+                <ChevronDown size={16} />
+              </button>
+            </div>
+
+            <div className="intelTabs" aria-label="City intelligence categories">
+              {categoryMatrix.map((group) => {
+                const Icon = group.icon;
+                return (
+                  <button
+                    className={intelCategory === group.key ? "active" : ""}
+                    key={group.key}
+                    onClick={() => {
+                      setIntelCategory(group.key);
+                      trackActivity({ type: "city_intel_category", city, category: group.key, label: "tab" });
+                    }}
+                    type="button"
+                  >
+                    <Icon size={16} />
+                    {group.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="intelFocusCard">
+              {(() => {
+                const Icon = activeIntelGroup.icon;
+                return (
+                  <header>
+                    <span>
+                      <Icon size={20} />
+                      {activeIntelGroup.label}
+                    </span>
+                    <strong>{activeIntelGroup.results.length} map-ready options</strong>
+                  </header>
+                );
+              })()}
+
+              <div className="categoryMatrixGrid">
+                {activeIntelGroup.results.map((item, index) => (
+                  <article key={`${activeIntelGroup.key}-${item.name}`}>
+                    <span className="resultIndex">{String(index + 1).padStart(2, "0")}</span>
+                    <h3>{item.name}</h3>
+                    <p>{item.why}</p>
+                    <div className="intelMeta">
+                      <span>{item.area}</span>
+                      <span>{item.eta}</span>
+                    </div>
+                    <button type="button" onClick={() => openTrackedMap(item.query, `matrix_${activeIntelGroup.key}_${item.name}`)}>
+                      Open route <ExternalLink size={14} />
+                    </button>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <details className="intelOverview">
+            <summary>See all categories at a glance</summary>
+            <div>
+              {categoryMatrix.map((group) => {
+                const Icon = group.icon;
+                return (
+                  <button key={group.key} onClick={() => setIntelCategory(group.key)} type="button">
+                    <Icon size={15} />
+                    <span>{group.label}</span>
+                    <small>{group.results.length} results</small>
+                  </button>
+                );
+              })}
+            </div>
+          </details>
+        </div>
       </section>
 
       <section className="platformBand" id="platform">
@@ -1191,16 +1428,25 @@ export default function Home() {
                   <span>{city}</span>
                   <strong>{selectedCategory?.label}</strong>
                 </div>
+                <div className="locationBox">
+                  <button type="button" onClick={requestNearbyLocation}>
+                    <Navigation size={15} />
+                    {userLocation ? "Nearby location enabled" : "Use my nearby location"}
+                  </button>
+                  <p>{locationStatus}</p>
+                </div>
                 <button className="mapPrimaryLink" type="button" onClick={() => openTrackedMap(`${selectedCategory?.label || category} near ${city}`, "nearby_primary")}>
                   Open nearby on Maps <ExternalLink size={15} />
                 </button>
-                <div className="nearbyList">
-                  <h3>Nearby picks</h3>
+                <div className="nearbyList" key={`${city}-${category}-nearby`}>
+                  <h3>Top 20 curated nearby picks</h3>
                   {nearbyCards.length > 0 ? (
-                    nearbyCards.map((item) => (
-                      <button type="button" onClick={() => openTrackedMap(item.query, `nearby_${item.name}`)} key={item.name}>
+                    nearbyCards.map((item, index) => (
+                      <button type="button" onClick={() => openTrackedMap(item.query, `nearby_${item.name}`)} key={`${city}-${category}-${index}-${item.name}`}>
                         <span>{item.name}</span>
-                        <small>{item.area} · {item.eta}</small>
+                        <small>
+                          {categories.find((cat) => cat.key === item.category)?.label || "City"} · {item.area} · {item.eta}
+                        </small>
                       </button>
                     ))
                   ) : (
@@ -1280,6 +1526,100 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <section className="aboutBand" id="about">
+        <div className="aboutGrid">
+          <div>
+            <span className="sectionKicker">About CityMitra</span>
+            <h2>Built to make Indian city decisions faster, cleaner, and less chaotic</h2>
+            <p>
+              CityMitra is an AI-assisted city companion for shopping streets, wholesale markets, hospitals, hotels,
+              food trails, vehicle support, schools, malls, play arenas, and sightseeing. The goal is simple: help
+              people choose where to go, what to expect, and what backup options sit nearby before they leave.
+            </p>
+          </div>
+          <div className="aboutCards">
+            {[
+              ["Human intent", "Search by city, category, or plain chat. CityMitra syncs the interface around the user."],
+              ["Map-first actions", "Every suggestion points toward maps, routes, photos, and useful nearby fallbacks."],
+              ["Business ready", "The platform is shaped for verified listings, paid placement, and privacy-aware analytics."]
+            ].map(([title, text]) => (
+              <article key={title}>
+                <Sparkles size={18} />
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className="siteFooter">
+        <div className="footerGrid">
+          <div className="footerBrand">
+            <a className="brand" href="#top" aria-label="CityMitra home">
+              <span className="brandMark">
+                <Navigation size={18} />
+              </span>
+              CityMitra
+            </a>
+            <p>AI city navigation for Indian commerce, travel, services, and everyday decisions.</p>
+            <div className="socialLinks" aria-label="Social links">
+              <a href="https://x.com" target="_blank" rel="noreferrer">X</a>
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
+                <Instagram size={17} />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn">
+                <Linkedin size={17} />
+              </a>
+            </div>
+          </div>
+
+          <div className="footerLinks">
+            <h3>Explore</h3>
+            <a href="#directory">Directory</a>
+            <a href="#ai">AI Guide</a>
+            <a href="#monetize">Monetize</a>
+            <a href="#coverage">Roadmap</a>
+          </div>
+
+          <div className="footerPrivacy" id="privacy">
+            <h3>Privacy Policy</h3>
+            <p>
+              CityMitra records lightweight activity such as page views, city/category choices, map opens, and chat
+              intent to improve recommendations and admin analytics. Admin analytics are protected behind login.
+            </p>
+          </div>
+
+          <div className="newsletterCard">
+            <h3>Subscribe to the city brief</h3>
+            <p>Get launch updates, city intelligence, and vendor roadmap notes.</p>
+            <form onSubmit={subscribeNewsletter}>
+              <label htmlFor="newsletterEmail">
+                <Mail size={16} />
+                Email
+              </label>
+              <div>
+                <input
+                  id="newsletterEmail"
+                  onChange={(event) => setNewsletterEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  type="email"
+                  value={newsletterEmail}
+                />
+                <button type="submit" aria-label="Subscribe">
+                  <Send size={16} />
+                </button>
+              </div>
+            </form>
+            {newsletterStatus && <strong>{newsletterStatus}</strong>}
+          </div>
+        </div>
+        <div className="footerBottom">
+          <span>© {new Date().getFullYear()} CityMitra. All rights reserved.</span>
+          <a href="#privacy">Privacy Policy</a>
+        </div>
+      </footer>
     </main>
   );
 }
