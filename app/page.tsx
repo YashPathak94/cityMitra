@@ -27,7 +27,7 @@ import {
   Table,
   Trash2
 } from "lucide-react";
-import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { categories, CategoryKey, cities, directory } from "@/data/city-directory";
 
 type ChatMessage = {
@@ -391,6 +391,7 @@ export default function Home() {
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [locationStatus, setLocationStatus] = useState("Use nearby location for smarter map routes.");
   const [intelCategory, setIntelCategory] = useState<CategoryKey>("markets");
+  const [activeResultIndex, setActiveResultIndex] = useState(0);
   const [question, setQuestion] = useState("Plan a Leh trip with places, altitude, hospitals, petrol, repairs, hotels and shopping.");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -407,6 +408,7 @@ export default function Home() {
   const categoryMatrix = useMemo(() => buildCategoryMatrix(city), [city]);
   const activeIntelIndex = Math.max(0, categoryMatrix.findIndex((item) => item.key === intelCategory));
   const activeIntelGroup = categoryMatrix[activeIntelIndex] || categoryMatrix[0];
+  const activeIntelResult = activeIntelGroup.results[activeResultIndex] || activeIntelGroup.results[0];
   const generatedCategoryResults = useMemo(() => buildGeneratedResults(city, category, 10), [city, category]);
   const selectedItems: NearbyCard[] = [
     ...exactDirectoryItems.map((item) => ({
@@ -483,6 +485,10 @@ export default function Home() {
   }, [category]);
 
   useEffect(() => {
+    setActiveResultIndex(0);
+  }, [city, intelCategory]);
+
+  useEffect(() => {
     const startedAt = Date.now();
     trackActivity({ type: "page_view", city, category });
 
@@ -538,6 +544,13 @@ export default function Home() {
 
     setIntelCategory(nextCategory);
     trackActivity({ type: "city_intel_category", city, category: nextCategory, label: direction > 0 ? "next" : "previous" });
+  }
+
+  function moveIntelResult(direction: -1 | 1) {
+    const resultCount = activeIntelGroup.results.length || 1;
+    const nextIndex = (activeResultIndex + direction + resultCount) % resultCount;
+    setActiveResultIndex(nextIndex);
+    trackActivity({ type: "city_intel_result", city, category: intelCategory, label: `${nextIndex + 1}` });
   }
 
   function openTrackedMap(query: string, label: string) {
@@ -1234,21 +1247,71 @@ export default function Home() {
                 );
               })()}
 
-              <div className="categoryMatrixGrid">
-                {activeIntelGroup.results.map((item, index) => (
-                  <article key={`${activeIntelGroup.key}-${item.name}`}>
-                    <span className="resultIndex">{String(index + 1).padStart(2, "0")}</span>
-                    <h3>{item.name}</h3>
-                    <p>{item.why}</p>
-                    <div className="intelMeta">
-                      <span>{item.area}</span>
-                      <span>{item.eta}</span>
-                    </div>
-                    <button type="button" onClick={() => openTrackedMap(item.query, `matrix_${activeIntelGroup.key}_${item.name}`)}>
-                      Open route <ExternalLink size={14} />
-                    </button>
-                  </article>
-                ))}
+              <div className="resultFrameModule">
+                <div className="resultFrameHeader">
+                  <button type="button" onClick={() => moveIntelResult(-1)} aria-label="Previous result">
+                    <ChevronUp size={16} />
+                    Previous
+                  </button>
+                  <div>
+                    <span>{String(activeResultIndex + 1).padStart(2, "0")} / {activeIntelGroup.results.length}</span>
+                    <strong>{activeIntelResult?.area}</strong>
+                    <small>{activeIntelResult?.eta}</small>
+                  </div>
+                  <button type="button" onClick={() => moveIntelResult(1)} aria-label="Next result">
+                    Next
+                    <ChevronDown size={16} />
+                  </button>
+                </div>
+
+                <div className="rotatingResultFrame" aria-live="polite">
+                  <div className="frameBackdrop">
+                    <span>{activeIntelResult?.area}</span>
+                    <b>{activeIntelGroup.label}</b>
+                  </div>
+
+                  <div className="rotatingDeck">
+                    {activeIntelGroup.results.map((item, index) => {
+                      const rawOffset = index - activeResultIndex;
+                      const resultCount = activeIntelGroup.results.length;
+                      const offset = rawOffset > resultCount / 2 ? rawOffset - resultCount : rawOffset < -resultCount / 2 ? rawOffset + resultCount : rawOffset;
+                      const visible = Math.abs(offset) <= 2;
+
+                      return (
+                        <article
+                          className={offset === 0 ? "rotatingCard active" : visible ? "rotatingCard visible" : "rotatingCard"}
+                          key={`${activeIntelGroup.key}-${item.name}`}
+                          style={{ "--card-offset": offset, "--card-abs": Math.abs(offset) } as CSSProperties}
+                        >
+                          <span className="resultIndex">{String(index + 1).padStart(2, "0")}</span>
+                          <div>
+                            <h3>{item.name}</h3>
+                            <p>{item.why}</p>
+                          </div>
+                          <div className="intelMeta">
+                            <span>{item.area}</span>
+                            <span>{item.eta}</span>
+                          </div>
+                          <button type="button" onClick={() => openTrackedMap(item.query, `matrix_${activeIntelGroup.key}_${item.name}`)}>
+                            Open route <ExternalLink size={14} />
+                          </button>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="resultDots" aria-label="Result carousel progress">
+                  {activeIntelGroup.results.map((item, index) => (
+                    <button
+                      aria-label={`Show ${item.name}`}
+                      className={index === activeResultIndex ? "active" : ""}
+                      key={`${item.name}-dot`}
+                      onClick={() => setActiveResultIndex(index)}
+                      type="button"
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
