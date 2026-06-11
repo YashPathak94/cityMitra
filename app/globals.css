@@ -1098,6 +1098,23 @@ textarea:focus-visible {
   gap: 16px;
 }
 
+.categoryResultFrame {
+  margin-top: 18px;
+}
+
+.categoryFocusCard {
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+
+.categoryFocusCard .intelTabs {
+  border-bottom: 1px solid rgba(244, 223, 210, 0.95);
+  padding: 12px 14px 8px;
+}
+
+.categoryRouteCard .intelMeta {
+  grid-template-columns: 1fr;
+}
+
 .listing,
 .askBox,
 .platformGrid article,
@@ -2817,6 +2834,22 @@ textarea {
     width: min(340px, 82%);
   }
 
+  .categoryStageFrame {
+    grid-template-columns: 1fr;
+  }
+
+  .categoryFrameStory {
+    min-height: 220px;
+  }
+
+  .categoryCardRotator {
+    min-height: 460px;
+  }
+
+  .categoryRotatingCard {
+    width: min(390px, 82%);
+  }
+
   .intelOverview > div {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2862,14 +2895,17 @@ textarea {
   }
 
   .intelControls,
-  .resultFrameHeader {
+  .resultFrameHeader,
+  .categoryStageNav {
     grid-template-columns: 1fr;
   }
 
   .intelControls button,
   .intelControls div,
   .resultFrameHeader > button,
-  .resultFrameHeader > div {
+  .resultFrameHeader > div,
+  .categoryStageNav > button,
+  .categoryStageNav > div {
     width: 100%;
   }
 
@@ -2891,6 +2927,24 @@ textarea {
     min-height: 330px;
     transform:
       translateX(calc(-50% + (var(--card-offset) * 72px)))
+      translateY(calc(var(--card-abs) * 18px))
+      rotateY(calc(var(--card-offset) * -10deg))
+      scale(calc(1 - (var(--card-abs) * 0.06)));
+  }
+
+  .categoryCardRotator {
+    min-height: 500px;
+  }
+
+  .categoryRotatingDeck {
+    inset: 26px 10px;
+  }
+
+  .categoryRotatingCard {
+    width: min(330px, 86%);
+    min-height: 350px;
+    transform:
+      translateX(calc(-50% + (var(--card-offset) * 74px)))
       translateY(calc(var(--card-abs) * 18px))
       rotateY(calc(var(--card-offset) * -10deg))
       scale(calc(1 - (var(--card-abs) * 0.06)));

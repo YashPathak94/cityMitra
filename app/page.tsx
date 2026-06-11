@@ -392,6 +392,8 @@ export default function Home() {
   const [locationStatus, setLocationStatus] = useState("Use nearby location for smarter map routes.");
   const [intelCategory, setIntelCategory] = useState<CategoryKey>("markets");
   const [activeResultIndex, setActiveResultIndex] = useState(0);
+  const [categoryStageIndex, setCategoryStageIndex] = useState(0);
+  const [categoryFrameIndex, setCategoryFrameIndex] = useState(0);
   const [question, setQuestion] = useState("Plan a Leh trip with places, altitude, hospitals, petrol, repairs, hotels and shopping.");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -423,6 +425,20 @@ export default function Home() {
       (generated) => !exactDirectoryItems.some((item) => generated.query.toLowerCase().includes(item.name.toLowerCase()))
     )
   ].slice(0, 10);
+  const categoryResultStages = useMemo(
+    () =>
+      ["Top city zone", "Nearby cluster", "Backup option"].map((stage) => ({
+        stage,
+        results: selectedItems.filter((item, index) =>
+          stage === "Top city zone"
+            ? item.area === stage || exactDirectoryItems.some((exact) => exact.name === item.name) || index < 3
+            : item.area === stage
+        )
+      })),
+    [exactDirectoryItems, selectedItems]
+  );
+  const activeCategoryStage = categoryResultStages[categoryStageIndex] || categoryResultStages[0];
+  const activeCategoryResult = activeCategoryStage.results[categoryFrameIndex] || activeCategoryStage.results[0];
   const topTwentyPicks = categoryMatrix.flatMap((item) => item.results.slice(0, 2)).slice(0, 20);
   const citySuggestions = directory
     .filter((item) => item.city === city && item.category !== category)
@@ -443,6 +459,7 @@ export default function Home() {
         }))
   ).slice(0, 5);
   const selectedCategory = categories.find((item) => item.key === category);
+  const SelectedCategoryIcon = selectedCategory?.icon;
   const cityVisual = cityVisuals[city] || {
     image: cityImageUrl(city),
     label: `${city} city`,
@@ -487,6 +504,11 @@ export default function Home() {
   useEffect(() => {
     setActiveResultIndex(0);
   }, [city, intelCategory]);
+
+  useEffect(() => {
+    setCategoryStageIndex(0);
+    setCategoryFrameIndex(0);
+  }, [city, category]);
 
   useEffect(() => {
     const startedAt = Date.now();
@@ -551,6 +573,20 @@ export default function Home() {
     const nextIndex = (activeResultIndex + direction + resultCount) % resultCount;
     setActiveResultIndex(nextIndex);
     trackActivity({ type: "city_intel_result", city, category: intelCategory, label: `${nextIndex + 1}` });
+  }
+
+  function moveCategoryStage(direction: -1 | 1) {
+    const nextIndex = (categoryStageIndex + direction + categoryResultStages.length) % categoryResultStages.length;
+    setCategoryStageIndex(nextIndex);
+    setCategoryFrameIndex(0);
+    trackActivity({ type: "category_stage", city, category, label: categoryResultStages[nextIndex]?.stage || "stage" });
+  }
+
+  function moveCategoryFrame(direction: -1 | 1) {
+    const resultCount = activeCategoryStage.results.length || 1;
+    const nextIndex = (categoryFrameIndex + direction + resultCount) % resultCount;
+    setCategoryFrameIndex(nextIndex);
+    trackActivity({ type: "category_result_frame", city, category, label: `${nextIndex + 1}` });
   }
 
   function openTrackedMap(query: string, label: string) {
@@ -1124,37 +1160,108 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="directoryGrid">
-          {selectedItems.map((item) => (
-            <article className="listing" key={`${item.name}-${item.query}`}>
-              <div className="listingTop">
-                <span className="pin">
-                  <MapPinned size={16} />
-                  {item.area}
-                </span>
-                <span className="score">
-                  <Star size={15} />
-                  {exactDirectoryItems.some((exact) => exact.name === item.name) ? "Verified" : "Smart"}
-                </span>
+        <div className="categoryResultFrame" aria-label={`${selectedCategory?.label || category} rotating category results`}>
+          <div className="intelFocusCard categoryFocusCard">
+            <header>
+              <span>
+                {SelectedCategoryIcon && <SelectedCategoryIcon size={20} />}
+                {selectedCategory?.label || "Category"} in {city}
+              </span>
+              <strong>{selectedItems.length} map-ready options</strong>
+            </header>
+
+            <div className="categoryStageNav intelTabs" aria-label="Category result zones">
+              {categoryResultStages.map((stage, index) => (
+                <button
+                  className={index === categoryStageIndex ? "active" : ""}
+                  key={stage.stage}
+                  onClick={() => {
+                    setCategoryStageIndex(index);
+                    setCategoryFrameIndex(0);
+                  }}
+                  type="button"
+                >
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  {stage.stage}
+                  <small>{stage.results.length}</small>
+                </button>
+              ))}
+            </div>
+
+            <div className="resultFrameModule categoryResultModule">
+              <div className="resultFrameHeader">
+                <button type="button" onClick={() => moveCategoryFrame(-1)} aria-label="Previous category result">
+                  <ChevronUp size={16} />
+                  Previous
+                </button>
+                <div>
+                  <span>{String(categoryFrameIndex + 1).padStart(2, "0")} / {activeCategoryStage.results.length || 0}</span>
+                  <strong>{activeCategoryStage.stage}</strong>
+                  <small>{activeCategoryResult?.eta || "Map check"}</small>
+                </div>
+                <button type="button" onClick={() => moveCategoryFrame(1)} aria-label="Next category result">
+                  Next
+                  <ChevronDown size={16} />
+                </button>
               </div>
-              <h3>{item.name}</h3>
-              <p>{item.why || `Curated ${selectedCategory?.label.toLowerCase() || "city"} option for ${city} with maps, photos, and route checks.`}</p>
-              <div className="listingMeta">
-                <span>
-                  <Clock3 size={15} />
-                  {item.eta}
-                </span>
-                <span>
-                  <ShieldCheck size={15} />
-                  {exactDirectoryItems.some((exact) => exact.name === item.name) ? "Seed listing" : "AI-ready"}
-                </span>
+
+              <div className="rotatingResultFrame categoryResultMotion" aria-live="polite">
+                <div
+                  className="frameBackdrop"
+                  style={{
+                    backgroundImage: `linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.72)), url("${photoSearchImage(city, `${selectedCategory?.label || category} ${activeCategoryStage.stage}`, categoryFrameIndex)}")`
+                  }}
+                >
+                  <span>{activeCategoryStage.stage}</span>
+                  <b>{selectedCategory?.label || "Category"}</b>
+                </div>
+
+                <div className="rotatingDeck">
+                  {activeCategoryStage.results.map((item, index) => {
+                    const rawOffset = index - categoryFrameIndex;
+                    const resultCount = activeCategoryStage.results.length;
+                    const offset = rawOffset > resultCount / 2 ? rawOffset - resultCount : rawOffset < -resultCount / 2 ? rawOffset + resultCount : rawOffset;
+                    const visible = Math.abs(offset) <= 2;
+                    const isVerified = exactDirectoryItems.some((exact) => exact.name === item.name);
+
+                    return (
+                      <article
+                        className={offset === 0 ? "rotatingCard categoryRouteCard active" : visible ? "rotatingCard categoryRouteCard visible" : "rotatingCard categoryRouteCard"}
+                        key={`${activeCategoryStage.stage}-${item.name}`}
+                        style={{ "--card-offset": offset, "--card-abs": Math.abs(offset) } as CSSProperties}
+                      >
+                        <span className="resultIndex">{String(index + 1).padStart(2, "0")}</span>
+                        <div>
+                          <h3>{item.name}</h3>
+                          <p>{item.why || `Curated ${selectedCategory?.label.toLowerCase() || "city"} option for ${city} with maps, photos, and route checks.`}</p>
+                        </div>
+                        <div className="intelMeta">
+                          <span>{isVerified ? item.area : activeCategoryStage.stage}</span>
+                          <span>{item.eta}</span>
+                          <span>{isVerified ? "Verified" : "Smart"}</span>
+                        </div>
+                        <button type="button" onClick={() => openTrackedMap(item.query, `directory_${item.name}`)}>
+                          Open route <ExternalLink size={14} />
+                        </button>
+                      </article>
+                    );
+                  })}
+                </div>
               </div>
-              <button className="inlineMapButton" type="button" onClick={() => openTrackedMap(item.query, `directory_${item.name}`)}>
-                Open route <ExternalLink size={14} />
-              </button>
-              <strong>{userLocation ? "Route starts from your current location." : "Enable nearby mode for current-location routing."}</strong>
-            </article>
-          ))}
+
+              <div className="resultDots" aria-label="Category result progress">
+                {activeCategoryStage.results.map((item, index) => (
+                  <button
+                    aria-label={`Show ${item.name}`}
+                    className={index === categoryFrameIndex ? "active" : ""}
+                    key={`${item.name}-category-dot`}
+                    onClick={() => setCategoryFrameIndex(index)}
+                    type="button"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
         {exactDirectoryItems.length === 0 && (
