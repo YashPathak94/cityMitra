@@ -60,6 +60,7 @@ type ActivityEvent = {
 const starterMessage =
   "Tell me the city, vibe, budget, and time you have. I will map the spots, backup services, and time-saving route. Yes, an actual plan, not a 47-tab research spiral.";
 const locationPromptKey = "citymitra-location-prompt-choice";
+const locationDataKey = "citymitra-user-location";
 
 const knownChatCities = [
   "Agra",
@@ -487,6 +488,25 @@ export default function Home() {
   }, [city, category]);
 
   useEffect(() => {
+    const savedLocation = window.localStorage.getItem(locationDataKey);
+    if (savedLocation) {
+      try {
+        const parsedLocation = JSON.parse(savedLocation) as UserLocation;
+        if (Number.isFinite(parsedLocation.lat) && Number.isFinite(parsedLocation.lng)) {
+          setUserLocation(parsedLocation);
+          if (parsedLocation.city) {
+            setCity(parsedLocation.city);
+            setLocationStatus(`Nearby mode restored for ${parsedLocation.city}. City tab, photos, and all 20 recommendations stay synced.`);
+          } else {
+            setLocationStatus("Nearby mode restored. Maps and recommendations use your saved current-location start.");
+          }
+          return;
+        }
+      } catch {
+        window.localStorage.removeItem(locationDataKey);
+      }
+    }
+
     const promptChoice = window.localStorage.getItem(locationPromptKey);
     if (!promptChoice) {
       const promptTimer = window.setTimeout(() => setShowLocationPrompt(true), 700);
@@ -534,6 +554,9 @@ export default function Home() {
 
   function selectCity(nextCity: string, label = "selector") {
     setCity(nextCity);
+    if (nextCity !== city && (!userLocation || (userLocation.city && userLocation.city !== nextCity))) {
+      setShowLocationPrompt(true);
+    }
     trackActivity({ type: "city_change", city: nextCity, category, label });
   }
 
@@ -563,7 +586,6 @@ export default function Home() {
 
   function requestNearbyLocation() {
     setShowLocationPrompt(false);
-    window.localStorage.setItem(locationPromptKey, "enabled");
 
     if (!navigator.geolocation) {
       setLocationStatus("Location is not supported in this browser. Maps will use city search instead.");
@@ -589,6 +611,8 @@ export default function Home() {
 
         const nextLocation = detectedCity ? { ...coords, city: detectedCity } : coords;
         setUserLocation(nextLocation);
+        window.localStorage.setItem(locationPromptKey, "enabled");
+        window.localStorage.setItem(locationDataKey, JSON.stringify(nextLocation));
         if (detectedCity) {
           setCity(detectedCity);
           setLocationStatus(`Nearby mode on for ${detectedCity}. City tab, photos, and all 20 recommendations now sync from your current location.`);
@@ -604,6 +628,7 @@ export default function Home() {
       },
       () => {
         setLocationStatus("Location permission was not enabled. CityMitra will still use city-level map searches.");
+        window.localStorage.setItem(locationPromptKey, "denied");
         trackActivity({ type: "location_denied", city, category });
       },
       { enableHighAccuracy: true, maximumAge: 300000, timeout: 10000 }
@@ -912,7 +937,7 @@ export default function Home() {
 
   return (
     <main>
-      {showLocationPrompt && !userLocation && (
+      {showLocationPrompt && (
         <div className="locationPromptOverlay" role="dialog" aria-modal="true" aria-labelledby="locationPromptTitle">
           <div className="locationPromptCard">
             <span className="locationPromptIcon">
@@ -920,15 +945,16 @@ export default function Home() {
             </span>
             <div>
               <span className="sectionKicker">Nearby Recommendations</span>
-              <h2 id="locationPromptTitle">Enable location for curated city picks</h2>
+              <h2 id="locationPromptTitle">{userLocation ? "Auto-detect your current city" : "Enable location for curated city picks"}</h2>
               <p>
-                CityMitra can show the top 20 nearby places, route-ready suggestions, hotels, food, fuel, repairs, and
-                backup stops from where you are starting.
+                {userLocation
+                  ? `You selected ${city}. Auto-detect again to sync the city tab, pictures, maps, and top 20 recommendations with where you are now.`
+                  : "CityMitra can show the top 20 nearby places, route-ready suggestions, hotels, food, fuel, repairs, and backup stops from where you are starting."}
               </p>
             </div>
             <div className="locationPromptActions">
               <button className="primaryButton" type="button" onClick={requestNearbyLocation}>
-                Enable nearby recommendations <Navigation size={17} />
+                {userLocation ? "Auto-detect location" : "Enable nearby recommendations"} <Navigation size={17} />
               </button>
               <button className="secondaryButton" type="button" onClick={dismissLocationPrompt}>
                 Not now
