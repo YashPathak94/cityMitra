@@ -7,6 +7,21 @@ const fallbackImages: Record<string, string> = {
   places: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=80"
 };
 
+// Only redirect to image hosts we expect from the Wikipedia/Commons APIs.
+function isAllowedImageHost(value: string) {
+  try {
+    const host = new URL(value).hostname;
+    return (
+      value.startsWith("https://") &&
+      (host.endsWith(".wikimedia.org") ||
+        host.endsWith(".wikipedia.org") ||
+        host === "images.unsplash.com")
+    );
+  } catch {
+    return false;
+  }
+}
+
 function clean(value: string | null) {
   return (value || "")
     .replace(/[^a-zA-Z0-9\s-]/g, " ")
@@ -82,7 +97,7 @@ export async function GET(request: NextRequest) {
 
   const cityPageImage = await findWikipediaCityImage(city).catch(() => null);
 
-  if (cityPageImage) {
+  if (cityPageImage && isAllowedImageHost(cityPageImage)) {
     return NextResponse.redirect(cityPageImage, {
       headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800" }
     });
@@ -114,7 +129,7 @@ export async function GET(request: NextRequest) {
     }>;
     const image = pages
       .map((page) => page.imageinfo?.[0]?.thumburl || page.imageinfo?.[0]?.url)
-      .find((url): url is string => Boolean(url && !/\.svg($|\?)/i.test(url)));
+      .find((url): url is string => Boolean(url && !/\.svg($|\?)/i.test(url) && isAllowedImageHost(url)));
 
     return NextResponse.redirect(image || fallback, {
       headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800" }

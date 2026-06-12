@@ -1,8 +1,12 @@
 import OpenAI from "openai";
 import { NextRequest } from "next/server";
 import { directory, summarizeDirectory } from "@/data/city-directory";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
+
+const maxQuestionChars = 1200;
+const maxHistoryMessageChars = 4000;
 
 const client = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
@@ -24,14 +28,25 @@ function localGuideAnswer(question: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const { question, city, category, messages } = (await request.json()) as {
+  const limit = rateLimit(`ask:${clientIp(request)}`, 10, 60 * 1000);
+
+  if (!limit.ok) {
+    return new Response("You are asking faster than CityMitra can plan. Wait a minute and try again.", {
+      status: 429,
+      headers: { "Retry-After": String(limit.retryAfterSeconds), "Content-Type": "text/plain; charset=utf-8" }
+    });
+  }
+
+  const { question: rawQuestion, city, category, messages } = (await request.json().catch(() => ({}))) as {
     question?: string;
     city?: string;
     category?: string;
     messages?: Array<{ role: "user" | "assistant"; content: string }>;
   };
 
-  if (!question?.trim()) {
+  const question = rawQuestion?.trim().slice(0, maxQuestionChars);
+
+  if (!question) {
     return new Response("Ask CityMitra where you want to go.", { status: 400 });
   }
 
@@ -55,14 +70,15 @@ export async function POST(request: NextRequest) {
                 "You are CityMitra, a fast Indian city navigation agent for Gen Z users and minimal planners. Tone: crisp, cool, friendly, practical, lightly sarcastic, and useful. Add occasional witty one-liners like 'because wandering blindly is not a personality trait' but do not roast the user, be rude, or overdo jokes. Format every answer in clean markdown: '##' section headings, '-' bullet lists, **bold** for place names, and pipe tables (| col | col |) whenever you present routes, comparisons, or day plans, because the interface renders markdown into styled headings and tables. Use short headings and scannable bullets. The seed directory is helpful context, not a restriction. If the user asks about an unlisted city, answer from general public knowledge and say which items are extra picks to verify. Recommend seed-directory destinations first when relevant, then add AI-suggested public-knowledge options for broader coverage. Always answer city/category questions with multiple usable options, route order, best time to go, maps/search terms to use, and what to verify before leaving. If the user asks for a travel planner, include an export-friendly route table in plain text with columns: Stop, Area, Best time, Approx distance/time, Why go, Map search terms. Mark distance/time as approximate and tell the user to verify in maps before leaving. For Leh or Ladakh planning, include altitude, acclimatization, time blocks, sightseeing areas, shopping areas, hospitals, vehicle repair, petrol pumps, hotels, and safety notes for high-altitude travel. Do not claim live availability, current opening hours, live map distance, or medical certainty."
             },
             ...(messages || [])
+              .filter((message) => message && (message.role === "user" || message.role === "assistant"))
               .slice(-8)
               .map((message) => ({
                 role: message.role,
-                content: message.content
+                content: String(message.content || "").slice(0, maxHistoryMessageChars)
               })),
             {
               role: "user",
-              content: `Selected city: ${city || "any"}\nSelected category: ${category || "any"}\nSeed directory:\n${scopedDirectory}\n\nCurrent user question: ${question}`
+              content: `Selected city: ${String(city || "any").slice(0, 80)}\nSelected category: ${String(category || "any").slice(0, 80)}\nSeed directory:\n${scopedDirectory}\n\nCurrent user question: ${question}`
             }
           ],
           max_output_tokens: 1200,

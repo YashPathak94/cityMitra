@@ -60,6 +60,8 @@ A practical, ordered checklist to take CityMitra from repo to revenue.
 | 5 | **City sponsorships** — a local brand sponsors a category ("Food trail powered by X") | Medium | 1k+ daily visits in a city |
 | 6 | **CityMitra Pro** — saved trips, longer AI plans, PDF branding removal, WhatsApp delivery (₹99–199/mo via Razorpay) | High | When chat retention is proven |
 
+**AdSense approval checklist (already wired into the site):** 12 original city guide pages at `/cities/*`, About/Contact/Privacy/Terms live and linked in the footer, admin noindexed, sitemap includes all content pages, and `public/ads.txt` has instructions — replace its contents with your `google.com, pub-XXXX, DIRECT, f08c47fec0942fa0` line once AdSense issues your publisher ID. Before applying: set `NEXT_PUBLIC_CONTACT_EMAIL`, add 2–4 more guides over a few weeks so the site shows fresh original content, and never place ads inside the chat panel or navigation.
+
 **Practical notes:**
 - Start outreach manually: pick your top city from admin analytics, walk the actual market, and sell 10 shopkeepers a ₹500/month featured slot with a WhatsApp onboarding flow. Ten paying vendors validates the whole model.
 - Use **Razorpay** (Indian cards/UPI) for payments; payment links are enough at first — no checkout build needed.

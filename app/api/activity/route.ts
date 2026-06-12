@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE, isAdminCookie } from "@/lib/admin-auth";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -97,6 +98,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const limit = rateLimit(`activity:${clientIp(request)}`, 120, 60 * 1000);
+
+  if (!limit.ok) {
+    return NextResponse.json({ error: "Too many events" }, { status: 429 });
+  }
+
   const payload = (await request.json().catch(() => null)) as Partial<ActivityRecord> | null;
 
   if (!payload?.type) {
@@ -105,15 +112,19 @@ export async function POST(request: NextRequest) {
 
   const existingVisitorId = request.cookies.get(visitorCookie)?.value;
   const visitorId = existingVisitorId || randomUUID();
+  const safeValue =
+    typeof payload.value === "number" && Number.isFinite(payload.value)
+      ? Math.max(0, Math.min(Math.round(payload.value), 60 * 60 * 24))
+      : undefined;
   const nextRecord: ActivityRecord = {
     type: String(payload.type).slice(0, 80),
     city: payload.city ? String(payload.city).slice(0, 80) : undefined,
     category: payload.category ? String(payload.category).slice(0, 80) : undefined,
     label: payload.label ? String(payload.label).slice(0, 160) : undefined,
-    value: typeof payload.value === "number" ? payload.value : undefined,
+    value: safeValue,
     path: payload.path ? String(payload.path).slice(0, 120) : undefined,
     sessionId: visitorId,
-    timestamp: payload.timestamp || new Date().toISOString()
+    timestamp: new Date().toISOString()
   };
 
   await mkdir(activityDir, { recursive: true });

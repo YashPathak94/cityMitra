@@ -4,10 +4,11 @@
 
 1. Push the repository to GitHub.
 2. Import the repo in Vercel from the Vercel dashboard.
-3. Set environment variables:
+3. Set environment variables (see `.env.example` for the full list):
    - `OPENAI_API_KEY`
-   - `ADMIN_PASSWORD`
-   - `ADMIN_SESSION_TOKEN`
+   - `ADMIN_PASSWORD` and `ADMIN_SESSION_TOKEN` (required - admin fails closed without them)
+   - `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL`
+   - `NEXT_PUBLIC_SOCIAL_X/_INSTAGRAM/_LINKEDIN/_WHATSAPP` (footer links)
 4. Build command:
    - `npm run build`
 5. Start command:
@@ -17,7 +18,7 @@
 
 The current `/api/activity` route stores activity in `.citymitra/activity.json` for local development.
 
-The `/admin` route is protected by an HTTP-only admin session cookie. In local development, the fallback password is `admin123`, but production must set `ADMIN_PASSWORD` and `ADMIN_SESSION_TOKEN`.
+The `/admin` route is protected by an HTTP-only admin session cookie. In local development the fallback password is `admin123`. In production the admin area FAILS CLOSED: if `ADMIN_PASSWORD` or `ADMIN_SESSION_TOKEN` is not set, no one can log in. Login is rate-limited (5 attempts / 5 min / IP) and uses constant-time comparison. `/admin` is also served with `X-Robots-Tag: noindex`.
 
 Unique visitor counting is server-issued through an HTTP-only `citymitra_visitor` cookie. The public website can write activity events, but only logged-in admins can read totals from `GET /api/activity`.
 
@@ -52,3 +53,12 @@ Keep the same event shape:
 - Admin dashboard protected by authentication
 - Durable activity database
 - Privacy notice for analytics collection
+
+## Data stored on the server
+
+- `.citymitra/activity.json` — anonymous usage events (rolling ~1000 records)
+- `.citymitra/newsletter.json` — newsletter emails (read via admin-only `GET /api/newsletter`)
+
+Both are flat files: fine for a single Node server, ephemeral on serverless. Move to
+Neon/Supabase before scaling. Rate limits protect `/api/ask` (10/min/IP),
+`/api/newsletter` (5/min/IP), `/api/activity` (120/min/IP), and admin login.
