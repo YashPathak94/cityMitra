@@ -1,7 +1,16 @@
 "use client";
 
-import { Menu, Navigation, Search, X } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { Menu, Navigation, Search, Sparkles, X } from "lucide-react";
+import { FormEvent, useEffect, useState } from "react";
+
+const navLinks = [
+  { href: "#directory", id: "directory", label: "Directory" },
+  { href: "#ai", id: "ai", label: "AI Guide" },
+  { href: "#monetize", id: "monetize", label: "Monetize" },
+  { href: "#about", id: "about", label: "About" },
+  { href: "#coverage", id: "coverage", label: "Coverage" }
+];
 
 type SiteHeaderProps = {
   onSearch: (text: string) => void;
@@ -10,6 +19,38 @@ type SiteHeaderProps = {
 export default function SiteHeader({ onSearch }: SiteHeaderProps) {
   const [searchText, setSearchText] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    function handleScroll() {
+      setScrolled(window.scrollY > 12);
+    }
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const sections = navLinks
+      .map((link) => document.getElementById(link.id))
+      .filter((section): section is HTMLElement => Boolean(section));
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((entry) => entry.isIntersecting);
+        if (visible.length > 0) {
+          setActiveSection(visible[0].target.id);
+        }
+      },
+      { rootMargin: "-30% 0px -55% 0px" }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -21,39 +62,87 @@ export default function SiteHeader({ onSearch }: SiteHeaderProps) {
   }
 
   return (
-    <nav className="topbar" aria-label="Primary navigation">
-      <a className="brand" href="#top" aria-label="CityMitra home">
-        <span className="brandMark">
-          <Navigation size={18} />
-        </span>
-        CityMitra
-      </a>
-      <form className="topSearch" onSubmit={submitSearch} role="search">
-        <Search size={16} />
-        <input
-          aria-label="Search any city or category"
-          onChange={(event) => setSearchText(event.target.value)}
-          placeholder="Search city, food, hotels, repair..."
-          value={searchText}
-        />
-        <button type="submit">Search</button>
-      </form>
-      <button
-        className="navToggle"
-        type="button"
-        aria-expanded={menuOpen}
-        aria-label={menuOpen ? "Close menu" : "Open menu"}
-        onClick={() => setMenuOpen((current) => !current)}
-      >
-        {menuOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
-      <div className={menuOpen ? "navActions open" : "navActions"}>
-        <a href="#directory" onClick={() => setMenuOpen(false)}>Directory</a>
-        <a href="#ai" onClick={() => setMenuOpen(false)}>AI Guide</a>
-        <a href="#monetize" onClick={() => setMenuOpen(false)}>Monetize</a>
-        <a href="#about" onClick={() => setMenuOpen(false)}>About</a>
-        <a href="#coverage" onClick={() => setMenuOpen(false)}>Coverage</a>
+    <header className={scrolled ? "glassNav scrolled" : "glassNav"}>
+      <div className="glassNavInner">
+        <a className="brand" href="#top" aria-label="CityMitra home">
+          <span className="brandMark">
+            <Navigation size={18} />
+          </span>
+          CityMitra
+        </a>
+
+        <nav className="glassNavLinks" aria-label="Primary navigation">
+          {navLinks.map((link) => (
+            <a
+              key={link.id}
+              href={link.href}
+              className={activeSection === link.id ? "active" : ""}
+            >
+              {activeSection === link.id && (
+                <motion.span
+                  className="navActivePill"
+                  layoutId="navActivePill"
+                  transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 32 }}
+                />
+              )}
+              <span>{link.label}</span>
+            </a>
+          ))}
+        </nav>
+
+        <div className="glassNavActions">
+          <form className="navSearch" onSubmit={submitSearch} role="search">
+            <Search size={15} />
+            <input
+              aria-label="Search any city or category"
+              onChange={(event) => setSearchText(event.target.value)}
+              placeholder="Search city or category..."
+              value={searchText}
+            />
+          </form>
+          <a className="navCta" href="#ai">
+            <Sparkles size={15} />
+            Ask AI
+          </a>
+          <button
+            className="navToggle"
+            type="button"
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            onClick={() => setMenuOpen((current) => !current)}
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
-    </nav>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            className="mobileMenu"
+            initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <form className="navSearch mobileSearch" onSubmit={submitSearch} role="search">
+              <Search size={15} />
+              <input
+                aria-label="Search any city or category"
+                onChange={(event) => setSearchText(event.target.value)}
+                placeholder="Search city, food, hotels, repair..."
+                value={searchText}
+              />
+              <button type="submit">Go</button>
+            </form>
+            {navLinks.map((link) => (
+              <a key={link.id} href={link.href} onClick={() => setMenuOpen(false)}>
+                {link.label}
+              </a>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
   );
 }

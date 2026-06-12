@@ -1,5 +1,6 @@
 "use client";
 
+import { MotionConfig } from "motion/react";
 import { useEffect, useState } from "react";
 import { categories, CategoryKey, cities, directory } from "@/data/city-directory";
 import {
@@ -281,7 +282,8 @@ export default function Home() {
   }
 
   return (
-    <main id="main">
+    <MotionConfig reducedMotion="user">
+      <main id="main">
       <LocationPrompt
         open={showLocationPrompt}
         hasLocation={Boolean(userLocation)}
@@ -289,6 +291,8 @@ export default function Home() {
         onEnable={requestNearbyLocation}
         onDismiss={dismissLocationPrompt}
       />
+
+      <SiteHeader onSearch={applySearch} />
 
       <Hero
         city={city}
@@ -298,7 +302,6 @@ export default function Home() {
         userLocation={userLocation}
         onSceneAction={handleSceneAction}
         onOpenMap={openTrackedMap}
-        headerSlot={<SiteHeader onSearch={applySearch} />}
       />
 
       <DirectoryExplorer
@@ -350,6 +353,7 @@ export default function Home() {
       <AboutSection />
 
       <SiteFooter city={city} category={category} />
-    </main>
+      </main>
+    </MotionConfig>
   );
 }

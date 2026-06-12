@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, Camera, Compass, Map, MapPinned, Navigation, Sparkles } from "lucide-react";
 import { categories, cities } from "@/data/city-directory";
 import { UserLocation } from "@/lib/city-intel";
@@ -13,7 +14,16 @@ type HeroProps = {
   userLocation: UserLocation | null;
   onSceneAction: (action: "sync" | "map" | "route") => void;
   onOpenMap: (query: string, label: string) => void;
-  headerSlot: React.ReactNode;
+};
+
+const heroStagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } }
+};
+
+const heroItem = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const } }
 };
 
 export default function Hero({
@@ -23,9 +33,10 @@ export default function Hero({
   nearbyCount,
   userLocation,
   onSceneAction,
-  onOpenMap,
-  headerSlot
+  onOpenMap
 }: HeroProps) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <section
       className="hero"
@@ -34,29 +45,37 @@ export default function Hero({
         backgroundPosition: cityVisual.position
       }}
     >
+      <div className="auroraField" aria-hidden="true">
+        <span className="auroraBlob auroraOne" />
+        <span className="auroraBlob auroraTwo" />
+        <span className="auroraBlob auroraThree" />
+      </div>
       <div className="heroContent">
-        {headerSlot}
-
         <div className="heroGrid" id="top">
-          <div className="heroCopy">
-            <div className="eyebrow">
+          <motion.div
+            className="heroCopy"
+            variants={heroStagger}
+            initial={reduceMotion ? false : "hidden"}
+            animate="visible"
+          >
+            <motion.div className="eyebrow" variants={heroItem}>
               <Sparkles size={16} />
               AI city navigation for Indian commerce
-            </div>
-            <h1>CityMitra</h1>
-            <p>
+            </motion.div>
+            <motion.h1 variants={heroItem}>CityMitra</motion.h1>
+            <motion.p variants={heroItem}>
               Find the right Indian city destination for shopping, wholesale, healthcare, food, repairs, schools,
               entertainment, dinner, and sightseeing without losing time across endless searches.
-            </p>
-            <div className="heroButtons">
+            </motion.p>
+            <motion.div className="heroButtons" variants={heroItem}>
               <a className="primaryButton" href="#ai">
                 Ask AI Guide <ArrowRight size={18} />
               </a>
               <a className="secondaryButton" href="#directory">
                 Browse Categories
               </a>
-            </div>
-            <div className="metrics">
+            </motion.div>
+            <motion.div className="metrics" variants={heroItem}>
               <span>
                 <b>{categories.length}</b> categories
               </span>
@@ -66,8 +85,8 @@ export default function Hero({
               <span>
                 <b>AI</b> route advice
               </span>
-            </div>
-            <div className="demoFlow" aria-label="CityMitra product flow">
+            </motion.div>
+            <motion.div className="demoFlow" aria-label="CityMitra product flow" variants={heroItem}>
               {[
                 ["01", "Choose city"],
                 ["02", "Pick category"],
@@ -79,8 +98,8 @@ export default function Hero({
                   {label}
                 </span>
               ))}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
           <div className="sceneWrap" aria-label="Animated 3D city directory map">
             <div
               className="motionBackdrop"

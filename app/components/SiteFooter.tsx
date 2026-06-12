@@ -1,9 +1,38 @@
 "use client";
 
-import { Instagram, Linkedin, Mail, Navigation, Send } from "lucide-react";
+import { ArrowUp, Instagram, Linkedin, Mail, Navigation, Send } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { CategoryKey } from "@/data/city-directory";
 import { trackActivity } from "@/lib/tracking";
+
+const footerColumns = [
+  {
+    title: "Explore",
+    links: [
+      { label: "Directory", href: "#directory" },
+      { label: "AI Guide", href: "#ai" },
+      { label: "Nearby Picks", href: "#ai" },
+      { label: "City Photos", href: "#top" }
+    ]
+  },
+  {
+    title: "Business",
+    links: [
+      { label: "Monetize", href: "#monetize" },
+      { label: "Roadmap", href: "#coverage" },
+      { label: "Featured Listings", href: "#monetize" },
+      { label: "Sponsorships", href: "#monetize" }
+    ]
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About", href: "#about" },
+      { label: "Privacy Policy", href: "#privacy" },
+      { label: "Contact", href: "mailto:hello@citymitra.in" }
+    ]
+  }
+];
 
 type SiteFooterProps = {
   city: string;
@@ -30,6 +59,7 @@ export default function SiteFooter({ city, category }: SiteFooterProps) {
 
   return (
     <footer className="siteFooter">
+      <div className="footerTopGlow" aria-hidden="true" />
       <div className="footerGrid">
         <div className="footerBrand">
           <a className="brand" href="#top" aria-label="CityMitra home">
@@ -40,7 +70,7 @@ export default function SiteFooter({ city, category }: SiteFooterProps) {
           </a>
           <p>AI city navigation for Indian commerce, travel, services, and everyday decisions.</p>
           <div className="socialLinks" aria-label="Social links">
-            <a href="https://x.com" target="_blank" rel="noreferrer">X</a>
+            <a href="https://x.com" target="_blank" rel="noreferrer" aria-label="X (Twitter)">X</a>
             <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
               <Instagram size={17} />
             </a>
@@ -50,21 +80,16 @@ export default function SiteFooter({ city, category }: SiteFooterProps) {
           </div>
         </div>
 
-        <div className="footerLinks">
-          <h3>Explore</h3>
-          <a href="#directory">Directory</a>
-          <a href="#ai">AI Guide</a>
-          <a href="#monetize">Monetize</a>
-          <a href="#coverage">Roadmap</a>
-        </div>
-
-        <div className="footerPrivacy" id="privacy">
-          <h3>Privacy Policy</h3>
-          <p>
-            CityMitra records lightweight activity such as page views, city/category choices, map opens, and chat
-            intent to improve recommendations and admin analytics. Admin analytics are protected behind login.
-          </p>
-        </div>
+        {footerColumns.map((column) => (
+          <div className="footerLinks" key={column.title}>
+            <h3>{column.title}</h3>
+            {column.links.map((link) => (
+              <a key={link.label} href={link.href}>
+                {link.label}
+              </a>
+            ))}
+          </div>
+        ))}
 
         <div className="newsletterCard">
           <h3>Subscribe to the city brief</h3>
@@ -90,9 +115,23 @@ export default function SiteFooter({ city, category }: SiteFooterProps) {
           {newsletterStatus && <strong>{newsletterStatus}</strong>}
         </div>
       </div>
+
+      <div className="footerPrivacy" id="privacy">
+        <p>
+          CityMitra records lightweight activity such as page views, city/category choices, map opens, and chat
+          intent to improve recommendations and admin analytics. Admin analytics are protected behind login.
+        </p>
+      </div>
+
       <div className="footerBottom">
         <span>© {new Date().getFullYear()} CityMitra. All rights reserved.</span>
-        <a href="#privacy">Privacy Policy</a>
+        <a className="backToTop" href="#top" aria-label="Back to top">
+          Back to top <ArrowUp size={15} />
+        </a>
+      </div>
+
+      <div className="footerWatermark" aria-hidden="true">
+        CITYMITRA
       </div>
     </footer>
   );
