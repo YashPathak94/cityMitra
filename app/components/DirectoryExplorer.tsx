@@ -1,12 +1,14 @@
 "use client";
 
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ExternalLink } from "lucide-react";
-import { useReducedMotion } from "motion/react";
+import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { CSSProperties, useEffect, useState } from "react";
 import { categories, CategoryKey, DirectoryItem } from "@/data/city-directory";
 import { NearbyCard, photoSearchImage } from "@/lib/city-intel";
 
 const autoRotateIntervalMs = 1500;
+
+const chipSpring = { type: "spring", stiffness: 420, damping: 24 } as const;
 
 type DirectoryExplorerProps = {
   city: string;
@@ -65,24 +67,34 @@ export default function DirectoryExplorer({
       <div className="filters">
         <div className="filterGroup" aria-label="City selector">
           {visibleCities.map((item) => (
-            <button className={city === item ? "active" : ""} key={item} onClick={() => onSelectCity(item)}>
+            <motion.button
+              className={city === item ? "active" : ""}
+              key={item}
+              onClick={() => onSelectCity(item)}
+              whileHover={{ y: -3, scale: 1.04 }}
+              whileTap={{ scale: 0.94 }}
+              transition={chipSpring}
+            >
               {item}
-            </button>
+            </motion.button>
           ))}
         </div>
         <div className="categoryGrid">
           {categories.map((item) => {
             const Icon = item.icon;
             return (
-              <button
+              <motion.button
                 className={category === item.key ? "category active" : "category"}
                 key={item.key}
                 onClick={() => onSelectCategory(item.key)}
                 title={item.label}
+                whileHover={{ y: -3, scale: 1.04 }}
+                whileTap={{ scale: 0.94 }}
+                transition={chipSpring}
               >
                 <Icon size={18} />
                 <span>{item.label}</span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -105,20 +117,12 @@ export default function DirectoryExplorer({
             onFocusCapture={() => setHovered(true)}
             onBlurCapture={() => setHovered(false)}
           >
-            <div className="resultFrameHeader">
-              <button type="button" onClick={() => onMoveFrame(-1)} aria-label="Previous category result">
-                <ChevronUp size={16} />
-                Previous
-              </button>
+            <div className="resultFrameHeader compact">
               <div>
                 <span>{String(categoryFrameIndex + 1).padStart(2, "0")} / {selectedItems.length || 0}</span>
                 <strong>All options deck</strong>
                 <small>{activeCategoryResult?.area || activeCategoryResult?.eta || "Map check"}</small>
               </div>
-              <button type="button" onClick={() => onMoveFrame(1)} aria-label="Next category result">
-                Next
-                <ChevronDown size={16} />
-              </button>
             </div>
 
             <div className="rotatingResultFrame categoryResultMotion" aria-live="polite">
@@ -138,12 +142,14 @@ export default function DirectoryExplorer({
               >
                 <ChevronRight size={22} />
               </button>
-              <div
-                className="frameBackdrop"
-                style={{
-                  backgroundImage: `linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.72)), url("${photoSearchImage(city, activeCategoryResult?.query || selectedCategory?.label || category, categoryFrameIndex)}")`
-                }}
-              >
+              <div className="frameBackdrop">
+                <span
+                  className="frameBackdropImage"
+                  aria-hidden="true"
+                  style={{
+                    backgroundImage: `linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.72)), url("${photoSearchImage(city, activeCategoryResult?.query || selectedCategory?.label || category, categoryFrameIndex)}")`
+                  }}
+                />
                 <span>{activeCategoryResult?.area || "City route"}</span>
                 <b>{selectedCategory?.label || "Category"}</b>
               </div>

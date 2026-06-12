@@ -3943,3 +3943,85 @@ body {
     right: 8px;
   }
 }
+
+/* --- Compact deck header (counter only) --- */
+
+.resultFrameHeader.compact {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+}
+
+/* --- Animated deck photo backdrop (Ken Burns) --- */
+
+.frameBackdrop {
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.frameBackdropImage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  animation: kenBurnsDrift 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.frameBackdrop::before,
+.frameBackdrop > span:not(.frameBackdropImage),
+.frameBackdrop b {
+  position: relative;
+  z-index: 1;
+}
+
+.frameBackdrop::before {
+  position: absolute;
+}
+
+@keyframes kenBurnsDrift {
+  from {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(-2.5%, -2%, 0);
+  }
+}
+
+/* --- Animated city & category chips --- */
+
+.filterGroup button,
+.categoryGrid .category {
+  position: relative;
+  overflow: hidden;
+}
+
+.filterGroup button.active::after,
+.categoryGrid .category.active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.34) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: chipSheen 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes chipSheen {
+  0% {
+    transform: translateX(-120%);
+  }
+  55%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frameBackdropImage,
+  .filterGroup button.active::after,
+  .categoryGrid .category.active::after {
+    animation: none;
+  }
+}
