@@ -32,7 +32,9 @@ body {
   background:
     linear-gradient(180deg, #fff7ed 0%, #f8fafc 45%, #fff7ed 100%);
   color: var(--ink);
-  font-family: "Plus Jakarta Sans", Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans, "Plus Jakarta Sans"), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 main {
@@ -3202,4 +3204,228 @@ textarea {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ============================================================
+   v2 design-system layer (ui-ux-pro-max pass)
+   Accessibility, mobile nav, rich chat answers, follow-ups
+   ============================================================ */
+
+.skipLink {
+  position: absolute;
+  top: -48px;
+  left: 16px;
+  z-index: 200;
+  border-radius: 0 0 10px 10px;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 10px 16px;
+  transition: top 0.2s var(--smooth);
+}
+
+.skipLink:focus-visible {
+  top: 0;
+}
+
+:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+button,
+a,
+input,
+textarea {
+  touch-action: manipulation;
+}
+
+/* --- Mobile navigation toggle --- */
+
+.navToggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .navToggle {
+    display: inline-flex;
+    position: absolute;
+    top: 18px;
+    right: 0;
+  }
+
+  .topbar {
+    position: relative;
+  }
+
+  .navActions {
+    display: none;
+    width: 100%;
+  }
+
+  .navActions.open {
+    display: flex;
+  }
+}
+
+/* --- Rich chat answers (markdown rendering) --- */
+
+.assistantBubble .richText {
+  display: grid;
+  gap: 10px;
+  line-height: 1.6;
+}
+
+.richText h4 {
+  margin: 6px 0 0;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--orange);
+}
+
+.richText h5 {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.richText p {
+  margin: 0;
+}
+
+.richText ul,
+.richText ol {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+}
+
+.richText li::marker {
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.richText code {
+  border-radius: 6px;
+  background: var(--soft);
+  padding: 1px 6px;
+  font-size: 0.88em;
+}
+
+.richTableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+}
+
+.richTableWrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.richTableWrap th,
+.richTableWrap td {
+  border-bottom: 1px solid var(--line);
+  padding: 9px 12px;
+  text-align: left;
+  vertical-align: top;
+  min-width: 90px;
+}
+
+.richTableWrap th {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(135deg, var(--orange), var(--blue));
+  color: #fff;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.richTableWrap tr:last-child td {
+  border-bottom: 0;
+}
+
+.richTableWrap tr:nth-child(even) td {
+  background: var(--soft);
+}
+
+/* --- Copy answer button --- */
+
+.copyAnswer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  width: fit-content;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  transition: color 0.2s var(--smooth), border-color 0.2s var(--smooth), transform 0.2s var(--smooth);
+}
+
+.copyAnswer:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  transform: translateY(-1px);
+}
+
+/* --- Follow-up suggestion chips --- */
+
+.followUps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 12px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+}
+
+.followUps > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--orange);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.followUps button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 13px;
+  min-height: 36px;
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth), transform 0.2s var(--smooth);
+}
+
+.followUps button:hover {
+  border-color: var(--orange);
+  box-shadow: var(--glow);
+  transform: translateY(-1px);
 }

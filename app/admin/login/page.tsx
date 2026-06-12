@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { ArrowLeft, LockKeyhole, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
@@ -35,10 +36,10 @@ export default function AdminLoginPage() {
 
   return (
     <main className="adminLoginPage">
-      <a className="secondaryButton" href="/">
+      <Link className="secondaryButton" href="/">
         <ArrowLeft size={17} />
         Back to CityMitra
-      </a>
+      </Link>
       <form className="adminLoginCard" onSubmit={login}>
         <span className="adminLock">
           <LockKeyhole size={22} />

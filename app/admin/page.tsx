@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, BarChart3, Clock3, IndianRupee, LogOut, MousePointerClick, RefreshCw, Save, Search, Users } from "lucide-react";
+import Link from "next/link";
 
 type ChartItem = {
   label: string;
@@ -120,10 +121,10 @@ export default function AdminPage() {
   return (
     <main className="adminPage">
       <nav className="adminTopbar">
-        <a className="secondaryButton" href="/">
+        <Link className="secondaryButton" href="/">
           <ArrowLeft size={17} />
           CityMitra
-        </a>
+        </Link>
         <button className="primaryButton" onClick={loadActivity} type="button">
           <RefreshCw size={17} />
           {loading ? "Loading" : "Refresh"}
