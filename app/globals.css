@@ -1341,53 +1341,6 @@ textarea:focus-visible {
   font-weight: 900;
 }
 
-.emptyState {
-  margin-top: 18px;
-  padding: 18px;
-  border: 1px dashed rgba(18, 20, 23, 0.26);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.78);
-}
-
-.emptyState p {
-  margin-bottom: 0;
-  color: var(--muted);
-  line-height: 1.55;
-}
-
-.suggestionRows {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.suggestionRows > div {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.suggestionRows button {
-  display: flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--white);
-  padding: 10px 12px;
-  color: var(--ink);
-  font-weight: 800;
-  text-align: left;
-}
-
-.suggestionRows button span {
-  color: var(--teal);
-  font-size: 0.85rem;
-}
-
 .categoryMatrix {
   margin-top: 36px;
 }
@@ -3033,7 +2986,6 @@ textarea {
   .heroGrid,
   .aiPanel,
   .directoryGrid,
-  .suggestionRows,
   .monetizeGrid,
   .aboutGrid,
   .footerGrid,

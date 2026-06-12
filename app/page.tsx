@@ -424,24 +424,7 @@ export default function Home() {
   ].slice(0, 10);
   const activeCategoryResult = selectedItems[categoryFrameIndex] || selectedItems[0];
   const topTwentyPicks = categoryMatrix.flatMap((item) => item.results.slice(0, 2)).slice(0, 20);
-  const citySuggestions = directory
-    .filter((item) => item.city === city && item.category !== category)
-    .slice(0, 3);
-  const categorySuggestions = directory
-    .filter((item) => item.city !== city && item.category === category)
-    .slice(0, 3);
-  const seededNearbyItems: NearbyCard[] = (
-    selectedItems.length > 0
-      ? selectedItems
-      : citySuggestions.map((item) => ({
-          name: item.name,
-          area: item.area,
-          eta: item.eta,
-          query: `${item.name} ${item.area} ${item.city}`,
-          category: item.category,
-          why: item.tip
-        }))
-  ).slice(0, 5);
+  const seededNearbyItems: NearbyCard[] = selectedItems.slice(0, 5);
   const selectedCategory = categories.find((item) => item.key === category);
   const SelectedCategoryIcon = selectedCategory?.icon;
   const cityVisual = cityVisuals[city] || {
@@ -582,6 +565,12 @@ export default function Home() {
   function openTrackedMap(query: string, label: string) {
     trackActivity({ type: "map_open", city, category, label });
     window.open(mapDirectionsUrl(query), "_blank", "noreferrer");
+  }
+
+  function openNearbyOptionsMap() {
+    const query = `best ${selectedCategory?.label || category} options near ${userLocation?.city || city}`;
+    trackActivity({ type: "map_open", city: userLocation?.city || city, category, label: "nearby_options" });
+    window.open(mapSearchUrl(query), "_blank", "noreferrer");
   }
 
   function requestNearbyLocation() {
@@ -1295,37 +1284,6 @@ export default function Home() {
           </div>
         </div>
 
-        {exactDirectoryItems.length === 0 && (
-          <div className="emptyState">
-            <h3>No exact {selectedCategory?.label.toLowerCase()} listing in {city} yet</h3>
-            <p>
-              Showing smart generated map-ready results for this city/category. Verify photos, distance, and timings in
-              Maps before leaving.
-            </p>
-          </div>
-        )}
-
-        {exactDirectoryItems.length === 0 && (
-          <div className="suggestionRows">
-            <div>
-              <h3>More in {city}</h3>
-              {categoryMatrix.slice(0, 7).map((item) => (
-                <button key={item.key} onClick={() => selectCategory(item.key, "suggested_city_category")}>
-                  {item.results[0]?.name} <span>{item.label}</span>
-                </button>
-              ))}
-            </div>
-            <div>
-              <h3>{selectedCategory?.label} in other cities</h3>
-              {categorySuggestions.map((item) => (
-                <button key={item.name} onClick={() => selectCity(item.city, "suggested_category_city")}>
-                  {item.name} <span>{item.city}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
       </section>
 
       <section className="aiBand" id="ai">
@@ -1454,8 +1412,8 @@ export default function Home() {
                   </button>
                   <p>{locationStatus}</p>
                 </div>
-                <button className="mapPrimaryLink" type="button" onClick={() => openTrackedMap(`${selectedCategory?.label || category} near ${city}`, "nearby_primary")}>
-                  Open nearby on Maps <ExternalLink size={15} />
+                <button className="mapPrimaryLink" type="button" onClick={openNearbyOptionsMap}>
+                  Show nearby options on Maps <ExternalLink size={15} />
                 </button>
                 <div className="nearbyList" key={`${city}-${category}-nearby`}>
                   <div className="nearbyListHeader">
