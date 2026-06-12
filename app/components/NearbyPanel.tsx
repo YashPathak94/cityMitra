@@ -45,7 +45,7 @@ export default function NearbyPanel({
   const activeNearbyPick = nearbyCards[nearbyFrameIndex] || nearbyCards[0];
 
   return (
-    <aside className="nearbyPanel" aria-label="Nearby map and places">
+    <aside className="nearbyPanel" id="nearby" aria-label="Nearby map and places">
       <div className="miniMap">
         <MapPinned size={22} />
         <span>{city}</span>

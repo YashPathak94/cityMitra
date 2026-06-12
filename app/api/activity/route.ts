@@ -1,41 +1,21 @@
-import { mkdir, readFile, writeFile } from "fs/promises";
+import { readFile } from "fs/promises";
 import { randomUUID } from "crypto";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE, isAdminCookie } from "@/lib/admin-auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { ActivityRecord, appendActivity, readRecentActivity } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
-type ActivityRecord = {
-  type: string;
-  city?: string;
-  category?: string;
-  label?: string;
-  value?: number;
-  path?: string;
-  sessionId?: string;
-  timestamp: string;
-};
-
-const activityDir = path.join(process.cwd(), ".citymitra");
-const activityFile = path.join(activityDir, "activity.json");
-const settingsFile = path.join(activityDir, "admin-settings.json");
+const settingsDir = path.join(process.cwd(), ".citymitra");
+const settingsFile = path.join(settingsDir, "admin-settings.json");
 const visitorCookie = "citymitra_visitor";
 
 type AdminSettings = {
   leadValue: number;
   featuredListingPrice: number;
 };
-
-async function readActivity() {
-  try {
-    const raw = await readFile(activityFile, "utf-8");
-    return JSON.parse(raw) as ActivityRecord[];
-  } catch {
-    return [];
-  }
-}
 
 async function readSettings(): Promise<AdminSettings> {
   try {
@@ -64,7 +44,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Admin login required" }, { status: 401 });
   }
 
-  const records = await readActivity();
+  const records = await readRecentActivity().catch(() => [] as ActivityRecord[]);
   const settings = await readSettings();
   const visitors = new Set(records.filter((record) => record.type === "page_view").map((record) => record.sessionId).filter(Boolean));
   const sessions = new Set(records.map((record) => record.sessionId).filter(Boolean));
@@ -127,10 +107,10 @@ export async function POST(request: NextRequest) {
     timestamp: new Date().toISOString()
   };
 
-  await mkdir(activityDir, { recursive: true });
-  const records = await readActivity();
-  const nextRecords = [...records.slice(-980), nextRecord];
-  await writeFile(activityFile, JSON.stringify(nextRecords, null, 2));
+  // analytics must never break the page; swallow storage failures
+  await appendActivity(nextRecord).catch((error) => {
+    console.error("activity write failed", error);
+  });
 
   const response = NextResponse.json({ ok: true });
 

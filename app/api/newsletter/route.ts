@@ -1,37 +1,24 @@
-import { mkdir, readFile, writeFile } from "fs/promises";
-import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE, isAdminCookie } from "@/lib/admin-auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { addSubscriber, readSubscribers } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
-type Subscriber = {
-  email: string;
-  subscribedAt: string;
-};
-
-const storageDir = path.join(process.cwd(), ".citymitra");
-const subscribersFile = path.join(storageDir, "newsletter.json");
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const maxSubscribers = 20000;
-
-async function readSubscribers(): Promise<Subscriber[]> {
-  try {
-    const raw = await readFile(subscribersFile, "utf-8");
-    return JSON.parse(raw) as Subscriber[];
-  } catch {
-    return [];
-  }
-}
 
 export async function GET(request: NextRequest) {
   if (!isAdminCookie(request.cookies.get(ADMIN_COOKIE)?.value)) {
     return NextResponse.json({ error: "Admin login required" }, { status: 401 });
   }
 
-  const subscribers = await readSubscribers();
-  return NextResponse.json({ count: subscribers.length, subscribers: subscribers.slice(-500).reverse() });
+  try {
+    const subscribers = await readSubscribers();
+    return NextResponse.json({ count: subscribers.length, subscribers: subscribers.slice(0, 500) });
+  } catch (error) {
+    console.error("newsletter read failed", error);
+    return NextResponse.json({ error: "Subscriber storage unavailable" }, { status: 503 });
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -56,12 +43,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
 
-  await mkdir(storageDir, { recursive: true });
-  const subscribers = await readSubscribers();
-
-  if (!subscribers.some((subscriber) => subscriber.email === email)) {
-    const next = [...subscribers, { email, subscribedAt: new Date().toISOString() }].slice(-maxSubscribers);
-    await writeFile(subscribersFile, JSON.stringify(next, null, 2));
+  try {
+    await addSubscriber(email);
+  } catch (error) {
+    console.error("newsletter write failed", error);
+    return NextResponse.json(
+      { error: "Subscriptions are temporarily unavailable. Please try again later." },
+      { status: 503 }
+    );
   }
 
   return NextResponse.json({ ok: true });

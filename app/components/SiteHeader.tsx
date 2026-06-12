@@ -2,14 +2,15 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Menu, Navigation, Search, Sparkles, X } from "lucide-react";
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
-const navLinks = [
-  { href: "#directory", id: "directory", label: "Directory" },
+const navLinks: Array<{ href: string; id?: string; label: string }> = [
+  { href: "/cities", label: "City Guides" },
   { href: "#ai", id: "ai", label: "AI Guide" },
-  { href: "#monetize", id: "monetize", label: "Monetize" },
-  { href: "#about", id: "about", label: "About" },
-  { href: "#coverage", id: "coverage", label: "Coverage" }
+  { href: "#directory", id: "directory", label: "Directory" },
+  { href: "#nearby", id: "nearby", label: "Nearby Picks" },
+  { href: "#about", id: "about", label: "About" }
 ];
 
 type SiteHeaderProps = {
@@ -35,7 +36,7 @@ export default function SiteHeader({ onSearch }: SiteHeaderProps) {
 
   useEffect(() => {
     const sections = navLinks
-      .map((link) => document.getElementById(link.id))
+      .map((link) => (link.id ? document.getElementById(link.id) : null))
       .filter((section): section is HTMLElement => Boolean(section));
 
     const observer = new IntersectionObserver(
@@ -73,12 +74,12 @@ export default function SiteHeader({ onSearch }: SiteHeaderProps) {
 
         <nav className="glassNavLinks" aria-label="Primary navigation">
           {navLinks.map((link) => (
-            <a
-              key={link.id}
+            <Link
+              key={link.label}
               href={link.href}
-              className={activeSection === link.id ? "active" : ""}
+              className={link.id && activeSection === link.id ? "active" : ""}
             >
-              {activeSection === link.id && (
+              {link.id && activeSection === link.id && (
                 <motion.span
                   className="navActivePill"
                   layoutId="navActivePill"
@@ -86,7 +87,7 @@ export default function SiteHeader({ onSearch }: SiteHeaderProps) {
                 />
               )}
               <span>{link.label}</span>
-            </a>
+            </Link>
           ))}
         </nav>
 
@@ -136,9 +137,9 @@ export default function SiteHeader({ onSearch }: SiteHeaderProps) {
               <button type="submit">Go</button>
             </form>
             {navLinks.map((link) => (
-              <a key={link.id} href={link.href} onClick={() => setMenuOpen(false)}>
+              <Link key={link.label} href={link.href} onClick={() => setMenuOpen(false)}>
                 {link.label}
-              </a>
+              </Link>
             ))}
           </motion.div>
         )}

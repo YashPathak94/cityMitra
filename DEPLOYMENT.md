@@ -54,6 +54,43 @@ Keep the same event shape:
 - Durable activity database
 - Privacy notice for analytics collection
 
+## Durable storage with Supabase (recommended for production)
+
+Without Supabase, activity and newsletter data write to local JSON files - fine in
+dev, but LOST/BROKEN on Vercel (read-only filesystem). To enable Supabase:
+
+1. Create a free project at supabase.com.
+2. In the SQL Editor, run:
+
+```sql
+create table if not exists activity (
+  id bigint generated always as identity primary key,
+  type text not null,
+  city text,
+  category text,
+  label text,
+  value integer,
+  path text,
+  session_id text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists newsletter (
+  email text primary key,
+  subscribed_at timestamptz not null default now()
+);
+
+alter table activity enable row level security;
+alter table newsletter enable row level security;
+```
+
+(No public policies needed - the app uses the service-role key server-side, and RLS
+blocks anonymous access.)
+
+3. Project Settings -> API: copy the Project URL and the service_role secret key.
+4. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` env vars (Vercel + .env.local).
+   The service-role key must NEVER be exposed client-side or prefixed NEXT_PUBLIC_.
+
 ## Data stored on the server
 
 - `.citymitra/activity.json` — anonymous usage events (rolling ~1000 records)
