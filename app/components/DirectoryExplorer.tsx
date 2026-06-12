@@ -1,12 +1,12 @@
 "use client";
 
-import { ChevronDown, ChevronUp, ExternalLink, Pause, Play } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ExternalLink } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import { CSSProperties, useEffect, useState } from "react";
 import { categories, CategoryKey, DirectoryItem } from "@/data/city-directory";
 import { NearbyCard, photoSearchImage } from "@/lib/city-intel";
 
-const autoRotateIntervalMs = 3500;
+const autoRotateIntervalMs = 1500;
 
 type DirectoryExplorerProps = {
   city: string;
@@ -39,19 +39,18 @@ export default function DirectoryExplorer({
   const SelectedCategoryIcon = selectedCategory?.icon;
   const activeCategoryResult = selectedItems[categoryFrameIndex] || selectedItems[0];
   const [hovered, setHovered] = useState(false);
-  const [autoRotate, setAutoRotate] = useState(true);
   const reduceMotion = useReducedMotion();
   const resultCount = selectedItems.length;
 
   useEffect(() => {
-    if (!autoRotate || hovered || reduceMotion || resultCount < 2) return;
+    if (hovered || reduceMotion || resultCount < 2) return;
 
     const timer = window.setInterval(() => {
       onSetFrame((categoryFrameIndex + 1) % resultCount);
     }, autoRotateIntervalMs);
 
     return () => window.clearInterval(timer);
-  }, [autoRotate, hovered, reduceMotion, resultCount, categoryFrameIndex, onSetFrame]);
+  }, [hovered, reduceMotion, resultCount, categoryFrameIndex, onSetFrame]);
 
   return (
     <section className="controlBand" id="directory">
@@ -116,17 +115,6 @@ export default function DirectoryExplorer({
                 <strong>All options deck</strong>
                 <small>{activeCategoryResult?.area || activeCategoryResult?.eta || "Map check"}</small>
               </div>
-              <button
-                className="autoRotateToggle"
-                type="button"
-                onClick={() => setAutoRotate((current) => !current)}
-                aria-pressed={autoRotate}
-                aria-label={autoRotate ? "Pause auto-rotation" : "Resume auto-rotation"}
-                title={autoRotate ? "Pause auto-rotation" : "Resume auto-rotation"}
-              >
-                {autoRotate ? <Pause size={14} /> : <Play size={14} />}
-                {autoRotate ? "Auto" : "Paused"}
-              </button>
               <button type="button" onClick={() => onMoveFrame(1)} aria-label="Next category result">
                 Next
                 <ChevronDown size={16} />
@@ -134,6 +122,22 @@ export default function DirectoryExplorer({
             </div>
 
             <div className="rotatingResultFrame categoryResultMotion" aria-live="polite">
+              <button
+                className="deckArrow deckArrowPrev"
+                type="button"
+                onClick={() => onMoveFrame(-1)}
+                aria-label="Previous card"
+              >
+                <ChevronLeft size={22} />
+              </button>
+              <button
+                className="deckArrow deckArrowNext"
+                type="button"
+                onClick={() => onMoveFrame(1)}
+                aria-label="Next card"
+              >
+                <ChevronRight size={22} />
+              </button>
               <div
                 className="frameBackdrop"
                 style={{
