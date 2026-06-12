@@ -185,25 +185,6 @@ const categoryResultBlueprints: Record<CategoryKey, string[]> = {
   sightseeing: ["heritage site", "viewpoint", "museum", "temple", "fort", "lake", "garden", "walking tour", "photo spot", "sunset point"]
 };
 
-const smartPhotoImages: Record<string, string> = {
-  hotels: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80",
-  places: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=80",
-  dining: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80",
-  markets: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80",
-  sarees: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=80",
-  electronics: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80",
-  hospitals: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=80",
-  malls: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?auto=format&fit=crop&w=900&q=80",
-  play: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=80",
-  schools: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=900&q=80",
-  food: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80",
-  grooming: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=900&q=80",
-  repair: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=900&q=80",
-  petrol: "https://images.unsplash.com/photo-1542367597-8849eb950fd8?auto=format&fit=crop&w=900&q=80",
-  dinner: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80",
-  sightseeing: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=80"
-};
-
 function titleCaseCity(value: string) {
   return value
     .trim()
@@ -330,17 +311,11 @@ function detectCategoryFromText(value: string) {
 }
 
 function cityImageUrl(cityName: string, topic = "city") {
-  return `https://source.unsplash.com/900x700/?${encodeURIComponent(`${cityName} India ${topic}`)}`;
+  return `/api/city-image?city=${encodeURIComponent(cityName)}&topic=${encodeURIComponent(topic)}`;
 }
 
 function photoSearchImage(cityName: string, topic: string, index = 0) {
-  return `https://source.unsplash.com/720x520/?${encodeURIComponent(`${cityName} India ${topic}`)}&sig=${encodeURIComponent(`${cityName}-${topic}-${index}`)}`;
-}
-
-function smartPhotoImage(cityName: string, topic: string, categoryKey?: CategoryKey) {
-  if (topic === "places" && cityVisuals[cityName]) return cityVisuals[cityName].image;
-
-  return smartPhotoImages[categoryKey || topic] || smartPhotoImages.places;
+  return `/api/city-image?city=${encodeURIComponent(cityName)}&topic=${encodeURIComponent(`${topic} ${index}`)}`;
 }
 
 function buildGeneratedResults(cityName: string, categoryKey: CategoryKey, count = 10): NearbyCard[] {
@@ -474,25 +449,25 @@ export default function Home() {
     {
       title: "Hotels",
       text: "Stays near the route",
-      image: smartPhotoImage(city, "hotels"),
+      image: cityVisual.image,
       query: `best hotels in ${city}`
     },
     {
       title: "Places",
       text: "Must-cover spots",
-      image: smartPhotoImage(city, "places"),
+      image: cityVisual.image,
       query: `best places to visit in ${city}`
     },
     {
       title: "Fine Dining",
       text: "Dinner without guesswork",
-      image: smartPhotoImage(city, "dining"),
+      image: cityVisual.image,
       query: `fine dining restaurants in ${city}`
     },
     {
       title: selectedCategory?.label || "Category",
       text: "Selected category nearby",
-      image: smartPhotoImage(city, selectedCategory?.label || category, category),
+      image: cityVisual.image,
       query: `${selectedCategory?.label || category} near ${city}`
     }
   ];
