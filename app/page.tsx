@@ -2,7 +2,6 @@
 
 import {
   ArrowRight,
-  BarChart3,
   Bot,
   Building2,
   Camera,
@@ -13,7 +12,6 @@ import {
   ExternalLink,
   FileText,
   Instagram,
-  Layers3,
   Linkedin,
   Mail,
   Map,
@@ -187,6 +185,25 @@ const categoryResultBlueprints: Record<CategoryKey, string[]> = {
   sightseeing: ["heritage site", "viewpoint", "museum", "temple", "fort", "lake", "garden", "walking tour", "photo spot", "sunset point"]
 };
 
+const smartPhotoImages: Record<string, string> = {
+  hotels: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80",
+  places: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=80",
+  dining: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80",
+  markets: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80",
+  sarees: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=80",
+  electronics: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80",
+  hospitals: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=80",
+  malls: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?auto=format&fit=crop&w=900&q=80",
+  play: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=80",
+  schools: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=900&q=80",
+  food: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80",
+  grooming: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=900&q=80",
+  repair: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=900&q=80",
+  petrol: "https://images.unsplash.com/photo-1542367597-8849eb950fd8?auto=format&fit=crop&w=900&q=80",
+  dinner: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80",
+  sightseeing: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=80"
+};
+
 function titleCaseCity(value: string) {
   return value
     .trim()
@@ -320,6 +337,12 @@ function photoSearchImage(cityName: string, topic: string, index = 0) {
   return `https://source.unsplash.com/720x520/?${encodeURIComponent(`${cityName} India ${topic}`)}&sig=${encodeURIComponent(`${cityName}-${topic}-${index}`)}`;
 }
 
+function smartPhotoImage(cityName: string, topic: string, categoryKey?: CategoryKey) {
+  if (topic === "places" && cityVisuals[cityName]) return cityVisuals[cityName].image;
+
+  return smartPhotoImages[categoryKey || topic] || smartPhotoImages.places;
+}
+
 function buildGeneratedResults(cityName: string, categoryKey: CategoryKey, count = 10): NearbyCard[] {
   const selected = categories.find((item) => item.key === categoryKey);
   const blueprints = categoryResultBlueprints[categoryKey] || categoryResultBlueprints.sightseeing;
@@ -390,10 +413,8 @@ export default function Home() {
   const [newsletterStatus, setNewsletterStatus] = useState("");
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [locationStatus, setLocationStatus] = useState("Use nearby location for smarter map routes.");
-  const [intelCategory, setIntelCategory] = useState<CategoryKey>("markets");
-  const [activeResultIndex, setActiveResultIndex] = useState(0);
-  const [categoryStageIndex, setCategoryStageIndex] = useState(0);
   const [categoryFrameIndex, setCategoryFrameIndex] = useState(0);
+  const [nearbyFrameIndex, setNearbyFrameIndex] = useState(0);
   const [question, setQuestion] = useState("Plan a Leh trip with places, altitude, hospitals, petrol, repairs, hotels and shopping.");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -408,9 +429,6 @@ export default function Home() {
   const visibleCities = useMemo(() => (cities.includes(city as (typeof cities)[number]) ? cities : [city, ...cities]), [city]);
   const exactDirectoryItems = directory.filter((item) => item.city === city && item.category === category);
   const categoryMatrix = useMemo(() => buildCategoryMatrix(city), [city]);
-  const activeIntelIndex = Math.max(0, categoryMatrix.findIndex((item) => item.key === intelCategory));
-  const activeIntelGroup = categoryMatrix[activeIntelIndex] || categoryMatrix[0];
-  const activeIntelResult = activeIntelGroup.results[activeResultIndex] || activeIntelGroup.results[0];
   const generatedCategoryResults = useMemo(() => buildGeneratedResults(city, category, 10), [city, category]);
   const selectedItems: NearbyCard[] = [
     ...exactDirectoryItems.map((item) => ({
@@ -425,20 +443,7 @@ export default function Home() {
       (generated) => !exactDirectoryItems.some((item) => generated.query.toLowerCase().includes(item.name.toLowerCase()))
     )
   ].slice(0, 10);
-  const categoryResultStages = useMemo(
-    () =>
-      ["Top city zone", "Nearby cluster", "Backup option"].map((stage) => ({
-        stage,
-        results: selectedItems.filter((item, index) =>
-          stage === "Top city zone"
-            ? item.area === stage || exactDirectoryItems.some((exact) => exact.name === item.name) || index < 3
-            : item.area === stage
-        )
-      })),
-    [exactDirectoryItems, selectedItems]
-  );
-  const activeCategoryStage = categoryResultStages[categoryStageIndex] || categoryResultStages[0];
-  const activeCategoryResult = activeCategoryStage.results[categoryFrameIndex] || activeCategoryStage.results[0];
+  const activeCategoryResult = selectedItems[categoryFrameIndex] || selectedItems[0];
   const topTwentyPicks = categoryMatrix.flatMap((item) => item.results.slice(0, 2)).slice(0, 20);
   const citySuggestions = directory
     .filter((item) => item.city === city && item.category !== category)
@@ -469,45 +474,38 @@ export default function Home() {
     {
       title: "Hotels",
       text: "Stays near the route",
-      image: photoSearchImage(city, "hotels", 1),
+      image: smartPhotoImage(city, "hotels"),
       query: `best hotels in ${city}`
     },
     {
       title: "Places",
       text: "Must-cover spots",
-      image: photoSearchImage(city, "tourist places", 2),
+      image: smartPhotoImage(city, "places"),
       query: `best places to visit in ${city}`
     },
     {
       title: "Fine Dining",
       text: "Dinner without guesswork",
-      image: photoSearchImage(city, "fine dining", 3),
+      image: smartPhotoImage(city, "dining"),
       query: `fine dining restaurants in ${city}`
     },
     {
       title: selectedCategory?.label || "Category",
       text: "Selected category nearby",
-      image: photoSearchImage(city, selectedCategory?.label || category, 4),
+      image: smartPhotoImage(city, selectedCategory?.label || category, category),
       query: `${selectedCategory?.label || category} near ${city}`
     }
   ];
   const nearbyCards: NearbyCard[] = [...seededNearbyItems, ...topTwentyPicks].slice(0, 20);
+  const activeNearbyPick = nearbyCards[nearbyFrameIndex] || nearbyCards[0];
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading]);
 
   useEffect(() => {
-    setIntelCategory(category);
-  }, [category]);
-
-  useEffect(() => {
-    setActiveResultIndex(0);
-  }, [city, intelCategory]);
-
-  useEffect(() => {
-    setCategoryStageIndex(0);
     setCategoryFrameIndex(0);
+    setNearbyFrameIndex(0);
   }, [city, category]);
 
   useEffect(() => {
@@ -555,38 +553,21 @@ export default function Home() {
 
   function selectCategory(nextCategory: CategoryKey, label = "selector") {
     setCategory(nextCategory);
-    setIntelCategory(nextCategory);
     trackActivity({ type: "category_change", city, category: nextCategory, label });
   }
 
-  function moveIntelCategory(direction: -1 | 1) {
-    const nextIndex = (activeIntelIndex + direction + categoryMatrix.length) % categoryMatrix.length;
-    const nextCategory = categoryMatrix[nextIndex]?.key;
-    if (!nextCategory) return;
-
-    setIntelCategory(nextCategory);
-    trackActivity({ type: "city_intel_category", city, category: nextCategory, label: direction > 0 ? "next" : "previous" });
-  }
-
-  function moveIntelResult(direction: -1 | 1) {
-    const resultCount = activeIntelGroup.results.length || 1;
-    const nextIndex = (activeResultIndex + direction + resultCount) % resultCount;
-    setActiveResultIndex(nextIndex);
-    trackActivity({ type: "city_intel_result", city, category: intelCategory, label: `${nextIndex + 1}` });
-  }
-
-  function moveCategoryStage(direction: -1 | 1) {
-    const nextIndex = (categoryStageIndex + direction + categoryResultStages.length) % categoryResultStages.length;
-    setCategoryStageIndex(nextIndex);
-    setCategoryFrameIndex(0);
-    trackActivity({ type: "category_stage", city, category, label: categoryResultStages[nextIndex]?.stage || "stage" });
-  }
-
   function moveCategoryFrame(direction: -1 | 1) {
-    const resultCount = activeCategoryStage.results.length || 1;
+    const resultCount = selectedItems.length || 1;
     const nextIndex = (categoryFrameIndex + direction + resultCount) % resultCount;
     setCategoryFrameIndex(nextIndex);
     trackActivity({ type: "category_result_frame", city, category, label: `${nextIndex + 1}` });
+  }
+
+  function moveNearbyFrame(direction: -1 | 1) {
+    const resultCount = nearbyCards.length || 1;
+    const nextIndex = (nearbyFrameIndex + direction + resultCount) % resultCount;
+    setNearbyFrameIndex(nextIndex);
+    trackActivity({ type: "nearby_result_frame", city, category, label: `${nextIndex + 1}` });
   }
 
   function openTrackedMap(query: string, label: string) {
@@ -608,7 +589,7 @@ export default function Home() {
           lng: Number(position.coords.longitude.toFixed(6))
         };
         setUserLocation(nextLocation);
-        setLocationStatus("Nearby mode on. Maps and PDF routes now start from your current location.");
+        setLocationStatus("Nearby mode on. All 20 smart picks stay available, and Maps/PDF routes now start from your current location.");
         trackActivity({ type: "location_enabled", city, category, label: `${nextLocation.lat},${nextLocation.lng}` });
       },
       () => {
@@ -1170,24 +1151,6 @@ export default function Home() {
               <strong>{selectedItems.length} map-ready options</strong>
             </header>
 
-            <div className="categoryStageNav intelTabs" aria-label="Category result zones">
-              {categoryResultStages.map((stage, index) => (
-                <button
-                  className={index === categoryStageIndex ? "active" : ""}
-                  key={stage.stage}
-                  onClick={() => {
-                    setCategoryStageIndex(index);
-                    setCategoryFrameIndex(0);
-                  }}
-                  type="button"
-                >
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  {stage.stage}
-                  <small>{stage.results.length}</small>
-                </button>
-              ))}
-            </div>
-
             <div className="resultFrameModule categoryResultModule">
               <div className="resultFrameHeader">
                 <button type="button" onClick={() => moveCategoryFrame(-1)} aria-label="Previous category result">
@@ -1195,9 +1158,9 @@ export default function Home() {
                   Previous
                 </button>
                 <div>
-                  <span>{String(categoryFrameIndex + 1).padStart(2, "0")} / {activeCategoryStage.results.length || 0}</span>
-                  <strong>{activeCategoryStage.stage}</strong>
-                  <small>{activeCategoryResult?.eta || "Map check"}</small>
+                  <span>{String(categoryFrameIndex + 1).padStart(2, "0")} / {selectedItems.length || 0}</span>
+                  <strong>All options deck</strong>
+                  <small>{activeCategoryResult?.area || activeCategoryResult?.eta || "Map check"}</small>
                 </div>
                 <button type="button" onClick={() => moveCategoryFrame(1)} aria-label="Next category result">
                   Next
@@ -1209,17 +1172,17 @@ export default function Home() {
                 <div
                   className="frameBackdrop"
                   style={{
-                    backgroundImage: `linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.72)), url("${photoSearchImage(city, `${selectedCategory?.label || category} ${activeCategoryStage.stage}`, categoryFrameIndex)}")`
+                    backgroundImage: `linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.72)), url("${photoSearchImage(city, activeCategoryResult?.query || selectedCategory?.label || category, categoryFrameIndex)}")`
                   }}
                 >
-                  <span>{activeCategoryStage.stage}</span>
+                  <span>{activeCategoryResult?.area || "City route"}</span>
                   <b>{selectedCategory?.label || "Category"}</b>
                 </div>
 
                 <div className="rotatingDeck">
-                  {activeCategoryStage.results.map((item, index) => {
+                  {selectedItems.map((item, index) => {
                     const rawOffset = index - categoryFrameIndex;
-                    const resultCount = activeCategoryStage.results.length;
+                    const resultCount = selectedItems.length;
                     const offset = rawOffset > resultCount / 2 ? rawOffset - resultCount : rawOffset < -resultCount / 2 ? rawOffset + resultCount : rawOffset;
                     const visible = Math.abs(offset) <= 2;
                     const isVerified = exactDirectoryItems.some((exact) => exact.name === item.name);
@@ -1227,7 +1190,7 @@ export default function Home() {
                     return (
                       <article
                         className={offset === 0 ? "rotatingCard categoryRouteCard active" : visible ? "rotatingCard categoryRouteCard visible" : "rotatingCard categoryRouteCard"}
-                        key={`${activeCategoryStage.stage}-${item.name}`}
+                        key={`${item.name}-${item.query}`}
                         style={{ "--card-offset": offset, "--card-abs": Math.abs(offset) } as CSSProperties}
                       >
                         <span className="resultIndex">{String(index + 1).padStart(2, "0")}</span>
@@ -1236,7 +1199,7 @@ export default function Home() {
                           <p>{item.why || `Curated ${selectedCategory?.label.toLowerCase() || "city"} option for ${city} with maps, photos, and route checks.`}</p>
                         </div>
                         <div className="intelMeta">
-                          <span>{isVerified ? item.area : activeCategoryStage.stage}</span>
+                          <span>{item.area || "Smart result"}</span>
                           <span>{item.eta}</span>
                           <span>{isVerified ? "Verified" : "Smart"}</span>
                         </div>
@@ -1250,7 +1213,7 @@ export default function Home() {
               </div>
 
               <div className="resultDots" aria-label="Category result progress">
-                {activeCategoryStage.results.map((item, index) => (
+                {selectedItems.map((item, index) => (
                   <button
                     aria-label={`Show ${item.name}`}
                     className={index === categoryFrameIndex ? "active" : ""}
@@ -1295,188 +1258,6 @@ export default function Home() {
           </div>
         )}
 
-        <div className="categoryMatrix" aria-label={`10 category results for ${city}`}>
-          <div className="sectionHeader compactHeader">
-            <div>
-              <span className="sectionKicker">City Intelligence</span>
-              <h2>Browse 10 smart results per category for {city}</h2>
-            </div>
-            <p>Use category tabs or next/previous to scan one focused set at a time. Open any item to verify photos, distance, traffic, and hours.</p>
-          </div>
-
-          <div className="intelBrowser">
-            <div className="intelControls">
-              <button type="button" onClick={() => moveIntelCategory(-1)} aria-label="Previous category">
-                <ChevronUp size={16} />
-                Previous
-              </button>
-              <div>
-                <span>{activeIntelIndex + 1} / {categoryMatrix.length}</span>
-                <strong>{activeIntelGroup.label}</strong>
-              </div>
-              <button type="button" onClick={() => moveIntelCategory(1)} aria-label="Next category">
-                Next
-                <ChevronDown size={16} />
-              </button>
-            </div>
-
-            <div className="intelTabs" aria-label="City intelligence categories">
-              {categoryMatrix.map((group) => {
-                const Icon = group.icon;
-                return (
-                  <button
-                    className={intelCategory === group.key ? "active" : ""}
-                    key={group.key}
-                    onClick={() => {
-                      setIntelCategory(group.key);
-                      trackActivity({ type: "city_intel_category", city, category: group.key, label: "tab" });
-                    }}
-                    type="button"
-                  >
-                    <Icon size={16} />
-                    {group.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="intelFocusCard">
-              {(() => {
-                const Icon = activeIntelGroup.icon;
-                return (
-                  <header>
-                    <span>
-                      <Icon size={20} />
-                      {activeIntelGroup.label}
-                    </span>
-                    <strong>{activeIntelGroup.results.length} map-ready options</strong>
-                  </header>
-                );
-              })()}
-
-              <div className="resultFrameModule">
-                <div className="resultFrameHeader">
-                  <button type="button" onClick={() => moveIntelResult(-1)} aria-label="Previous result">
-                    <ChevronUp size={16} />
-                    Previous
-                  </button>
-                  <div>
-                    <span>{String(activeResultIndex + 1).padStart(2, "0")} / {activeIntelGroup.results.length}</span>
-                    <strong>{activeIntelResult?.area}</strong>
-                    <small>{activeIntelResult?.eta}</small>
-                  </div>
-                  <button type="button" onClick={() => moveIntelResult(1)} aria-label="Next result">
-                    Next
-                    <ChevronDown size={16} />
-                  </button>
-                </div>
-
-                <div className="rotatingResultFrame" aria-live="polite">
-                  <div className="frameBackdrop">
-                    <span>{activeIntelResult?.area}</span>
-                    <b>{activeIntelGroup.label}</b>
-                  </div>
-
-                  <div className="rotatingDeck">
-                    {activeIntelGroup.results.map((item, index) => {
-                      const rawOffset = index - activeResultIndex;
-                      const resultCount = activeIntelGroup.results.length;
-                      const offset = rawOffset > resultCount / 2 ? rawOffset - resultCount : rawOffset < -resultCount / 2 ? rawOffset + resultCount : rawOffset;
-                      const visible = Math.abs(offset) <= 2;
-
-                      return (
-                        <article
-                          className={offset === 0 ? "rotatingCard active" : visible ? "rotatingCard visible" : "rotatingCard"}
-                          key={`${activeIntelGroup.key}-${item.name}`}
-                          style={{ "--card-offset": offset, "--card-abs": Math.abs(offset) } as CSSProperties}
-                        >
-                          <span className="resultIndex">{String(index + 1).padStart(2, "0")}</span>
-                          <div>
-                            <h3>{item.name}</h3>
-                            <p>{item.why}</p>
-                          </div>
-                          <div className="intelMeta">
-                            <span>{item.area}</span>
-                            <span>{item.eta}</span>
-                          </div>
-                          <button type="button" onClick={() => openTrackedMap(item.query, `matrix_${activeIntelGroup.key}_${item.name}`)}>
-                            Open route <ExternalLink size={14} />
-                          </button>
-                        </article>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="resultDots" aria-label="Result carousel progress">
-                  {activeIntelGroup.results.map((item, index) => (
-                    <button
-                      aria-label={`Show ${item.name}`}
-                      className={index === activeResultIndex ? "active" : ""}
-                      key={`${item.name}-dot`}
-                      onClick={() => setActiveResultIndex(index)}
-                      type="button"
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <details className="intelOverview">
-            <summary>See all categories at a glance</summary>
-            <div>
-              {categoryMatrix.map((group) => {
-                const Icon = group.icon;
-                return (
-                  <button key={group.key} onClick={() => setIntelCategory(group.key)} type="button">
-                    <Icon size={15} />
-                    <span>{group.label}</span>
-                    <small>{group.results.length} results</small>
-                  </button>
-                );
-              })}
-            </div>
-          </details>
-        </div>
-      </section>
-
-      <section className="platformBand" id="platform">
-        <div className="sectionHeader">
-          <div>
-            <span className="sectionKicker">Production Layer</span>
-            <h2>One city graph for discovery, maps, agents, and commerce</h2>
-          </div>
-          <p>CityMitra connects what people ask, where they click, and which local categories drive intent.</p>
-        </div>
-        <div className="platformGrid">
-          {[
-            {
-              icon: Layers3,
-              title: "City graph",
-              text: "Cities, categories, nearby picks, photos, maps, and backup services update together."
-            },
-            {
-              icon: Bot,
-              title: "AI concierge",
-              text: "The chat can answer route plans, shopping runs, trip timing, hospitals, fuel, repairs, and hotels."
-            },
-            {
-              icon: BarChart3,
-              title: "Activity intelligence",
-              text: "Page views, searches, map opens, city changes, exports, and chat intent flow into admin analytics."
-            }
-          ].map((item) => {
-            const Icon = item.icon;
-            return (
-              <article key={item.title}>
-                <Icon size={22} />
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </article>
-            );
-          })}
-        </div>
       </section>
 
       <section className="aiBand" id="ai">
@@ -1609,16 +1390,67 @@ export default function Home() {
                   Open nearby on Maps <ExternalLink size={15} />
                 </button>
                 <div className="nearbyList" key={`${city}-${category}-nearby`}>
-                  <h3>Top 20 curated nearby picks</h3>
-                  {nearbyCards.length > 0 ? (
-                    nearbyCards.map((item, index) => (
-                      <button type="button" onClick={() => openTrackedMap(item.query, `nearby_${item.name}`)} key={`${city}-${category}-${index}-${item.name}`}>
-                        <span>{item.name}</span>
-                        <small>
-                          {categories.find((cat) => cat.key === item.category)?.label || "City"} · {item.area} · {item.eta}
-                        </small>
+                  <div className="nearbyListHeader">
+                    <div>
+                      <h3>Top 20 curated nearby picks</h3>
+                      <span>{userLocation ? "Live-route mode" : "City-smart mode"} · {nearbyCards.length} smart suggestions</span>
+                    </div>
+                    <div className="nearbyFrameControls" aria-label="Nearby picks controls">
+                      <button type="button" onClick={() => moveNearbyFrame(-1)} aria-label="Previous nearby pick">
+                        <ChevronUp size={14} />
                       </button>
-                    ))
+                      <button type="button" onClick={() => moveNearbyFrame(1)} aria-label="Next nearby pick">
+                        <ChevronDown size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  {nearbyCards.length > 0 ? (
+                    <div className="nearbyDeck">
+                      <button
+                        className="nearbyFocusCard"
+                        type="button"
+                        onClick={() => activeNearbyPick && openTrackedMap(activeNearbyPick.query, `nearby_${activeNearbyPick.name}`)}
+                      >
+                        <span className="nearbyIndex">{String(nearbyFrameIndex + 1).padStart(2, "0")} / {nearbyCards.length}</span>
+                        <strong>{activeNearbyPick?.name}</strong>
+                        <small>
+                          {categories.find((cat) => cat.key === activeNearbyPick?.category)?.label || "City"} · {activeNearbyPick?.area} · {activeNearbyPick?.eta}
+                        </small>
+                        <em>{userLocation ? "Routes from your current location" : "Enable location for live-start routing"}</em>
+                      </button>
+
+                      <div className="nearbyDots" aria-label="Nearby picks progress">
+                        {nearbyCards.map((item, index) => (
+                          <button
+                            aria-label={`Show ${item.name}`}
+                            className={index === nearbyFrameIndex ? "active" : ""}
+                            key={`${item.name}-nearby-dot-${index}`}
+                            onClick={() => setNearbyFrameIndex(index)}
+                            type="button"
+                          />
+                        ))}
+                      </div>
+
+                      <div className="nearbyAllDrawer" aria-label="All top 20 nearby picks">
+                        <strong>All 20 smart nearby suggestions</strong>
+                        <div>
+                          {nearbyCards.map((item, index) => (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNearbyFrameIndex(index);
+                                openTrackedMap(item.query, `nearby_all_${item.name}`);
+                              }}
+                              key={`${city}-${category}-${index}-${item.name}`}
+                            >
+                              <span>{String(index + 1).padStart(2, "0")}</span>
+                              <b>{item.name}</b>
+                              <small>{item.area}</small>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   ) : (
                     <p>Ask CityMitra for live-style suggestions, then open the map search for that city.</p>
                   )}

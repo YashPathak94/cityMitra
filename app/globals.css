@@ -86,7 +86,6 @@ button {
 
 .heroContent,
 .controlBand,
-.platformBand,
 .monetizeBand,
 .aiBand,
 .coverage {
@@ -1005,7 +1004,6 @@ textarea:focus-visible {
 }
 
 .controlBand,
-.platformBand,
 .monetizeBand,
 .aiBand,
 .coverage,
@@ -1015,14 +1013,12 @@ textarea:focus-visible {
 }
 
 .controlBand,
-.platformBand,
 .monetizeBand,
 .coverage {
   position: relative;
 }
 
 .controlBand::before,
-.platformBand::before,
 .monetizeBand::before,
 .coverage::before {
   display: block;
@@ -1064,20 +1060,84 @@ textarea:focus-visible {
 
 .filterGroup button,
 .category {
-  min-height: 44px;
-  border: 1px solid var(--line);
-  background: var(--white);
+  position: relative;
+  isolation: isolate;
+  min-height: 48px;
+  overflow: hidden;
+  border: 1px solid rgba(244, 223, 210, 0.95);
+  background: rgba(255, 255, 255, 0.82);
   border-radius: 8px;
   color: var(--muted);
+  font-family: inherit;
   font-weight: 800;
+  letter-spacing: 0;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.filterGroup button::before,
+.category::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.72) 42%, transparent 68%);
+  content: "";
+  opacity: 0;
+  transform: translateX(-28%);
+  transition: opacity 220ms var(--smooth), transform 360ms var(--smooth);
+}
+
+.filterGroup button::after,
+.category::after {
+  position: absolute;
+  inset: auto 14px 8px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--orange), #f97316);
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.35);
+  transition: opacity 220ms var(--smooth), transform 220ms var(--smooth);
+}
+
+.filterGroup button:hover,
+.category:hover {
+  border-color: rgba(234, 88, 12, 0.34);
+  color: var(--ink);
+  box-shadow: 0 14px 36px rgba(234, 88, 12, 0.12);
+}
+
+.filterGroup button:hover::before,
+.category:hover::before {
+  opacity: 1;
+  transform: translateX(18%);
+}
+
+.filterGroup button:hover::after,
+.category:hover::after {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 .filterGroup button.active,
 .category.active {
-  border-color: var(--orange);
-  background: linear-gradient(135deg, var(--orange), #fb923c);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--orange), #f97316);
   color: var(--white);
-  box-shadow: 0 14px 34px rgba(234, 88, 12, 0.18);
+  text-shadow: none;
+  box-shadow: 0 14px 36px rgba(234, 88, 12, 0.28);
+}
+
+.filterGroup button.active::before,
+.category.active::before {
+  opacity: 0.18;
+  transform: translateX(10%);
+}
+
+.filterGroup button.active::after,
+.category.active::after {
+  background: rgba(255, 255, 255, 0.76);
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 .categoryGrid {
@@ -1090,6 +1150,26 @@ textarea:focus-visible {
   justify-content: center;
   gap: 8px;
   padding: 0 10px;
+}
+
+.category svg {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transition: background 200ms var(--smooth), color 200ms var(--smooth), transform 200ms var(--smooth);
+}
+
+.category:hover svg {
+  transform: translateY(-1px) scale(1.04);
+}
+
+.category.active svg {
+  background: transparent;
+  box-shadow: none;
+  color: var(--white);
 }
 
 .directoryGrid {
@@ -1106,18 +1186,12 @@ textarea:focus-visible {
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
 }
 
-.categoryFocusCard .intelTabs {
-  border-bottom: 1px solid rgba(244, 223, 210, 0.95);
-  padding: 12px 14px 8px;
-}
-
 .categoryRouteCard .intelMeta {
   grid-template-columns: 1fr;
 }
 
 .listing,
 .askBox,
-.platformGrid article,
 .monetizeGrid article,
 .aboutCards article,
 .roadmap article {
@@ -1127,7 +1201,6 @@ textarea:focus-visible {
 }
 
 .listing,
-.platformGrid article,
 .monetizeGrid article,
 .aboutCards article,
 .roadmap article,
@@ -1137,7 +1210,6 @@ textarea:focus-visible {
 }
 
 .listing:hover,
-.platformGrid article:hover,
 .monetizeGrid article:hover,
 .aboutCards article:hover,
 .roadmap article:hover,
@@ -1149,7 +1221,6 @@ textarea:focus-visible {
 }
 
 .directoryGrid .listing:nth-child(1),
-.platformGrid article:nth-child(1),
 .monetizeGrid article:nth-child(1) {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 237, 213, 0.78)),
@@ -1663,28 +1734,17 @@ textarea:focus-visible {
   font-size: 0.72rem;
 }
 
-.platformBand {
-  padding-top: 34px;
-}
-
-.platformGrid,
 .monetizeGrid {
   display: grid;
   gap: 16px;
 }
 
-.platformGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.platformGrid article,
 .monetizeGrid article {
   position: relative;
   overflow: hidden;
   padding: 20px;
 }
 
-.platformGrid article::after,
 .monetizeGrid article::after,
 .aboutCards article::after {
   position: absolute;
@@ -1698,17 +1758,11 @@ textarea:focus-visible {
   transition: transform 260ms var(--smooth);
 }
 
-.platformGrid article:hover::after,
 .monetizeGrid article:hover::after,
 .aboutCards article:hover::after {
   transform: scaleX(1);
 }
 
-.platformGrid svg {
-  color: var(--teal);
-}
-
-.platformGrid p,
 .monetizeGrid p {
   color: var(--muted);
   line-height: 1.6;
@@ -2140,33 +2194,196 @@ textarea {
 }
 
 .nearbyList {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-height: 0;
 }
 
-.nearbyList h3 {
+.nearbyListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.nearbyListHeader h3 {
   margin-bottom: 2px;
 }
 
-.nearbyList button {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.84);
-  padding: 10px;
-  color: var(--ink);
-  text-align: left;
+.nearbyListHeader span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
 }
 
-.nearbyList button span {
+.nearbyFrameControls {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.nearbyFrameControls button {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(244, 223, 210, 0.95);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--orange);
+}
+
+.nearbyDeck {
+  position: relative;
+  min-height: 168px;
+  perspective: 1000px;
+}
+
+.nearbyFocusCard {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  width: 100%;
+  min-height: 132px;
+  gap: 7px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 237, 0.86)),
+    radial-gradient(circle at 16% 0%, rgba(234, 88, 12, 0.16), transparent 34%);
+  padding: 14px;
+  text-align: left;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+}
+
+.nearbyFocusCard::after {
+  position: absolute;
+  inset: auto 14px 12px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--orange), #f97316);
+  content: "";
+}
+
+.nearbyFocusCard .nearbyIndex {
+  color: var(--orange);
+  font-size: 0.76rem;
   font-weight: 900;
 }
 
-.nearbyList button small,
+.nearbyFocusCard strong {
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.nearbyFocusCard small {
+  color: var(--muted);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.nearbyFocusCard em {
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.nearbyDots {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.nearbyDots button {
+  width: 7px;
+  height: 7px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.24);
+  padding: 0;
+}
+
+.nearbyDots button.active {
+  width: 24px;
+  background: linear-gradient(90deg, var(--orange), #f97316);
+}
+
+.nearbyAllDrawer {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% - 14px);
+  z-index: 10;
+  width: min(520px, 92vw);
+  max-height: 360px;
+  overflow: hidden;
+  border: 1px solid rgba(244, 223, 210, 0.95);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.98);
+  transition: opacity 180ms var(--smooth), transform 180ms var(--smooth);
+  backdrop-filter: blur(16px);
+}
+
+.nearbyDeck:hover .nearbyAllDrawer,
+.nearbyDeck:focus-within .nearbyAllDrawer {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.nearbyAllDrawer > strong {
+  display: block;
+  border-bottom: 1px solid rgba(244, 223, 210, 0.95);
+  color: var(--ink);
+  padding: 12px;
+  font-size: 0.92rem;
+}
+
+.nearbyAllDrawer > div {
+  display: grid;
+  max-height: 302px;
+  overflow: auto;
+  padding: 8px;
+  gap: 6px;
+}
+
+.nearbyAllDrawer button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(244, 223, 210, 0.72);
+  border-radius: 8px;
+  background: rgba(255, 247, 237, 0.44);
+  color: var(--ink);
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.nearbyAllDrawer button span {
+  color: var(--orange);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.nearbyAllDrawer button b {
+  overflow: hidden;
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nearbyAllDrawer button small,
 .nearbyList p {
   color: var(--muted);
   line-height: 1.45;
@@ -2759,7 +2976,6 @@ textarea {
   .aiPanel,
   .directoryGrid,
   .suggestionRows,
-  .platformGrid,
   .monetizeGrid,
   .aboutGrid,
   .footerGrid,
@@ -2834,22 +3050,6 @@ textarea {
     width: min(340px, 82%);
   }
 
-  .categoryStageFrame {
-    grid-template-columns: 1fr;
-  }
-
-  .categoryFrameStory {
-    min-height: 220px;
-  }
-
-  .categoryCardRotator {
-    min-height: 460px;
-  }
-
-  .categoryRotatingCard {
-    width: min(390px, 82%);
-  }
-
   .intelOverview > div {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2895,17 +3095,14 @@ textarea {
   }
 
   .intelControls,
-  .resultFrameHeader,
-  .categoryStageNav {
+  .resultFrameHeader {
     grid-template-columns: 1fr;
   }
 
   .intelControls button,
   .intelControls div,
   .resultFrameHeader > button,
-  .resultFrameHeader > div,
-  .categoryStageNav > button,
-  .categoryStageNav > div {
+  .resultFrameHeader > div {
     width: 100%;
   }
 
@@ -2927,24 +3124,6 @@ textarea {
     min-height: 330px;
     transform:
       translateX(calc(-50% + (var(--card-offset) * 72px)))
-      translateY(calc(var(--card-abs) * 18px))
-      rotateY(calc(var(--card-offset) * -10deg))
-      scale(calc(1 - (var(--card-abs) * 0.06)));
-  }
-
-  .categoryCardRotator {
-    min-height: 500px;
-  }
-
-  .categoryRotatingDeck {
-    inset: 26px 10px;
-  }
-
-  .categoryRotatingCard {
-    width: min(330px, 86%);
-    min-height: 350px;
-    transform:
-      translateX(calc(-50% + (var(--card-offset) * 74px)))
       translateY(calc(var(--card-abs) * 18px))
       rotateY(calc(var(--card-offset) * -10deg))
       scale(calc(1 - (var(--card-abs) * 0.06)));
