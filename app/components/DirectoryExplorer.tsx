@@ -1,10 +1,12 @@
 "use client";
 
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, Pause, Play } from "lucide-react";
+import { useReducedMotion } from "motion/react";
+import { CSSProperties, useEffect, useState } from "react";
 import { categories, CategoryKey, DirectoryItem } from "@/data/city-directory";
 import { NearbyCard, photoSearchImage } from "@/lib/city-intel";
-import CircularGallery from "@/app/components/CircularGallery";
-import Reveal from "@/app/components/motion/Reveal";
+
+const autoRotateIntervalMs = 3500;
 
 type DirectoryExplorerProps = {
   city: string;
@@ -36,32 +38,30 @@ export default function DirectoryExplorer({
   const selectedCategory = categories.find((item) => item.key === category);
   const SelectedCategoryIcon = selectedCategory?.icon;
   const activeCategoryResult = selectedItems[categoryFrameIndex] || selectedItems[0];
+  const [hovered, setHovered] = useState(false);
+  const [autoRotate, setAutoRotate] = useState(true);
+  const reduceMotion = useReducedMotion();
+  const resultCount = selectedItems.length;
 
-  const galleryItems = selectedItems.map((item, index) => {
-    const isVerified = exactDirectoryItems.some((exact) => exact.name === item.name);
-    return {
-      id: `${city}-${category}-${item.name}-${index}`,
-      title: item.name,
-      subtitle: item.area || "Smart result",
-      meta: item.eta,
-      badge: isVerified ? "Verified" : "Smart",
-      image: item.image || photoSearchImage(city, item.query, index),
-      actionLabel: "Open route",
-      onAction: () => onOpenMap(item.query, `directory_${item.name}`)
-    };
-  });
+  useEffect(() => {
+    if (!autoRotate || hovered || reduceMotion || resultCount < 2) return;
+
+    const timer = window.setInterval(() => {
+      onSetFrame((categoryFrameIndex + 1) % resultCount);
+    }, autoRotateIntervalMs);
+
+    return () => window.clearInterval(timer);
+  }, [autoRotate, hovered, reduceMotion, resultCount, categoryFrameIndex, onSetFrame]);
 
   return (
     <section className="controlBand" id="directory">
-      <Reveal>
-        <div className="sectionHeader">
-          <div>
-            <span className="sectionKicker">Destination Finder</span>
-            <h2>Choose a city and category</h2>
-          </div>
-          <p>Built for quick decisions: where to go, what the area is known for, and how to avoid wasted trips.</p>
+      <div className="sectionHeader">
+        <div>
+          <span className="sectionKicker">Destination Finder</span>
+          <h2>Choose a city and category</h2>
         </div>
-      </Reveal>
+        <p>Built for quick decisions: where to go, what the area is known for, and how to avoid wasted trips.</p>
+      </div>
 
       <div className="filters">
         <div className="filterGroup" aria-label="City selector">
@@ -89,7 +89,7 @@ export default function DirectoryExplorer({
         </div>
       </div>
 
-      <div className="categoryResultFrame" aria-label={`${selectedCategory?.label || category} circular gallery of results`}>
+      <div className="categoryResultFrame" aria-label={`${selectedCategory?.label || category} rotating category results`}>
         <div className="intelFocusCard categoryFocusCard">
           <header>
             <span>
@@ -99,7 +99,13 @@ export default function DirectoryExplorer({
             <strong>{selectedItems.length} map-ready options</strong>
           </header>
 
-          <div className="resultFrameModule categoryResultModule">
+          <div
+            className="resultFrameModule categoryResultModule"
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            onFocusCapture={() => setHovered(true)}
+            onBlurCapture={() => setHovered(false)}
+          >
             <div className="resultFrameHeader">
               <button type="button" onClick={() => onMoveFrame(-1)} aria-label="Previous category result">
                 <ChevronUp size={16} />
@@ -107,20 +113,69 @@ export default function DirectoryExplorer({
               </button>
               <div>
                 <span>{String(categoryFrameIndex + 1).padStart(2, "0")} / {selectedItems.length || 0}</span>
-                <strong>{activeCategoryResult?.name || "All options deck"}</strong>
+                <strong>All options deck</strong>
                 <small>{activeCategoryResult?.area || activeCategoryResult?.eta || "Map check"}</small>
               </div>
+              <button
+                className="autoRotateToggle"
+                type="button"
+                onClick={() => setAutoRotate((current) => !current)}
+                aria-pressed={autoRotate}
+                aria-label={autoRotate ? "Pause auto-rotation" : "Resume auto-rotation"}
+                title={autoRotate ? "Pause auto-rotation" : "Resume auto-rotation"}
+              >
+                {autoRotate ? <Pause size={14} /> : <Play size={14} />}
+                {autoRotate ? "Auto" : "Paused"}
+              </button>
               <button type="button" onClick={() => onMoveFrame(1)} aria-label="Next category result">
                 Next
                 <ChevronDown size={16} />
               </button>
             </div>
 
-            <CircularGallery
-              items={galleryItems}
-              activeIndex={categoryFrameIndex}
-              onActiveIndexChange={onSetFrame}
-            />
+            <div className="rotatingResultFrame categoryResultMotion" aria-live="polite">
+              <div
+                className="frameBackdrop"
+                style={{
+                  backgroundImage: `linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.72)), url("${photoSearchImage(city, activeCategoryResult?.query || selectedCategory?.label || category, categoryFrameIndex)}")`
+                }}
+              >
+                <span>{activeCategoryResult?.area || "City route"}</span>
+                <b>{selectedCategory?.label || "Category"}</b>
+              </div>
+
+              <div className="rotatingDeck">
+                {selectedItems.map((item, index) => {
+                  const rawOffset = index - categoryFrameIndex;
+                  const resultCount = selectedItems.length;
+                  const offset = rawOffset > resultCount / 2 ? rawOffset - resultCount : rawOffset < -resultCount / 2 ? rawOffset + resultCount : rawOffset;
+                  const visible = Math.abs(offset) <= 2;
+                  const isVerified = exactDirectoryItems.some((exact) => exact.name === item.name);
+
+                  return (
+                    <article
+                      className={offset === 0 ? "rotatingCard categoryRouteCard active" : visible ? "rotatingCard categoryRouteCard visible" : "rotatingCard categoryRouteCard"}
+                      key={`${item.name}-${item.query}`}
+                      style={{ "--card-offset": offset, "--card-abs": Math.abs(offset) } as CSSProperties}
+                    >
+                      <span className="resultIndex">{String(index + 1).padStart(2, "0")}</span>
+                      <div>
+                        <h3>{item.name}</h3>
+                        <p>{item.why || `Curated ${selectedCategory?.label.toLowerCase() || "city"} option for ${city} with maps, photos, and route checks.`}</p>
+                      </div>
+                      <div className="intelMeta">
+                        <span>{item.area || "Smart result"}</span>
+                        <span>{item.eta}</span>
+                        <span>{isVerified ? "Verified" : "Smart"}</span>
+                      </div>
+                      <button type="button" onClick={() => onOpenMap(item.query, `directory_${item.name}`)}>
+                        Open route <ExternalLink size={14} />
+                      </button>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
 
             <div className="resultDots" aria-label="Category result progress">
               {selectedItems.map((item, index) => (
