@@ -46,6 +46,7 @@ type NearbyCard = {
 type UserLocation = {
   lat: number;
   lng: number;
+  city?: string;
 };
 
 type ActivityEvent = {
@@ -58,6 +59,7 @@ type ActivityEvent = {
 
 const starterMessage =
   "Tell me the city, vibe, budget, and time you have. I will map the spots, backup services, and time-saving route. Yes, an actual plan, not a 47-tab research spiral.";
+const locationPromptKey = "citymitra-location-prompt-choice";
 
 const knownChatCities = [
   "Agra",
@@ -387,6 +389,7 @@ export default function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState("");
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [locationStatus, setLocationStatus] = useState("Use nearby location for smarter map routes.");
   const [categoryFrameIndex, setCategoryFrameIndex] = useState(0);
   const [nearbyFrameIndex, setNearbyFrameIndex] = useState(0);
@@ -484,6 +487,14 @@ export default function Home() {
   }, [city, category]);
 
   useEffect(() => {
+    const promptChoice = window.localStorage.getItem(locationPromptKey);
+    if (!promptChoice) {
+      const promptTimer = window.setTimeout(() => setShowLocationPrompt(true), 700);
+      return () => window.clearTimeout(promptTimer);
+    }
+  }, []);
+
+  useEffect(() => {
     const startedAt = Date.now();
     trackActivity({ type: "page_view", city, category });
 
@@ -551,6 +562,9 @@ export default function Home() {
   }
 
   function requestNearbyLocation() {
+    setShowLocationPrompt(false);
+    window.localStorage.setItem(locationPromptKey, "enabled");
+
     if (!navigator.geolocation) {
       setLocationStatus("Location is not supported in this browser. Maps will use city search instead.");
       return;
@@ -558,14 +572,35 @@ export default function Home() {
 
     setLocationStatus("Asking browser for location permission...");
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const nextLocation = {
+      async (position) => {
+        const coords = {
           lat: Number(position.coords.latitude.toFixed(6)),
           lng: Number(position.coords.longitude.toFixed(6))
         };
+        let detectedCity: string | null = null;
+
+        try {
+          const response = await fetch(`/api/reverse-location?lat=${coords.lat}&lng=${coords.lng}`);
+          const payload = (await response.json()) as { city?: string | null };
+          detectedCity = payload.city || null;
+        } catch {
+          detectedCity = null;
+        }
+
+        const nextLocation = detectedCity ? { ...coords, city: detectedCity } : coords;
         setUserLocation(nextLocation);
-        setLocationStatus("Nearby mode on. All 20 smart picks stay available, and Maps/PDF routes now start from your current location.");
-        trackActivity({ type: "location_enabled", city, category, label: `${nextLocation.lat},${nextLocation.lng}` });
+        if (detectedCity) {
+          setCity(detectedCity);
+          setLocationStatus(`Nearby mode on for ${detectedCity}. City tab, photos, and all 20 recommendations now sync from your current location.`);
+        } else {
+          setLocationStatus("Nearby mode on. All 20 smart picks stay available, and Maps/PDF routes now start from your current location.");
+        }
+        trackActivity({
+          type: "location_enabled",
+          city: detectedCity || city,
+          category,
+          label: detectedCity ? `${detectedCity} ${coords.lat},${coords.lng}` : `${coords.lat},${coords.lng}`
+        });
       },
       () => {
         setLocationStatus("Location permission was not enabled. CityMitra will still use city-level map searches.");
@@ -573,6 +608,12 @@ export default function Home() {
       },
       { enableHighAccuracy: true, maximumAge: 300000, timeout: 10000 }
     );
+  }
+
+  function dismissLocationPrompt() {
+    setShowLocationPrompt(false);
+    window.localStorage.setItem(locationPromptKey, "dismissed");
+    trackActivity({ type: "location_prompt_dismissed", city, category });
   }
 
   function handleSceneAction(action: "sync" | "map" | "route") {
@@ -871,6 +912,32 @@ export default function Home() {
 
   return (
     <main>
+      {showLocationPrompt && !userLocation && (
+        <div className="locationPromptOverlay" role="dialog" aria-modal="true" aria-labelledby="locationPromptTitle">
+          <div className="locationPromptCard">
+            <span className="locationPromptIcon">
+              <MapPinned size={24} />
+            </span>
+            <div>
+              <span className="sectionKicker">Nearby Recommendations</span>
+              <h2 id="locationPromptTitle">Enable location for curated city picks</h2>
+              <p>
+                CityMitra can show the top 20 nearby places, route-ready suggestions, hotels, food, fuel, repairs, and
+                backup stops from where you are starting.
+              </p>
+            </div>
+            <div className="locationPromptActions">
+              <button className="primaryButton" type="button" onClick={requestNearbyLocation}>
+                Enable nearby recommendations <Navigation size={17} />
+              </button>
+              <button className="secondaryButton" type="button" onClick={dismissLocationPrompt}>
+                Not now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <section
         className="hero"
         style={{
@@ -1352,7 +1419,7 @@ export default function Home() {
                 <div className="miniMap">
                   <MapPinned size={22} />
                   <span>{city}</span>
-                  <strong>{selectedCategory?.label}</strong>
+                  <strong>{userLocation?.city ? `Near you · ${selectedCategory?.label}` : selectedCategory?.label}</strong>
                 </div>
                 <div className="locationBox">
                   <button type="button" onClick={requestNearbyLocation}>
@@ -1368,7 +1435,9 @@ export default function Home() {
                   <div className="nearbyListHeader">
                     <div>
                       <h3>Top 20 curated nearby picks</h3>
-                      <span>{userLocation ? "Live-route mode" : "City-smart mode"} · {nearbyCards.length} smart suggestions</span>
+                      <span>
+                        {userLocation?.city ? `${userLocation.city} live-route mode` : userLocation ? "Live-route mode" : "City-smart mode"} · {nearbyCards.length} smart suggestions
+                      </span>
                     </div>
                     <div className="nearbyFrameControls" aria-label="Nearby picks controls">
                       <button type="button" onClick={() => moveNearbyFrame(-1)} aria-label="Previous nearby pick">
