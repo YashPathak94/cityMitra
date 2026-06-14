@@ -39,6 +39,79 @@ export function hasDurableStorage() {
   return Boolean(supabase());
 }
 
+export type StorageDiagnostics = {
+  configured: boolean;
+  urlHostHint: string | null;
+  insertOk: boolean;
+  selectOk: boolean;
+  activityRows: number | null;
+  newsletterRows: number | null;
+  error: string | null;
+  hint: string | null;
+};
+
+// Admin-only: performs a real write + read round-trip against Supabase and
+// returns the raw error so misconfiguration (wrong key, missing table, RLS)
+// becomes visible instead of silently producing zeros.
+export async function runStorageDiagnostics(): Promise<StorageDiagnostics> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const urlHostHint = url ? (() => { try { return new URL(url).host; } catch { return "invalid-url"; } })() : null;
+
+  const base: StorageDiagnostics = {
+    configured: Boolean(url && key),
+    urlHostHint,
+    insertOk: false,
+    selectOk: false,
+    activityRows: null,
+    newsletterRows: null,
+    error: null,
+    hint: null
+  };
+
+  const client = supabase();
+  if (!client) {
+    return {
+      ...base,
+      error: !url ? "SUPABASE_URL is not set." : "SUPABASE_SERVICE_ROLE_KEY is not set.",
+      hint: "Set both env vars in Vercel (Production scope) and redeploy."
+    };
+  }
+
+  // 1. try an insert
+  const probe = await client.from("activity").insert({
+    type: "diagnostic_probe",
+    label: "admin storage test",
+    session_id: "diagnostics"
+  });
+  if (probe.error) {
+    return {
+      ...base,
+      error: `INSERT failed: ${probe.error.message}`,
+      hint: probe.error.message.toLowerCase().includes("row-level security")
+        ? "RLS blocked the write. You are almost certainly using the ANON key. Copy the service_role key (Settings -> API -> Project API keys -> service_role) into SUPABASE_SERVICE_ROLE_KEY."
+        : probe.error.message.toLowerCase().includes("does not exist") || probe.error.message.toLowerCase().includes("schema cache")
+        ? "The 'activity' table is missing or has wrong columns. Run the SQL from DEPLOYMENT.md in the Supabase SQL editor."
+        : "Check the SUPABASE_URL and service_role key are from the same project."
+    };
+  }
+  base.insertOk = true;
+
+  // 2. try counts
+  const activityCount = await client.from("activity").select("*", { count: "exact", head: true });
+  const newsletterCount = await client.from("newsletter").select("*", { count: "exact", head: true });
+
+  if (activityCount.error) {
+    return { ...base, error: `SELECT failed: ${activityCount.error.message}`, hint: "Read blocked — same key/RLS issue as above." };
+  }
+
+  base.selectOk = true;
+  base.activityRows = activityCount.count ?? 0;
+  base.newsletterRows = newsletterCount.error ? null : newsletterCount.count ?? 0;
+  base.hint = "Storage round-trip succeeded. If the dashboard still shows 0, browse the public site to generate events, then refresh.";
+  return base;
+}
+
 async function readJsonFile<T>(file: string): Promise<T[]> {
   try {
     return JSON.parse(await readFile(file, "utf-8")) as T[];

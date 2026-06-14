@@ -44,7 +44,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Admin login required" }, { status: 401 });
   }
 
-  const records = await readRecentActivity().catch(() => [] as ActivityRecord[]);
+  const allRecords = await readRecentActivity().catch(() => [] as ActivityRecord[]);
+  // exclude internal storage-test rows from real analytics
+  const records = allRecords.filter((record) => record.type !== "diagnostic_probe");
   const settings = await readSettings();
   const visitors = new Set(records.filter((record) => record.type === "page_view").map((record) => record.sessionId).filter(Boolean));
   const sessions = new Set(records.map((record) => record.sessionId).filter(Boolean));

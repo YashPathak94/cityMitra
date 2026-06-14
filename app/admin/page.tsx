@@ -60,11 +60,51 @@ function formatDuration(seconds: number) {
   return `${minutes}m ${remainingSeconds}s`;
 }
 
+type Diagnostics = {
+  configured: boolean;
+  urlHostHint: string | null;
+  insertOk: boolean;
+  selectOk: boolean;
+  activityRows: number | null;
+  newsletterRows: number | null;
+  error: string | null;
+  hint: string | null;
+};
+
 export default function AdminPage() {
   const [summary, setSummary] = useState<ActivitySummary>(emptySummary);
   const [settings, setSettings] = useState({ leadValue: 12, featuredListingPrice: 999 });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [diagnostics, setDiagnostics] = useState<Diagnostics | null>(null);
+  const [testing, setTesting] = useState(false);
+
+  async function runStorageTest() {
+    setTesting(true);
+    setDiagnostics(null);
+    try {
+      const response = await fetch("/api/admin/diagnostics", { cache: "no-store" });
+      if (response.status === 401) {
+        window.location.href = "/admin/login";
+        return;
+      }
+      setDiagnostics((await response.json()) as Diagnostics);
+    } catch {
+      setDiagnostics({
+        configured: false,
+        urlHostHint: null,
+        insertOk: false,
+        selectOk: false,
+        activityRows: null,
+        newsletterRows: null,
+        error: "Could not reach the diagnostics endpoint.",
+        hint: null
+      });
+    } finally {
+      setTesting(false);
+      await loadActivity();
+    }
+  }
 
   async function loadActivity() {
     setLoading(true);
@@ -130,6 +170,9 @@ export default function AdminPage() {
           <RefreshCw size={17} />
           {loading ? "Loading" : "Refresh"}
         </button>
+        <button className="secondaryButton" onClick={runStorageTest} type="button" disabled={testing}>
+          {testing ? "Testing…" : "Run storage test"}
+        </button>
         <button className="secondaryButton" onClick={logout} type="button">
           <LogOut size={17} />
           Logout
@@ -156,6 +199,23 @@ export default function AdminPage() {
       {!loading && summary.storage === "supabase" && (
         <section className="adminStorageOk" role="status">
           <strong>✓ Durable storage connected (Supabase).</strong> Events and subscribers persist across deploys.
+        </section>
+      )}
+
+      {diagnostics && (
+        <section
+          className={diagnostics.error ? "adminStorageWarning" : "adminStorageOk"}
+          role={diagnostics.error ? "alert" : "status"}
+        >
+          <strong>{diagnostics.error ? "⚠ Storage test failed" : "✓ Storage test passed"}</strong>
+          <p>
+            Project host: <code>{diagnostics.urlHostHint || "not set"}</code> · write:{" "}
+            {diagnostics.insertOk ? "OK" : "FAILED"} · read: {diagnostics.selectOk ? "OK" : "FAILED"}
+            {diagnostics.activityRows !== null && <> · activity rows: <code>{diagnostics.activityRows}</code></>}
+            {diagnostics.newsletterRows !== null && <> · newsletter rows: <code>{diagnostics.newsletterRows}</code></>}
+          </p>
+          {diagnostics.error && <p><b>Error:</b> {diagnostics.error}</p>}
+          {diagnostics.hint && <p><b>Fix:</b> {diagnostics.hint}</p>}
         </section>
       )}
 
