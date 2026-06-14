@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, BarChart3, Clock3, IndianRupee, LogOut, MousePointerClick, RefreshCw, Save, Search, Users } from "lucide-react";
+import { ArrowLeft, BarChart3, Clock3, Download, IndianRupee, LogOut, MousePointerClick, RefreshCw, Save, Search, Target, Users } from "lucide-react";
 import Link from "next/link";
 
 type ChartItem = {
@@ -69,6 +69,21 @@ type Diagnostics = {
   hint: string | null;
 };
 
+type LeadsData = {
+  total: number;
+  byCity: ChartItem[];
+  byCategory: ChartItem[];
+  byDay: ChartItem[];
+  recent: Array<{
+    type: string;
+    typeLabel: string;
+    city?: string;
+    category?: string;
+    label?: string;
+    timestamp: string;
+  }>;
+};
+
 export default function AdminPage() {
   const [summary, setSummary] = useState<ActivitySummary>(emptySummary);
   const [settings, setSettings] = useState({ leadValue: 12, featuredListingPrice: 999 });
@@ -76,6 +91,7 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [diagnostics, setDiagnostics] = useState<Diagnostics | null>(null);
   const [testing, setTesting] = useState(false);
+  const [leads, setLeads] = useState<LeadsData | null>(null);
 
   async function runStorageTest() {
     setTesting(true);
@@ -104,9 +120,10 @@ export default function AdminPage() {
 
   async function loadActivity() {
     setLoading(true);
-    const [activityResponse, settingsResponse] = await Promise.all([
+    const [activityResponse, settingsResponse, leadsResponse] = await Promise.all([
       fetch("/api/activity", { cache: "no-store" }),
-      fetch("/api/admin/settings", { cache: "no-store" })
+      fetch("/api/admin/settings", { cache: "no-store" }),
+      fetch("/api/admin/leads", { cache: "no-store" })
     ]);
 
     if (activityResponse.status === 401 || settingsResponse.status === 401) {
@@ -116,9 +133,11 @@ export default function AdminPage() {
 
     const settingsData = (await settingsResponse.json()) as typeof settings;
     setSettings(settingsData);
-    const response = activityResponse;
-    const data = (await response.json()) as ActivitySummary;
+    const data = (await activityResponse.json()) as ActivitySummary;
     setSummary(data);
+    if (leadsResponse.ok) {
+      setLeads((await leadsResponse.json()) as LeadsData);
+    }
     setLoading(false);
   }
 
@@ -149,6 +168,17 @@ export default function AdminPage() {
   useEffect(() => {
     loadActivity().catch(() => setLoading(false));
   }, []);
+
+  const maxLeadCount = useMemo(
+    () =>
+      Math.max(
+        1,
+        ...(leads?.byCity.map((item) => item.count) ?? []),
+        ...(leads?.byCategory.map((item) => item.count) ?? []),
+        ...(leads?.byDay.map((item) => item.count) ?? [])
+      ),
+    [leads]
+  );
 
   const maxEventCount = useMemo(
     () => Math.max(1, ...summary.charts.events.map((item) => item.count), ...summary.charts.cities.map((item) => item.count)),
@@ -317,6 +347,82 @@ export default function AdminPage() {
               ))
             ) : (
               <p>No activity recorded yet. Open the main page, search a city, ask chat, or click a map.</p>
+            )}
+          </div>
+        </article>
+      </section>
+
+      <section className="leadsHeader">
+        <div>
+          <span className="sectionKicker">Leads</span>
+          <h2>High-intent actions you can sell to vendors</h2>
+          <p>
+            Every map open, AI question, search, and export is a buying signal. {leads?.total ?? 0} captured so far —
+            grouped by city and category below. Download the CSV to show a shop “your area got this many leads this week.”
+          </p>
+        </div>
+        <a className="primaryButton" href="/api/admin/leads?format=csv" download>
+          <Download size={17} />
+          Download leads CSV
+        </a>
+      </section>
+
+      <section className="adminGrid">
+        <article className="adminCard">
+          <h2>Leads by city</h2>
+          <div className="barList">
+            {(leads?.byCity.length ? leads.byCity : [{ label: "No leads yet", count: 0 }]).map((item) => (
+              <div key={item.label}>
+                <span>{item.label}</span>
+                <b>{item.count}</b>
+                <i style={{ width: `${Math.max(8, (item.count / maxLeadCount) * 100)}%` }} />
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="adminCard">
+          <h2>Leads by category</h2>
+          <div className="barList">
+            {(leads?.byCategory.length ? leads.byCategory : [{ label: "No leads yet", count: 0 }]).map((item) => (
+              <div key={item.label}>
+                <span>{item.label}</span>
+                <b>{item.count}</b>
+                <i style={{ width: `${Math.max(8, (item.count / maxLeadCount) * 100)}%` }} />
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="adminCard">
+          <h2>Leads per day</h2>
+          <div className="barList">
+            {(leads?.byDay.length ? leads.byDay : [{ label: "No leads yet", count: 0 }]).map((item) => (
+              <div key={item.label}>
+                <span>{item.label}</span>
+                <b>{item.count}</b>
+                <i style={{ width: `${Math.max(8, (item.count / maxLeadCount) * 100)}%` }} />
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="adminCard recentCard">
+          <h2>Recent leads</h2>
+          <div className="recentList">
+            {leads && leads.recent.length > 0 ? (
+              leads.recent.map((item, index) => (
+                <div key={`${item.timestamp}-${index}`}>
+                  <Target size={16} />
+                  <span>
+                    <strong>{item.typeLabel}</strong>
+                    <small>{[item.city, item.category, item.label].filter(Boolean).join(" · ") || "CityMitra lead"}</small>
+                  </span>
+                  <time>{new Date(item.timestamp).toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</time>
+                </div>
+              ))
+            ) : (
+              <p>No leads yet. Map opens, AI questions, searches, and exports will appear here.</p>
             )}
           </div>
         </article>
