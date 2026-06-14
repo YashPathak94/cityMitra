@@ -63,10 +63,8 @@ function formatDuration(seconds: number) {
 type Diagnostics = {
   configured: boolean;
   urlHostHint: string | null;
-  insertOk: boolean;
-  selectOk: boolean;
-  activityRows: number | null;
-  newsletterRows: number | null;
+  activityTable: { ok: boolean; rows: number | null; error: string | null };
+  newsletterTable: { ok: boolean; rows: number | null; error: string | null };
   error: string | null;
   hint: string | null;
 };
@@ -93,10 +91,8 @@ export default function AdminPage() {
       setDiagnostics({
         configured: false,
         urlHostHint: null,
-        insertOk: false,
-        selectOk: false,
-        activityRows: null,
-        newsletterRows: null,
+        activityTable: { ok: false, rows: null, error: null },
+        newsletterTable: { ok: false, rows: null, error: null },
         error: "Could not reach the diagnostics endpoint.",
         hint: null
       });
@@ -209,10 +205,9 @@ export default function AdminPage() {
         >
           <strong>{diagnostics.error ? "⚠ Storage test failed" : "✓ Storage test passed"}</strong>
           <p>
-            Project host: <code>{diagnostics.urlHostHint || "not set"}</code> · write:{" "}
-            {diagnostics.insertOk ? "OK" : "FAILED"} · read: {diagnostics.selectOk ? "OK" : "FAILED"}
-            {diagnostics.activityRows !== null && <> · activity rows: <code>{diagnostics.activityRows}</code></>}
-            {diagnostics.newsletterRows !== null && <> · newsletter rows: <code>{diagnostics.newsletterRows}</code></>}
+            Project host: <code>{diagnostics.urlHostHint || "not set"}</code><br />
+            activity table: {diagnostics.activityTable.ok ? `OK (${diagnostics.activityTable.rows} rows)` : "FAILED"} ·
+            newsletter table: {diagnostics.newsletterTable.ok ? `OK (${diagnostics.newsletterTable.rows} rows)` : "FAILED"}
           </p>
           {diagnostics.error && <p><b>Error:</b> {diagnostics.error}</p>}
           {diagnostics.hint && <p><b>Fix:</b> {diagnostics.hint}</p>}

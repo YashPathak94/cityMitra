@@ -42,17 +42,29 @@ export function hasDurableStorage() {
 export type StorageDiagnostics = {
   configured: boolean;
   urlHostHint: string | null;
-  insertOk: boolean;
-  selectOk: boolean;
-  activityRows: number | null;
-  newsletterRows: number | null;
+  activityTable: { ok: boolean; rows: number | null; error: string | null };
+  newsletterTable: { ok: boolean; rows: number | null; error: string | null };
   error: string | null;
   hint: string | null;
 };
 
-// Admin-only: performs a real write + read round-trip against Supabase and
-// returns the raw error so misconfiguration (wrong key, missing table, RLS)
-// becomes visible instead of silently producing zeros.
+function diagnoseError(message: string): string {
+  const lower = message.toLowerCase();
+  if (lower.includes("row-level security")) {
+    return "RLS blocked this. The key is NOT the service_role key — copy it from Supabase → Settings → API → Project API keys → service_role (secret).";
+  }
+  if (lower.includes("does not exist") || lower.includes("schema cache") || lower.includes("could not find")) {
+    return "Table or column missing. Run the SQL from DEPLOYMENT.md in the Supabase SQL editor (creates the activity + newsletter tables).";
+  }
+  if (lower.includes("invalid api key") || lower.includes("jwt") || lower.includes("unauthorized")) {
+    return "The key is invalid or from a different project. Re-copy the service_role key from the SAME project as SUPABASE_URL.";
+  }
+  return "Verify SUPABASE_URL and the service_role key are from the same project, then redeploy.";
+}
+
+// Admin-only: performs a real write + read round-trip against BOTH tables and
+// returns the raw error per table so misconfiguration (wrong key, missing
+// table/column, RLS, project mismatch) becomes visible instead of silent zeros.
 export async function runStorageDiagnostics(): Promise<StorageDiagnostics> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -61,10 +73,8 @@ export async function runStorageDiagnostics(): Promise<StorageDiagnostics> {
   const base: StorageDiagnostics = {
     configured: Boolean(url && key),
     urlHostHint,
-    insertOk: false,
-    selectOk: false,
-    activityRows: null,
-    newsletterRows: null,
+    activityTable: { ok: false, rows: null, error: null },
+    newsletterTable: { ok: false, rows: null, error: null },
     error: null,
     hint: null
   };
@@ -78,37 +88,51 @@ export async function runStorageDiagnostics(): Promise<StorageDiagnostics> {
     };
   }
 
-  // 1. try an insert
-  const probe = await client.from("activity").insert({
+  // --- activity table: insert probe + count ---
+  const activityInsert = await client.from("activity").insert({
     type: "diagnostic_probe",
     label: "admin storage test",
     session_id: "diagnostics"
   });
-  if (probe.error) {
-    return {
-      ...base,
-      error: `INSERT failed: ${probe.error.message}`,
-      hint: probe.error.message.toLowerCase().includes("row-level security")
-        ? "RLS blocked the write. You are almost certainly using the ANON key. Copy the service_role key (Settings -> API -> Project API keys -> service_role) into SUPABASE_SERVICE_ROLE_KEY."
-        : probe.error.message.toLowerCase().includes("does not exist") || probe.error.message.toLowerCase().includes("schema cache")
-        ? "The 'activity' table is missing or has wrong columns. Run the SQL from DEPLOYMENT.md in the Supabase SQL editor."
-        : "Check the SUPABASE_URL and service_role key are from the same project."
-    };
-  }
-  base.insertOk = true;
-
-  // 2. try counts
-  const activityCount = await client.from("activity").select("*", { count: "exact", head: true });
-  const newsletterCount = await client.from("newsletter").select("*", { count: "exact", head: true });
-
-  if (activityCount.error) {
-    return { ...base, error: `SELECT failed: ${activityCount.error.message}`, hint: "Read blocked — same key/RLS issue as above." };
+  if (activityInsert.error) {
+    base.activityTable.error = activityInsert.error.message;
+  } else {
+    const activityCount = await client.from("activity").select("*", { count: "exact", head: true });
+    if (activityCount.error) {
+      base.activityTable.error = activityCount.error.message;
+    } else {
+      base.activityTable.ok = true;
+      base.activityTable.rows = activityCount.count ?? 0;
+    }
   }
 
-  base.selectOk = true;
-  base.activityRows = activityCount.count ?? 0;
-  base.newsletterRows = newsletterCount.error ? null : newsletterCount.count ?? 0;
-  base.hint = "Storage round-trip succeeded. If the dashboard still shows 0, browse the public site to generate events, then refresh.";
+  // --- newsletter table: insert probe + count ---
+  const probeEmail = `diagnostic+${Date.now()}@citymitra.test`;
+  const newsletterInsert = await client.from("newsletter").insert({ email: probeEmail });
+  if (newsletterInsert.error && !/duplicate key|already exists|23505/i.test(newsletterInsert.error.message)) {
+    base.newsletterTable.error = newsletterInsert.error.message;
+  } else {
+    const newsletterCount = await client.from("newsletter").select("*", { count: "exact", head: true });
+    if (newsletterCount.error) {
+      base.newsletterTable.error = newsletterCount.error.message;
+    } else {
+      base.newsletterTable.ok = true;
+      base.newsletterTable.rows = newsletterCount.count ?? 0;
+    }
+    // clean up the probe email so it doesn't pollute the real list
+    await client.from("newsletter").delete().eq("email", probeEmail);
+  }
+
+  const firstError = base.activityTable.error || base.newsletterTable.error;
+  if (firstError) {
+    base.error = base.activityTable.error
+      ? `activity table: ${base.activityTable.error}`
+      : `newsletter table: ${base.newsletterTable.error}`;
+    base.hint = diagnoseError(firstError);
+  } else {
+    base.hint = "Both tables work. If the dashboard still shows 0, open the PUBLIC site (/), click a city or map, then return to /admin and Refresh — the admin page itself does not generate events.";
+  }
+
   return base;
 }
 
@@ -174,8 +198,12 @@ export async function addSubscriber(email: string) {
   const client = supabase();
 
   if (client) {
-    const { error } = await client.from("newsletter").upsert({ email }, { onConflict: "email", ignoreDuplicates: true });
-    if (error) throw new Error(error.message);
+    // Plain insert (no onConflict) so it works whether or not email is a unique
+    // key; duplicate-key errors just mean "already subscribed" and are ignored.
+    const { error } = await client.from("newsletter").insert({ email });
+    if (error && !/duplicate key|already exists|23505/i.test(error.message)) {
+      throw new Error(error.message);
+    }
     return;
   }
 
