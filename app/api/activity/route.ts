@@ -4,7 +4,7 @@ import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE, isAdminCookie } from "@/lib/admin-auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
-import { ActivityRecord, appendActivity, readRecentActivity } from "@/lib/storage";
+import { ActivityRecord, appendActivity, hasDurableStorage, readRecentActivity } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
   ).length;
 
   return NextResponse.json({
+    storage: hasDurableStorage() ? "supabase" : "ephemeral-file",
     totals: {
       events: records.length,
       pageViews,

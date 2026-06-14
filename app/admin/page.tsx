@@ -10,6 +10,7 @@ type ChartItem = {
 };
 
 type ActivitySummary = {
+  storage?: "supabase" | "ephemeral-file";
   totals: {
     events: number;
     pageViews?: number;
@@ -140,6 +141,23 @@ export default function AdminPage() {
         <h1>Activity, retention, and monetization signals</h1>
         <p>Track what users search, which cities move, where map clicks happen, and how much local intent can become paid leads.</p>
       </section>
+
+      {!loading && summary.storage === "ephemeral-file" && (
+        <section className="adminStorageWarning" role="alert">
+          <strong>⚠ Events are not being saved durably.</strong>
+          <p>
+            This deployment is using temporary file storage. On Vercel the filesystem is read-only and reset on every
+            request, so activity and newsletter data is lost. Connect Supabase by setting <code>SUPABASE_URL</code> and{" "}
+            <code>SUPABASE_SERVICE_ROLE_KEY</code> in your Vercel environment variables, then redeploy. See{" "}
+            <code>DEPLOYMENT.md</code> for the one-time table setup.
+          </p>
+        </section>
+      )}
+      {!loading && summary.storage === "supabase" && (
+        <section className="adminStorageOk" role="status">
+          <strong>✓ Durable storage connected (Supabase).</strong> Events and subscribers persist across deploys.
+        </section>
+      )}
 
       <section className="adminStatGrid">
         {[
