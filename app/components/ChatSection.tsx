@@ -22,17 +22,17 @@ import {
 } from "lucide-react";
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { CategoryKey } from "@/data/city-directory";
-import { detectCityFromMessage, NearbyCard, UserLocation } from "@/lib/city-intel";
+import { detectKnownCity, NearbyCard, UserLocation } from "@/lib/city-intel";
 import { buildBookingOptions, buildConcierge, BookingCategory, bookingCategoryLabels, categoryToBooking, detectBookingIntents } from "@/lib/booking";
 import { downloadCsvPlan, openPdfPlan, PlanExportContext } from "@/lib/export-plan";
 import { trackActivity } from "@/lib/tracking";
 import MarkdownText from "@/app/components/MarkdownText";
-import ConciergeCard, { ConciergeGroup } from "@/app/components/ConciergeCard";
+import { ConciergeGroup } from "@/app/components/ConciergeCard";
+import ConciergePip from "@/app/components/ConciergePip";
 
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
-  concierge?: ConciergeGroup[];
 };
 
 const starterMessage =
@@ -83,6 +83,7 @@ export default function ChatSection({
   const [loading, setLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [recommended, setRecommended] = useState<BookingCategory[]>([]);
+  const [pipGroups, setPipGroups] = useState<ConciergeGroup[] | null>(null);
   const chatWindowRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const autoPromptRef = useRef("");
@@ -151,19 +152,13 @@ export default function ChatSection({
     trackActivity({ type: "chat_clear", city, category });
   }
 
-  // Instant, no-AI-call action: drop a concierge card for one category.
+  // Instant, no-AI-call action: open the concierge as a dismissible
+  // picture-in-picture panel (not a chat message).
   function openConciergeFor(bookingCategory: BookingCategory) {
     const options = buildBookingOptions(bookingCategory, { city, destination: city });
     if (options.length === 0) return;
 
-    setMessages((current) => [
-      ...current,
-      {
-        role: "assistant",
-        content: `**${bookingCategoryLabels[bookingCategory]} in ${city}** — tap to compare and book:`,
-        concierge: [{ category: bookingCategory, label: bookingCategoryLabels[bookingCategory], options }]
-      }
-    ]);
+    setPipGroups([{ category: bookingCategory, label: bookingCategoryLabels[bookingCategory], options }]);
     trackActivity({ type: "concierge_quick_action", city, category, label: bookingCategory });
   }
 
@@ -218,7 +213,9 @@ export default function ChatSection({
   async function submitQuestion(value: string) {
     const trimmedQuestion = value.trim();
     if (!trimmedQuestion || loading) return;
-    const detectedCity = detectCityFromMessage(trimmedQuestion);
+    // Only switch city when the message names a real known city, so commands
+    // like "plan a trip" never swap the selected city or background image.
+    const detectedCity = detectKnownCity(trimmedQuestion);
     const activeCity = detectedCity || city;
 
     if (detectedCity && detectedCity !== city) {
@@ -233,11 +230,15 @@ export default function ChatSection({
     if (detectedIntents.length > 0) {
       setRecommended(detectedIntents);
     }
+    // Surface booking options in the picture-in-picture panel, not the chat thread.
+    if (conciergeGroups.length > 0) {
+      setPipGroups(conciergeGroups);
+    }
 
     const nextMessages: ChatMessage[] = [
       ...messages,
       { role: "user", content: trimmedQuestion },
-      { role: "assistant", content: "", concierge: conciergeGroups.length ? conciergeGroups : undefined }
+      { role: "assistant", content: "" }
     ];
 
     setLoading(true);
@@ -422,14 +423,6 @@ export default function ChatSection({
                     ) : (
                       <p>{message.content || "Thinking..."}</p>
                     )}
-                    {message.role === "assistant" && message.concierge && message.concierge.length > 0 && (
-                      <ConciergeCard
-                        groups={message.concierge}
-                        onOpen={(provider, bookingCategory) =>
-                          trackActivity({ type: "concierge_open", city, category, label: `${bookingCategory}:${provider}` })
-                        }
-                      />
-                    )}
                   </div>
                 ))}
                 {loading && (
@@ -475,6 +468,15 @@ export default function ChatSection({
           </div>
         </form>
       </div>
+
+      <ConciergePip
+        groups={pipGroups}
+        city={city}
+        onClose={() => setPipGroups(null)}
+        onOpen={(provider, bookingCategory) =>
+          trackActivity({ type: "concierge_open", city, category, label: `${bookingCategory}:${provider}` })
+        }
+      />
     </section>
   );
 }

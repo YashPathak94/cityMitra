@@ -4911,3 +4911,142 @@ body {
 .actionChip.recommended svg {
   color: var(--orange);
 }
+
+/* --- Concierge picture-in-picture panel --- */
+
+.conciergePip {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 150;
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(70vh, 560px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 247, 237, 0.96);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.28);
+  overflow: hidden;
+}
+
+.conciergePipHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(135deg, var(--orange), #f97316);
+  color: #fff;
+}
+
+.conciergePipHead span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.conciergePipHead button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  transition: background 0.2s var(--smooth);
+}
+
+.conciergePipHead button:hover {
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.conciergePipBody {
+  display: grid;
+  gap: 14px;
+  padding: 14px 16px;
+  overflow-y: auto;
+}
+
+.conciergePipGroupTitle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.conciergePipGroupTitle svg {
+  color: var(--orange);
+}
+
+.conciergePipOptions {
+  display: grid;
+  gap: 8px;
+}
+
+.conciergePipOptions a {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  padding: 10px 12px;
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth), transform 0.2s var(--smooth);
+}
+
+.conciergePipOptions a:hover {
+  border-color: rgba(234, 88, 12, 0.55);
+  box-shadow: var(--glow);
+  transform: translateY(-2px);
+}
+
+.conciergePipOptions a b {
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.conciergePipOptions a small {
+  font-size: 0.74rem;
+  color: var(--muted);
+  line-height: 1.4;
+  padding-right: 16px;
+}
+
+.conciergePipOptions a svg {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: var(--muted);
+}
+
+.conciergePipNote {
+  margin: 0;
+  padding: 10px 16px 14px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  line-height: 1.45;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 560px) {
+  .conciergePip {
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 72vh;
+    border-radius: 18px 18px 0 0;
+  }
+}

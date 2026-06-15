@@ -259,6 +259,17 @@ export function detectCityFromMessage(message: string) {
   return cleanCityCandidate(patternMatch[1]);
 }
 
+// High-confidence only: matches an explicitly named known city or alias. Used by
+// the chat so commands like "plan a trip" never get mis-read as a city named
+// "Plan" and swap the selected city / background image.
+export function detectKnownCity(message: string) {
+  const aliasMatch = Object.entries(cityAliases).find(([alias]) => new RegExp(`\\b${alias}\\b`, "i").test(message));
+
+  if (aliasMatch) return aliasMatch[1];
+
+  return knownChatCities.find((knownCity) => new RegExp(`\\b${knownCity}\\b`, "i").test(message)) || null;
+}
+
 export function detectCategoryFromText(value: string) {
   const lowerValue = value.toLowerCase();
   const directMatch = categories.find(
