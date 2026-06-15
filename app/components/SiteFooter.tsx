@@ -29,7 +29,7 @@ const footerColumns = [
       { label: "City Guides", href: "/cities" },
       { label: "Directory", href: "/#directory" },
       { label: "AI Guide", href: "/#ai" },
-      { label: "Nearby Picks", href: "/#ai" }
+      { label: "CityMitra Pro", href: "/pro" }
     ]
   },
   {

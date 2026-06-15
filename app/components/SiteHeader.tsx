@@ -10,7 +10,7 @@ const navLinks: Array<{ href: string; id?: string; label: string }> = [
   { href: "#ai", id: "ai", label: "AI Guide" },
   { href: "#directory", id: "directory", label: "Directory" },
   { href: "#nearby", id: "nearby", label: "Nearby Picks" },
-  { href: "#about", id: "about", label: "About" }
+  { href: "/pro", label: "Pro" }
 ];
 
 type SiteHeaderProps = {

@@ -17,13 +17,16 @@ import {
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { CategoryKey } from "@/data/city-directory";
 import { detectCityFromMessage, NearbyCard, UserLocation } from "@/lib/city-intel";
+import { buildConcierge } from "@/lib/booking";
 import { downloadCsvPlan, openPdfPlan, PlanExportContext } from "@/lib/export-plan";
 import { trackActivity } from "@/lib/tracking";
 import MarkdownText from "@/app/components/MarkdownText";
+import ConciergeCard, { ConciergeGroup } from "@/app/components/ConciergeCard";
 
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
+  concierge?: ConciergeGroup[];
 };
 
 const starterMessage =
@@ -156,10 +159,15 @@ export default function ChatSection({
       onCityDetected(detectedCity);
     }
 
+    const conciergeGroups = buildConcierge(trimmedQuestion, {
+      city: activeCity,
+      destination: activeCity
+    });
+
     const nextMessages: ChatMessage[] = [
       ...messages,
       { role: "user", content: trimmedQuestion },
-      { role: "assistant", content: "" }
+      { role: "assistant", content: "", concierge: conciergeGroups.length ? conciergeGroups : undefined }
     ];
 
     setLoading(true);
@@ -325,6 +333,14 @@ export default function ChatSection({
                       </>
                     ) : (
                       <p>{message.content || "Thinking..."}</p>
+                    )}
+                    {message.role === "assistant" && message.concierge && message.concierge.length > 0 && (
+                      <ConciergeCard
+                        groups={message.concierge}
+                        onOpen={(provider, bookingCategory) =>
+                          trackActivity({ type: "concierge_open", city, category, label: `${bookingCategory}:${provider}` })
+                        }
+                      />
                     )}
                   </div>
                 ))}

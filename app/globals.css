@@ -4653,3 +4653,216 @@ body {
   flex-wrap: wrap;
   margin-top: 14px;
 }
+
+/* --- Chat booking concierge card --- */
+
+.conciergeCard {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    radial-gradient(420px circle at 0% 0%, rgba(37, 99, 235, 0.08), transparent 50%),
+    linear-gradient(180deg, var(--white), var(--soft));
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.conciergeHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--orange);
+}
+
+.conciergeHead strong {
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+
+.conciergeHead span {
+  margin-left: auto;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.conciergeGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.conciergeGroupTitle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.conciergeGroupTitle svg {
+  color: var(--orange);
+}
+
+.conciergeOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.conciergeOptions a {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  padding: 10px 12px;
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth), transform 0.2s var(--smooth);
+}
+
+.conciergeOptions a:hover {
+  border-color: rgba(234, 88, 12, 0.5);
+  box-shadow: var(--glow);
+  transform: translateY(-2px);
+}
+
+.conciergeOptions a b {
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.conciergeOptions a small {
+  font-size: 0.74rem;
+  color: var(--muted);
+  line-height: 1.4;
+  padding-right: 16px;
+}
+
+.conciergeOptions a svg {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: var(--muted);
+}
+
+.conciergeNote {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* --- CityMitra Pro page --- */
+
+.proHero {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background:
+    radial-gradient(520px circle at 85% 0%, rgba(234, 88, 12, 0.16), transparent 55%),
+    radial-gradient(420px circle at 0% 100%, rgba(37, 99, 235, 0.12), transparent 55%),
+    linear-gradient(180deg, var(--white), var(--soft));
+  padding: clamp(24px, 5vw, 44px);
+  margin-bottom: 14px;
+}
+
+.proHero h1 {
+  margin: 10px 0 12px;
+}
+
+.proHero > p {
+  max-width: 640px;
+  margin: 0 0 16px;
+}
+
+.proPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.proPrice strong {
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.proPrice span {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.proCheckout {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.proSecure {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.proError {
+  margin: 4px 0 0;
+  color: var(--red);
+  font-size: 0.85rem;
+}
+
+.proSuccess {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #86efac;
+  border-radius: 14px;
+  background: #f0fdf4;
+  color: #14532d;
+  padding: 14px 18px;
+  font-size: 0.95rem;
+}
+
+.proFeatureList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 11px;
+}
+
+.proFeatureList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.proFeatureList svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--green);
+}
+
+.proBlock {
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
