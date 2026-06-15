@@ -24,7 +24,11 @@ export default function WelcomeIntro({ onAskAI, onEnableLocation }: WelcomeIntro
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.sessionStorage.getItem(seenKey)) return;
-    const timer = window.setTimeout(() => setOpen(true), 450);
+    const timer = window.setTimeout(() => {
+      // Bring the Destination Finder into view so the intro opens in front of it.
+      document.getElementById("directory")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setOpen(true);
+    }, 500);
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -109,7 +113,7 @@ export default function WelcomeIntro({ onAskAI, onEnableLocation }: WelcomeIntro
                 }}
               >
                 <Navigation size={15} />
-                Use my location
+                Auto-detect my location
               </button>
             </div>
           </motion.aside>
