@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, Camera, Compass, Map, MapPinned, Navigation, Sparkles } from "lucide-react";
-import { categories, cities } from "@/data/city-directory";
+import { categories } from "@/data/city-directory";
 import { UserLocation } from "@/lib/city-intel";
 import { mapEmbedUrl, mapSearchUrl } from "@/lib/maps";
 
@@ -80,7 +80,7 @@ export default function Hero({
                 <b>{categories.length}</b> categories
               </span>
               <span>
-                <b>{cities.length}</b> launch cities
+                <b>500+</b> cities
               </span>
               <span>
                 <b>AI</b> route advice

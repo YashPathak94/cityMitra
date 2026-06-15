@@ -91,11 +91,6 @@ export const cityVisuals: Record<string, { image: string; label: string; positio
     label: "Jaipur bazaar",
     position: "center"
   },
-  Surat: {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Surat%20Clock%20Tower.jpg",
-    label: "Surat trade",
-    position: "center"
-  },
   Hyderabad: {
     image: "https://commons.wikimedia.org/wiki/Special:FilePath/Charminar%20Hyderabad%201.jpg",
     label: "Hyderabad heritage",

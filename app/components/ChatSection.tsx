@@ -246,10 +246,15 @@ export default function ChatSection({
     setMessages(nextMessages);
     trackActivity({ type: "chat_submit", city: activeCity, category, label: trimmedQuestion.slice(0, 80) });
 
+    // Abort if the server stalls, so the chat never gets stuck spinning.
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 45000);
+
     try {
       const response = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           question: trimmedQuestion,
           city: activeCity,
@@ -258,8 +263,8 @@ export default function ChatSection({
         })
       });
 
-      if (!response.body) {
-        const fallbackText = await response.text();
+      if (!response.ok || !response.body) {
+        const fallbackText = (await response.text().catch(() => "")) || "CityMitra is busy right now. Please try again in a moment.";
         setMessages((current) =>
           current.map((message, index) =>
             index === current.length - 1 ? { ...message, content: fallbackText } : message
@@ -292,15 +297,22 @@ export default function ChatSection({
             : message
         )
       );
-    } catch {
+    } catch (error) {
+      const aborted = error instanceof DOMException && error.name === "AbortError";
       setMessages((current) =>
         current.map((message, index) =>
           index === current.length - 1
-            ? { ...message, content: "CityMitra is offline right now. Try again once the server is running." }
+            ? {
+                ...message,
+                content: aborted
+                  ? "That took too long, so I stopped waiting. Please try again."
+                  : "CityMitra is offline right now. Try again once the server is running."
+              }
             : message
         )
       );
     } finally {
+      window.clearTimeout(timeout);
       setLoading(false);
     }
   }
@@ -333,7 +345,7 @@ export default function ChatSection({
             </span>
             <span>
               <Bot size={16} />
-              OpenAI-ready
+              Booking concierge
             </span>
           </div>
         </div>
