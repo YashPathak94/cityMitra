@@ -4900,3 +4900,14 @@ body {
   box-shadow: var(--glow);
   transform: translateY(-2px);
 }
+
+.actionChip.recommended {
+  border-color: rgba(234, 88, 12, 0.6);
+  background: linear-gradient(135deg, #fff, #ffe9d8);
+  color: var(--orange);
+  box-shadow: 0 8px 22px rgba(234, 88, 12, 0.14);
+}
+
+.actionChip.recommended svg {
+  color: var(--orange);
+}

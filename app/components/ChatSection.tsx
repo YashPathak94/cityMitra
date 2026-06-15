@@ -20,10 +20,10 @@ import {
   Trash2,
   UtensilsCrossed
 } from "lucide-react";
-import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { CategoryKey } from "@/data/city-directory";
 import { detectCityFromMessage, NearbyCard, UserLocation } from "@/lib/city-intel";
-import { buildBookingOptions, buildConcierge, BookingCategory, bookingCategoryLabels } from "@/lib/booking";
+import { buildBookingOptions, buildConcierge, BookingCategory, bookingCategoryLabels, categoryToBooking, detectBookingIntents } from "@/lib/booking";
 import { downloadCsvPlan, openPdfPlan, PlanExportContext } from "@/lib/export-plan";
 import { trackActivity } from "@/lib/tracking";
 import MarkdownText from "@/app/components/MarkdownText";
@@ -79,8 +79,33 @@ export default function ChatSection({
   const [messages, setMessages] = useState<ChatMessage[]>([{ role: "assistant", content: starterMessage }]);
   const [loading, setLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [recommended, setRecommended] = useState<BookingCategory[]>([]);
   const chatWindowRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const autoPromptRef = useRef("");
+
+  // Order chips so the selected category's match comes first, then anything the
+  // user just asked about (recommended), then the rest.
+  const orderedChips = useMemo(() => {
+    const primary = categoryToBooking[category];
+    const priority = new Set<BookingCategory>([...(primary ? [primary] : []), ...recommended]);
+    return [...actionChips].sort((a, b) => {
+      const aScore = priority.has(a.category) ? 0 : 1;
+      const bScore = priority.has(b.category) ? 0 : 1;
+      return aScore - bScore;
+    });
+  }, [category, recommended]);
+
+  // Adaptive pre-filled prompt that follows the selected city + category, as long
+  // as the user has not typed their own text.
+  useEffect(() => {
+    const suggestion = `Best ${categoryLabel.toLowerCase()} in ${city} — quick picks with timings`;
+    if (question === "" || question === autoPromptRef.current) {
+      autoPromptRef.current = suggestion;
+      setQuestion(suggestion);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city, category]);
 
   const hasConversation = messages.some((message) => message.role === "user");
   const followUps = hasConversation
@@ -184,6 +209,10 @@ export default function ChatSection({
       city: activeCity,
       destination: activeCity
     });
+    const detectedIntents = detectBookingIntents(trimmedQuestion);
+    if (detectedIntents.length > 0) {
+      setRecommended(detectedIntents);
+    }
 
     const nextMessages: ChatMessage[] = [
       ...messages,
@@ -302,10 +331,16 @@ export default function ChatSection({
             </div>
           </div>
           <div className="actionChips" aria-label={`Quick actions for ${city}`}>
-            {actionChips.map((chip) => {
+            {orderedChips.map((chip) => {
               const Icon = chip.icon;
+              const isPrimary = categoryToBooking[category] === chip.category || recommended.includes(chip.category);
               return (
-                <button key={chip.category} type="button" className="actionChip" onClick={() => openConciergeFor(chip.category)}>
+                <button
+                  key={chip.category}
+                  type="button"
+                  className={isPrimary ? "actionChip recommended" : "actionChip"}
+                  onClick={() => openConciergeFor(chip.category)}
+                >
                   <Icon size={15} />
                   {chip.label}
                 </button>

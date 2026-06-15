@@ -65,30 +65,50 @@ function enc(value?: string) {
   return encodeURIComponent((value || "").trim());
 }
 
+function citySlug(value?: string) {
+  return (value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-");
+}
+
+// Maps a CityMitra directory category to the most relevant booking category,
+// so the chat can surface the right action chip first.
+export const categoryToBooking: Record<string, BookingCategory> = {
+  hotels: "hotels",
+  dinner: "food",
+  food: "food",
+  hospitals: "doctor",
+  sightseeing: "hotels",
+  petrol: "cabs",
+  repair: "cabs"
+};
+
 export function buildBookingOptions(category: BookingCategory, context: BookingContext): BookingOption[] {
   const destination = context.destination || context.city || "";
-  const origin = context.origin || "";
+  const slug = citySlug(destination);
 
   switch (category) {
     case "flights":
       return [
         {
-          provider: "skyscanner",
-          label: "Skyscanner",
-          url: withAffiliate("https://www.skyscanner.co.in/transport/flights/", "skyscanner"),
-          note: "Compare airlines and find the cheapest dates"
-        },
-        {
           provider: "makemytrip",
           label: "MakeMyTrip",
           url: withAffiliate("https://www.makemytrip.com/flights/", "makemytrip"),
-          note: "Popular in India, frequent fare offers"
+          note: "India-first fares and offers"
+        },
+        {
+          provider: "skyscanner",
+          label: "Skyscanner",
+          url: withAffiliate("https://www.skyscanner.co.in/", "skyscanner"),
+          note: "Compare every airline"
         },
         {
           provider: "googleflights",
           label: "Google Flights",
-          url: withAffiliate(`https://www.google.com/travel/flights?q=${enc(`flights ${origin} to ${destination}`)}`, "googleflights"),
-          note: "Fast price calendar and tracking"
+          url: withAffiliate(`https://www.google.com/travel/flights?q=${enc(`Flights to ${destination}`)}`, "googleflights"),
+          note: "Price calendar and tracking"
         }
       ];
     case "hotels":
@@ -97,25 +117,25 @@ export function buildBookingOptions(category: BookingCategory, context: BookingC
           provider: "booking",
           label: "Booking.com",
           url: withAffiliate(`https://www.booking.com/searchresults.html?ss=${enc(destination)}`, "booking"),
-          note: "Largest inventory, free cancellation filters"
-        },
-        {
-          provider: "agoda",
-          label: "Agoda",
-          url: withAffiliate(`https://www.agoda.com/search?city=${enc(destination)}`, "agoda"),
-          note: "Strong deals across Asia"
+          note: `Stays in ${destination || "your city"}`
         },
         {
           provider: "makemytrip",
           label: "MakeMyTrip",
-          url: withAffiliate(`https://www.makemytrip.com/hotels/hotel-listing/?city=${enc(destination)}`, "makemytrip"),
-          note: "India-first, wallet offers"
+          url: withAffiliate("https://www.makemytrip.com/hotels/", "makemytrip"),
+          note: "Wallet offers, India-wide"
+        },
+        {
+          provider: "agoda",
+          label: "Agoda",
+          url: withAffiliate("https://www.agoda.com/", "agoda"),
+          note: "Strong deals across Asia"
         },
         {
           provider: "scapia",
           label: "Scapia",
           url: withAffiliate("https://www.scapia.com/", "scapia"),
-          note: "Travel card rewards on stays"
+          note: "Travel-card rewards"
         }
       ];
     case "trains":
@@ -124,13 +144,13 @@ export function buildBookingOptions(category: BookingCategory, context: BookingC
           provider: "irctc",
           label: "IRCTC",
           url: withAffiliate("https://www.irctc.co.in/nget/train-search", "irctc"),
-          note: "Official Indian Railways booking"
+          note: "Official railway booking"
         },
         {
           provider: "confirmtkt",
           label: "ConfirmTkt",
-          url: withAffiliate(`https://www.confirmtkt.com/rbooking-train-tickets/${enc(origin)}-to-${enc(destination)}`, "confirmtkt"),
-          note: "Seat availability and waitlist prediction"
+          url: withAffiliate("https://www.confirmtkt.com/", "confirmtkt"),
+          note: "Seat & waitlist prediction"
         }
       ];
     case "food":
@@ -138,14 +158,14 @@ export function buildBookingOptions(category: BookingCategory, context: BookingC
         {
           provider: "zomato",
           label: "Zomato",
-          url: withAffiliate(`https://www.zomato.com/${enc(destination.toLowerCase())}/restaurants`, "zomato"),
-          note: "Reviews, menus, and table reservations"
+          url: withAffiliate(slug ? `https://www.zomato.com/${slug}/restaurants` : "https://www.zomato.com/", "zomato"),
+          note: "Menus, reviews, reservations"
         },
         {
           provider: "googlemaps",
           label: "Maps: restaurants",
-          url: withAffiliate(`https://www.google.com/maps/search/${enc(`best restaurants in ${destination}`)}`, "googlemaps"),
-          note: "See ratings and directions nearby"
+          url: withAffiliate(`https://www.google.com/maps/search/${enc(`restaurants in ${destination}`)}`, "googlemaps"),
+          note: "Ratings and directions"
         }
       ];
     case "cabs":
@@ -154,13 +174,13 @@ export function buildBookingOptions(category: BookingCategory, context: BookingC
           provider: "uber",
           label: "Uber",
           url: withAffiliate("https://m.uber.com/", "uber"),
-          note: "Book a ride to your destination"
+          note: "Book a ride"
         },
         {
           provider: "ola",
           label: "Ola",
-          url: withAffiliate("https://book.olacabs.com/", "ola"),
-          note: "India-wide cabs and autos"
+          url: withAffiliate("https://www.olacabs.com/", "ola"),
+          note: "Cabs and autos"
         }
       ];
     case "doctor":
@@ -168,8 +188,14 @@ export function buildBookingOptions(category: BookingCategory, context: BookingC
         {
           provider: "practo",
           label: "Practo",
-          url: withAffiliate(`https://www.practo.com/${enc(destination.toLowerCase())}`, "practo"),
-          note: "Find doctors and book appointments"
+          url: withAffiliate(slug ? `https://www.practo.com/${slug}` : "https://www.practo.com/", "practo"),
+          note: "Find doctors & appointments"
+        },
+        {
+          provider: "googlemaps",
+          label: "Maps: clinics",
+          url: withAffiliate(`https://www.google.com/maps/search/${enc(`clinics and hospitals in ${destination}`)}`, "googlemaps"),
+          note: "Nearby, with directions"
         }
       ];
     default:
