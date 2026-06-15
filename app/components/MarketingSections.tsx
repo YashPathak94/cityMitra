@@ -5,70 +5,10 @@ import {
   Bot,
   Building2,
   Compass,
-  HandCoins,
-  LayoutDashboard,
   MapPinned,
-  Megaphone,
-  Sparkles,
-  Store
+  Sparkles
 } from "lucide-react";
 import Reveal from "@/app/components/motion/Reveal";
-
-const monetizeCards = [
-  {
-    icon: Store,
-    title: "Featured listings",
-    text: "Shopkeepers pay for verified placement, photos, offers, and peak-hour visibility."
-  },
-  {
-    icon: Megaphone,
-    title: "Lead routing",
-    text: "Hotels, repair shops, clinics, and stores receive qualified clicks from high-intent searches."
-  },
-  {
-    icon: LayoutDashboard,
-    title: "Vendor dashboard",
-    text: "Paid partners track views, map opens, category demand, and chat-driven leads."
-  },
-  {
-    icon: HandCoins,
-    title: "City sponsorships",
-    text: "Local brands sponsor categories like food trails, shopping routes, and travel plans."
-  }
-];
-
-export function MonetizeSection() {
-  return (
-    <section className="monetizeBand" id="monetize">
-      <Reveal>
-        <div className="sectionHeader">
-          <div>
-            <span className="sectionKicker">Revenue Engine</span>
-            <h2>Monetize local intent without making the app noisy</h2>
-          </div>
-          <p>Keep the user experience minimal, then charge businesses for useful placement, trust, and analytics.</p>
-        </div>
-      </Reveal>
-      <div className="monetizeGrid bentoGrid">
-        {monetizeCards.map((card, index) => {
-          const Icon = card.icon;
-          return (
-            <Reveal key={card.title} delay={index * 0.07}>
-              <article className="bentoCard">
-                <span className="bentoIcon">
-                  <Icon size={19} />
-                </span>
-                <span className="bentoIndex">{String(index + 1).padStart(2, "0")}</span>
-                <h3>{card.title}</h3>
-                <p>{card.text}</p>
-              </article>
-            </Reveal>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
 
 const roadmapCards = [
   {

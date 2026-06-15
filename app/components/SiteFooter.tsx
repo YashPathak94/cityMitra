@@ -35,10 +35,10 @@ const footerColumns = [
   {
     title: "Business",
     links: [
-      { label: "Monetize", href: "/#monetize" },
-      { label: "Roadmap", href: "/#coverage" },
-      { label: "Featured Listings", href: "/#monetize" },
-      { label: "Sponsorships", href: "/#monetize" }
+      { label: "Partner & Advertise", href: "/partner" },
+      { label: "Featured Listings", href: "/partner#featured-listings" },
+      { label: "Sponsorships", href: "/partner#sponsorships" },
+      { label: "Roadmap", href: "/#coverage" }
     ]
   },
   {

@@ -27,7 +27,7 @@ import LocationPrompt from "@/app/components/LocationPrompt";
 import NearbyPanel from "@/app/components/NearbyPanel";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
-import { AboutSection, CoverageSection, MonetizeSection } from "@/app/components/MarketingSections";
+import { AboutSection, CoverageSection } from "@/app/components/MarketingSections";
 
 export default function Home() {
   const [city, setCity] = useState<string>("Delhi");
@@ -348,7 +348,6 @@ export default function Home() {
         }
       />
 
-      <MonetizeSection />
       <CoverageSection />
       <AboutSection />
 
