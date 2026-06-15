@@ -24,6 +24,7 @@ import ChatSection from "@/app/components/ChatSection";
 import DirectoryExplorer from "@/app/components/DirectoryExplorer";
 import Hero from "@/app/components/Hero";
 import LocationPrompt from "@/app/components/LocationPrompt";
+import WelcomeIntro from "@/app/components/WelcomeIntro";
 import NearbyPanel from "@/app/components/NearbyPanel";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
@@ -120,11 +121,8 @@ export default function Home() {
       }
     }
 
-    const promptChoice = window.localStorage.getItem(locationPromptKey);
-    if (!promptChoice) {
-      const promptTimer = window.setTimeout(() => setShowLocationPrompt(true), 700);
-      return () => window.clearTimeout(promptTimer);
-    }
+    // The welcome intro now owns the on-load moment and offers location there,
+    // so we no longer auto-pop the separate location prompt on first load.
   }, []);
 
   useEffect(() => {
@@ -171,6 +169,13 @@ export default function Home() {
   function openTrackedMap(query: string, label: string) {
     trackActivity({ type: "map_open", city, category, label });
     window.open(mapDirectionsUrl(query, userLocation), "_blank", "noreferrer");
+  }
+
+  // Opens a Maps SEARCH (multiple pins) so the user can see several top spots
+  // and pick one to navigate to, instead of jumping to a single destination.
+  function openTrackedSearch(query: string, label: string) {
+    trackActivity({ type: "map_search", city, category, label });
+    window.open(mapSearchUrl(query, userLocation), "_blank", "noreferrer");
   }
 
   function openNearbyOptionsMap() {
@@ -284,6 +289,10 @@ export default function Home() {
   return (
     <MotionConfig reducedMotion="user">
       <main id="main">
+      <WelcomeIntro
+        onAskAI={() => document.getElementById("ai")?.scrollIntoView({ behavior: "smooth" })}
+        onEnableLocation={requestNearbyLocation}
+      />
       <LocationPrompt
         open={showLocationPrompt}
         hasLocation={Boolean(userLocation)}
@@ -316,6 +325,7 @@ export default function Home() {
         onMoveFrame={moveCategoryFrame}
         onSetFrame={setCategoryFrameIndex}
         onOpenMap={openTrackedMap}
+        onSearchMap={openTrackedSearch}
       />
 
       <ChatSection

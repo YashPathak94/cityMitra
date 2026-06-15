@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, Map, MapPin, Navigation } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { CSSProperties, useEffect, useState } from "react";
 import { categories, CategoryKey, DirectoryItem } from "@/data/city-directory";
@@ -22,6 +22,7 @@ type DirectoryExplorerProps = {
   onMoveFrame: (direction: -1 | 1) => void;
   onSetFrame: (index: number) => void;
   onOpenMap: (query: string, label: string) => void;
+  onSearchMap: (query: string, label: string) => void;
 };
 
 export default function DirectoryExplorer({
@@ -35,7 +36,8 @@ export default function DirectoryExplorer({
   onSelectCategory,
   onMoveFrame,
   onSetFrame,
-  onOpenMap
+  onOpenMap,
+  onSearchMap
 }: DirectoryExplorerProps) {
   const selectedCategory = categories.find((item) => item.key === category);
   const SelectedCategoryIcon = selectedCategory?.icon;
@@ -178,14 +180,30 @@ export default function DirectoryExplorer({
                         <span>{item.eta}</span>
                         <span>{isVerified ? "Verified" : "Smart"}</span>
                       </div>
-                      <button type="button" onClick={() => onOpenMap(item.query, `directory_${item.name}`)}>
-                        Open route <ExternalLink size={14} />
-                      </button>
+                      <div className="cardMapActions">
+                        <button type="button" onClick={() => onSearchMap(item.query, `directory_show_${item.name}`)}>
+                          <MapPin size={14} />
+                          Show on map
+                        </button>
+                        <button type="button" className="ghostMapBtn" onClick={() => onOpenMap(item.query, `directory_route_${item.name}`)}>
+                          <Navigation size={14} />
+                          Directions
+                        </button>
+                      </div>
                     </article>
                   );
                 })}
               </div>
             </div>
+
+            <button
+              type="button"
+              className="viewAllOnMap"
+              onClick={() => onSearchMap(`top ${selectedCategory?.label || category} in ${city}`, "directory_all_map")}
+            >
+              <Map size={15} />
+              View all top {selectedCategory?.label?.toLowerCase() || "spots"} in {city} on the map
+            </button>
 
             <div className="resultDots" aria-label="Category result progress">
               {selectedItems.map((item, index) => (
