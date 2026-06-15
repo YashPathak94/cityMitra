@@ -4866,3 +4866,37 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* --- Chat quick action chips (booking) --- */
+
+.actionChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.actionChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--white), var(--soft));
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 9px 14px;
+  min-height: 40px;
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth), transform 0.2s var(--smooth);
+}
+
+.actionChip svg {
+  color: var(--orange);
+}
+
+.actionChip:hover {
+  border-color: rgba(234, 88, 12, 0.55);
+  box-shadow: var(--glow);
+  transform: translateY(-2px);
+}

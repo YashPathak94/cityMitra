@@ -2,22 +2,28 @@
 
 import {
   ArrowRight,
+  BedDouble,
   Bot,
+  Car,
   Check,
   ChevronDown,
   ChevronUp,
   Compass,
   Copy,
   FileText,
+  Plane,
   Search,
   Sparkles,
+  Stethoscope,
   Table,
-  Trash2
+  TrainFront,
+  Trash2,
+  UtensilsCrossed
 } from "lucide-react";
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { CategoryKey } from "@/data/city-directory";
 import { detectCityFromMessage, NearbyCard, UserLocation } from "@/lib/city-intel";
-import { buildConcierge } from "@/lib/booking";
+import { buildBookingOptions, buildConcierge, BookingCategory, bookingCategoryLabels } from "@/lib/booking";
 import { downloadCsvPlan, openPdfPlan, PlanExportContext } from "@/lib/export-plan";
 import { trackActivity } from "@/lib/tracking";
 import MarkdownText from "@/app/components/MarkdownText";
@@ -32,17 +38,16 @@ type ChatMessage = {
 const starterMessage =
   "Tell me the city, vibe, budget, and time you have. I will map the spots, backup services, and time-saving route. Yes, an actual plan, not a 47-tab research spiral.";
 
-const quickPrompts = [
-  "Plan Leh for 3 days with route table",
-  "Prayagraj hotels and food",
-  "Ayodhya trip planner",
-  "Tell me about Indore food",
-  "Darjeeling route planner",
-  "Shillong cafes and viewpoints",
-  "Best dinner under 45 minutes",
-  "Shopping plus hospital backup",
-  "Petrol and repair before a road trip"
+const actionChips: Array<{ category: BookingCategory; label: string; icon: typeof Plane }> = [
+  { category: "hotels", label: "Book hotels", icon: BedDouble },
+  { category: "flights", label: "Book flights", icon: Plane },
+  { category: "trains", label: "Book trains", icon: TrainFront },
+  { category: "food", label: "Reserve a table", icon: UtensilsCrossed },
+  { category: "cabs", label: "Book a cab", icon: Car },
+  { category: "doctor", label: "Doctor visit", icon: Stethoscope }
 ];
+
+const planPrompts = ["Make a 1-day plan", "Weekend trip", "Hidden gems", "Budget plan"];
 
 type ChatSectionProps = {
   city: string;
@@ -99,6 +104,22 @@ export default function ChatSection({
     setMessages([{ role: "assistant", content: starterMessage }]);
     setQuestion("");
     trackActivity({ type: "chat_clear", city, category });
+  }
+
+  // Instant, no-AI-call action: drop a concierge card for one category.
+  function openConciergeFor(bookingCategory: BookingCategory) {
+    const options = buildBookingOptions(bookingCategory, { city, destination: city });
+    if (options.length === 0) return;
+
+    setMessages((current) => [
+      ...current,
+      {
+        role: "assistant",
+        content: `**${bookingCategoryLabels[bookingCategory]} in ${city}** — tap to compare and book:`,
+        concierge: [{ category: bookingCategory, label: bookingCategoryLabels[bookingCategory], options }]
+      }
+    ]);
+    trackActivity({ type: "concierge_quick_action", city, category, label: bookingCategory });
   }
 
   function scrollChat(position: "top" | "bottom") {
@@ -280,14 +301,26 @@ export default function ChatSection({
               </button>
             </div>
           </div>
+          <div className="actionChips" aria-label={`Quick actions for ${city}`}>
+            {actionChips.map((chip) => {
+              const Icon = chip.icon;
+              return (
+                <button key={chip.category} type="button" className="actionChip" onClick={() => openConciergeFor(chip.category)}>
+                  <Icon size={15} />
+                  {chip.label}
+                </button>
+              );
+            })}
+          </div>
           <div className="quickPrompts">
-            {quickPrompts.map((prompt) => (
+            {planPrompts.map((prompt) => (
               <button
                 key={prompt}
                 type="button"
                 onClick={() => {
-                  setQuestion(prompt);
-                  trackActivity({ type: "quick_prompt", city, category, label: prompt });
+                  const fullPrompt = `${prompt} for ${city}`;
+                  setQuestion(fullPrompt);
+                  trackActivity({ type: "quick_prompt", city, category, label: fullPrompt });
                 }}
               >
                 {prompt}
