@@ -49,6 +49,9 @@ const actionChips: Array<{ category: BookingCategory; label: string; icon: typeo
 
 const planPrompts = ["Make a 1-day plan", "Weekend trip", "Hidden gems", "Budget plan"];
 
+const chatPlaceholder =
+  "Plan a Leh trip with places, altitude, hospitals, petrol, repairs, hotels and shopping.";
+
 type ChatSectionProps = {
   city: string;
   category: CategoryKey;
@@ -83,6 +86,8 @@ export default function ChatSection({
   const chatWindowRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const autoPromptRef = useRef("");
+  const prevCategoryRef = useRef(category);
+  const initialisedRef = useRef(false);
 
   // Order chips so the selected category's match comes first, then anything the
   // user just asked about (recommended), then the rest.
@@ -96,13 +101,28 @@ export default function ChatSection({
     });
   }, [category, recommended]);
 
-  // Adaptive pre-filled prompt that follows the selected city + category, as long
-  // as the user has not typed their own text.
+  // On city/category change: combine them into one smart prompt (unless the user
+  // typed their own), and auto-open the most relevant concierge when a mapped
+  // category is selected. The first render is skipped so the box starts empty and
+  // shows the example watermark.
   useEffect(() => {
-    const suggestion = `Best ${categoryLabel.toLowerCase()} in ${city} — quick picks with timings`;
+    const categoryChanged = prevCategoryRef.current !== category;
+    prevCategoryRef.current = category;
+
+    if (!initialisedRef.current) {
+      initialisedRef.current = true;
+      return;
+    }
+
+    const smartPrompt = `Plan ${categoryLabel.toLowerCase()} in ${city}: top picks, timings, and a quick route`;
     if (question === "" || question === autoPromptRef.current) {
-      autoPromptRef.current = suggestion;
-      setQuestion(suggestion);
+      autoPromptRef.current = smartPrompt;
+      setQuestion(smartPrompt);
+    }
+
+    if (categoryChanged) {
+      const booking = categoryToBooking[category];
+      if (booking) openConciergeFor(booking);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city, category]);
@@ -441,7 +461,7 @@ export default function ChatSection({
                   value={question}
                   onChange={(event) => setQuestion(event.target.value)}
                   onKeyDown={handleQuestionKeyDown}
-                  placeholder="Ask anything city-related. Press Enter to send, Shift+Enter for a new line."
+                  placeholder={chatPlaceholder}
                 />
                 <button className="primaryButton" disabled={loading} type="submit">
                   {loading ? "Mapping..." : "Send"} <ArrowRight size={18} />

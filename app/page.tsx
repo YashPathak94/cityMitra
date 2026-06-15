@@ -37,7 +37,7 @@ export default function Home() {
   const [locationStatus, setLocationStatus] = useState("Use nearby location for smarter map routes.");
   const [categoryFrameIndex, setCategoryFrameIndex] = useState(0);
   const [nearbyFrameIndex, setNearbyFrameIndex] = useState(0);
-  const [question, setQuestion] = useState("Plan a Leh trip with places, altitude, hospitals, petrol, repairs, hotels and shopping.");
+  const [question, setQuestion] = useState("");
   const [frameResetKey, setFrameResetKey] = useState(`${city}-${category}`);
 
   if (frameResetKey !== `${city}-${category}`) {
