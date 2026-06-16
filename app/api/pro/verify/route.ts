@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { appendActivity } from "@/lib/storage";
+import { readSessionToken, SESSION_COOKIE } from "@/lib/auth";
+import { appendActivity, setUserPro } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
@@ -37,12 +38,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
   }
 
+  // upgrade the logged-in account to Pro (best-effort)
+  const session = readSessionToken(request.cookies.get(SESSION_COOKIE)?.value);
+  if (session) {
+    await setUserPro(session.email, true).catch((error) => console.error("pro upgrade failed", error));
+  }
+
   // record the successful purchase as an activity event (best-effort)
   await appendActivity({
     type: "pro_purchase",
-    label: `${razorpay_order_id} ${payload?.email || ""}`.trim().slice(0, 160),
+    label: `${razorpay_order_id} ${session?.email || payload?.email || ""}`.trim().slice(0, 160),
     timestamp: new Date().toISOString()
   }).catch((error) => console.error("pro purchase record failed", error));
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, isPro: Boolean(session) });
 }

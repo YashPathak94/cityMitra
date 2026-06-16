@@ -82,6 +82,14 @@ create table if not exists newsletter (
 
 alter table activity enable row level security;
 alter table newsletter enable row level security;
+
+create table if not exists users (
+  email text primary key,
+  password_hash text not null,
+  is_pro boolean not null default false,
+  created_at timestamptz not null default now()
+);
+alter table users enable row level security;
 ```
 
 (No public policies needed - the app uses the service-role key server-side, and RLS

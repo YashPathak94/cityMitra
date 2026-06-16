@@ -27,7 +27,7 @@ function loadRazorpayScript() {
   });
 }
 
-export default function ProCheckout({ priceInr }: { priceInr: number }) {
+export default function ProCheckout({ priceInr, onPurchased }: { priceInr: number; onPurchased?: () => void }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
 
@@ -78,6 +78,7 @@ export default function ProCheckout({ priceInr }: { priceInr: number }) {
             setStatus("success");
             setMessage("Welcome to CityMitra Pro! Your payment is confirmed.");
             trackActivity({ type: "pro_purchase_confirmed", label: response.razorpay_order_id });
+            onPurchased?.();
           } else {
             setStatus("error");
             setMessage("Payment captured but verification failed. Contact support with your payment id.");

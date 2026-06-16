@@ -18,9 +18,17 @@ export type Subscriber = {
   subscribedAt: string;
 };
 
+export type User = {
+  email: string;
+  passwordHash: string;
+  isPro: boolean;
+  createdAt: string;
+};
+
 const storageDir = path.join(process.cwd(), ".citymitra");
 const activityFile = path.join(storageDir, "activity.json");
 const subscribersFile = path.join(storageDir, "newsletter.json");
+const usersFile = path.join(storageDir, "users.json");
 
 let cachedClient: SupabaseClient | null | undefined;
 
@@ -234,4 +242,63 @@ export async function readSubscribers(): Promise<Subscriber[]> {
   }
 
   return (await readJsonFile<Subscriber>(subscribersFile)).reverse();
+}
+
+export async function getUserByEmail(email: string): Promise<User | null> {
+  const client = supabase();
+
+  if (client) {
+    const { data, error } = await client
+      .from("users")
+      .select("email, password_hash, is_pro, created_at")
+      .eq("email", email)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return null;
+    return {
+      email: data.email as string,
+      passwordHash: data.password_hash as string,
+      isPro: Boolean(data.is_pro),
+      createdAt: data.created_at as string
+    };
+  }
+
+  const users = await readJsonFile<User>(usersFile);
+  return users.find((user) => user.email === email) || null;
+}
+
+export async function createUser(email: string, passwordHash: string): Promise<User> {
+  const client = supabase();
+  const record: User = { email, passwordHash, isPro: false, createdAt: new Date().toISOString() };
+
+  if (client) {
+    const { error } = await client.from("users").insert({
+      email,
+      password_hash: passwordHash,
+      is_pro: false
+    });
+    if (error) throw new Error(error.message);
+    return record;
+  }
+
+  await mkdir(storageDir, { recursive: true });
+  const users = await readJsonFile<User>(usersFile);
+  users.push(record);
+  await writeFile(usersFile, JSON.stringify(users, null, 2));
+  return record;
+}
+
+export async function setUserPro(email: string, isPro: boolean) {
+  const client = supabase();
+
+  if (client) {
+    const { error } = await client.from("users").update({ is_pro: isPro }).eq("email", email);
+    if (error) throw new Error(error.message);
+    return;
+  }
+
+  const users = await readJsonFile<User>(usersFile);
+  const next = users.map((user) => (user.email === email ? { ...user, isPro } : user));
+  await mkdir(storageDir, { recursive: true });
+  await writeFile(usersFile, JSON.stringify(next, null, 2));
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { BadgeCheck, Check } from "lucide-react";
 import PageShell from "@/app/components/PageShell";
-import ProCheckout from "@/app/components/ProCheckout";
+import ProAccess from "@/app/components/ProAccess";
 import { proFeatures, proPriceInr } from "@/lib/pro";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://citymitra.vercel.app";
@@ -46,7 +46,7 @@ export default function ProPage() {
             <strong>₹{proPriceInr}</strong>
             <span>per month · cancel anytime</span>
           </div>
-          <ProCheckout priceInr={proPriceInr} />
+          <ProAccess priceInr={proPriceInr} />
         </header>
 
         <section>
