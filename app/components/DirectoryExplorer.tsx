@@ -67,38 +67,49 @@ export default function DirectoryExplorer({
       </div>
 
       <div className="filters">
-        <div className="filterGroup" aria-label="City selector">
-          {visibleCities.map((item) => (
-            <motion.button
-              className={city === item ? "active" : ""}
-              key={item}
-              onClick={() => onSelectCity(item)}
-              whileHover={{ y: -3, scale: 1.04 }}
-              whileTap={{ scale: 0.94 }}
-              transition={chipSpring}
-            >
-              {item}
-            </motion.button>
-          ))}
-        </div>
-        <div className="categoryGrid">
-          {categories.map((item) => {
-            const Icon = item.icon;
-            return (
+        <div className="filterBlock">
+          <span className="filterLabel">
+            <b>1</b> Choose your city
+          </span>
+          <div className="filterGroup" aria-label="City selector">
+            {visibleCities.map((item) => (
               <motion.button
-                className={category === item.key ? "category active" : "category"}
-                key={item.key}
-                onClick={() => onSelectCategory(item.key)}
-                title={item.label}
+                className={city === item ? "active" : ""}
+                key={item}
+                onClick={() => onSelectCity(item)}
                 whileHover={{ y: -3, scale: 1.04 }}
                 whileTap={{ scale: 0.94 }}
                 transition={chipSpring}
               >
-                <Icon size={18} />
-                <span>{item.label}</span>
+                {item}
               </motion.button>
-            );
-          })}
+            ))}
+          </div>
+        </div>
+
+        <div className="filterBlock">
+          <span className="filterLabel">
+            <b>2</b> Pick a category in {city}
+          </span>
+          <div className="categoryGrid">
+            {categories.map((item) => {
+              const Icon = item.icon;
+              return (
+                <motion.button
+                  className={category === item.key ? "category active" : "category"}
+                  key={item.key}
+                  onClick={() => onSelectCategory(item.key)}
+                  title={item.label}
+                  whileHover={{ y: -3, scale: 1.04 }}
+                  whileTap={{ scale: 0.94 }}
+                  transition={chipSpring}
+                >
+                  <Icon size={18} />
+                  <span>{item.label}</span>
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

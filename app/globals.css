@@ -5495,3 +5495,70 @@ body {
   line-height: 1.5;
   word-break: break-word;
 }
+
+/* --- Destination Finder: labeled steps + mobile chip rails --- */
+
+.filterBlock {
+  display: grid;
+  gap: 10px;
+}
+
+.filterLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.filterLabel b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--orange), #f97316);
+  color: #fff;
+  font-size: 0.78rem;
+}
+
+/* On phones, stacked grids become a long list; switch to compact, swipeable
+   horizontal chip rails instead (one row per group). */
+@media (max-width: 640px) {
+  .filterGroup,
+  .categoryGrid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px 2px 8px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* fade the right edge to hint there's more to swipe */
+    mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent 100%);
+  }
+
+  .filterGroup::-webkit-scrollbar,
+  .categoryGrid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filterGroup button,
+  .categoryGrid .category {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 0 16px;
+    white-space: nowrap;
+    scroll-snap-align: start;
+  }
+
+  .filters {
+    gap: 20px;
+  }
+}
