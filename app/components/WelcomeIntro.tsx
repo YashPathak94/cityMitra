@@ -24,11 +24,7 @@ export default function WelcomeIntro({ onAskAI, onEnableLocation }: WelcomeIntro
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.sessionStorage.getItem(seenKey)) return;
-    const timer = window.setTimeout(() => {
-      // Bring the Destination Finder into view so the intro opens in front of it.
-      document.getElementById("directory")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      setOpen(true);
-    }, 500);
+    const timer = window.setTimeout(() => setOpen(true), 500);
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -63,58 +59,64 @@ export default function WelcomeIntro({ onAskAI, onEnableLocation }: WelcomeIntro
               <X size={18} />
             </button>
 
-            <span className="welcomeBadge">
-              <span className="welcomeBadgeMark">
-                <Navigation size={15} />
-              </span>
-              CityMitra
-            </span>
+            <div className="welcomeGrid">
+              <div className="welcomeMain">
+                <span className="welcomeBadge">
+                  <span className="welcomeBadgeMark">
+                    <Navigation size={15} />
+                  </span>
+                  CityMitra
+                </span>
 
-            <h2>Your AI companion for Indian cities</h2>
-            <p>
-              Skip the 47-tab research spiral. Tell CityMitra where you are headed and get curated places, smart routes,
-              and one-tap bookings — for any city.
-            </p>
+                <h2>Your AI companion for Indian cities</h2>
+                <p>
+                  Skip the 47-tab research spiral. Tell CityMitra where you are headed and get curated places, smart
+                  routes, and one-tap bookings — for any city.
+                </p>
 
-            <ul className="welcomeHighlights">
-              {highlights.map((item, index) => {
-                const Icon = item.icon;
-                return (
-                  <motion.li
-                    key={item.text}
-                    initial={reduceMotion ? false : { opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.12 + index * 0.08 }}
+                <div className="welcomeActions">
+                  <button
+                    className="primaryButton"
+                    type="button"
+                    onClick={() => {
+                      dismiss();
+                      onAskAI();
+                    }}
                   >
-                    <Icon size={16} />
-                    {item.text}
-                  </motion.li>
-                );
-              })}
-            </ul>
+                    Start with the AI guide <ArrowRight size={16} />
+                  </button>
+                  <button
+                    className="secondaryButton"
+                    type="button"
+                    onClick={() => {
+                      dismiss();
+                      onEnableLocation();
+                    }}
+                  >
+                    <Navigation size={15} />
+                    Auto-detect my location
+                  </button>
+                </div>
+              </div>
 
-            <div className="welcomeActions">
-              <button
-                className="primaryButton"
-                type="button"
-                onClick={() => {
-                  dismiss();
-                  onAskAI();
-                }}
-              >
-                Start with the AI guide <ArrowRight size={16} />
-              </button>
-              <button
-                className="secondaryButton"
-                type="button"
-                onClick={() => {
-                  dismiss();
-                  onEnableLocation();
-                }}
-              >
-                <Navigation size={15} />
-                Auto-detect my location
-              </button>
+              <ul className="welcomeHighlights">
+                {highlights.map((item, index) => {
+                  const Icon = item.icon;
+                  return (
+                    <motion.li
+                      key={item.text}
+                      initial={reduceMotion ? false : { opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.12 + index * 0.08 }}
+                    >
+                      <span className="welcomeHighlightIcon">
+                        <Icon size={16} />
+                      </span>
+                      {item.text}
+                    </motion.li>
+                  );
+                })}
+              </ul>
             </div>
           </motion.aside>
         </>
