@@ -45,16 +45,17 @@ export default function WelcomeIntro({ onAskAI, onEnableLocation }: WelcomeIntro
             onClick={dismiss}
             aria-hidden="true"
           />
-          <motion.aside
-            className="welcomeCard"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Welcome to CityMitra"
-            initial={reduceMotion ? false : { opacity: 0, y: 40, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reduceMotion ? undefined : { opacity: 0, y: 30, scale: 0.96 }}
-            transition={{ type: "spring", stiffness: 240, damping: 26 }}
-          >
+          <div className="welcomeViewport">
+            <motion.aside
+              className="welcomeCard"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Welcome to CityMitra"
+              initial={reduceMotion ? false : { opacity: 0, y: 40, scale: 0.94 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: 30, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 240, damping: 26 }}
+            >
             <button className="welcomeClose" type="button" onClick={dismiss} aria-label="Close">
               <X size={18} />
             </button>
@@ -119,6 +120,7 @@ export default function WelcomeIntro({ onAskAI, onEnableLocation }: WelcomeIntro
               </ul>
             </div>
           </motion.aside>
+          </div>
         </>
       )}
     </AnimatePresence>
