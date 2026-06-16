@@ -23,6 +23,10 @@ export type User = {
   passwordHash: string;
   isPro: boolean;
   createdAt: string;
+  provider?: string;
+  subscriptionId?: string | null;
+  subscriptionStatus?: string | null;
+  currentPeriodEnd?: string | null;
 };
 
 const storageDir = path.join(process.cwd(), ".citymitra");
@@ -244,38 +248,57 @@ export async function readSubscribers(): Promise<Subscriber[]> {
   return (await readJsonFile<Subscriber>(subscribersFile)).reverse();
 }
 
+function mapUserRow(data: Record<string, unknown>): User {
+  return {
+    email: data.email as string,
+    passwordHash: (data.password_hash as string) || "",
+    isPro: Boolean(data.is_pro),
+    createdAt: data.created_at as string,
+    provider: (data.provider as string) ?? undefined,
+    subscriptionId: (data.subscription_id as string) ?? null,
+    subscriptionStatus: (data.subscription_status as string) ?? null,
+    currentPeriodEnd: (data.current_period_end as string) ?? null
+  };
+}
+
+const userColumns = "email, password_hash, is_pro, created_at, provider, subscription_id, subscription_status, current_period_end";
+
 export async function getUserByEmail(email: string): Promise<User | null> {
   const client = supabase();
 
   if (client) {
-    const { data, error } = await client
-      .from("users")
-      .select("email, password_hash, is_pro, created_at")
-      .eq("email", email)
-      .maybeSingle();
+    const { data, error } = await client.from("users").select(userColumns).eq("email", email).maybeSingle();
     if (error) throw new Error(error.message);
-    if (!data) return null;
-    return {
-      email: data.email as string,
-      passwordHash: data.password_hash as string,
-      isPro: Boolean(data.is_pro),
-      createdAt: data.created_at as string
-    };
+    return data ? mapUserRow(data) : null;
   }
 
   const users = await readJsonFile<User>(usersFile);
   return users.find((user) => user.email === email) || null;
 }
 
-export async function createUser(email: string, passwordHash: string): Promise<User> {
+export async function getUserBySubscriptionId(subscriptionId: string): Promise<User | null> {
   const client = supabase();
-  const record: User = { email, passwordHash, isPro: false, createdAt: new Date().toISOString() };
+
+  if (client) {
+    const { data, error } = await client.from("users").select(userColumns).eq("subscription_id", subscriptionId).maybeSingle();
+    if (error) throw new Error(error.message);
+    return data ? mapUserRow(data) : null;
+  }
+
+  const users = await readJsonFile<User>(usersFile);
+  return users.find((user) => user.subscriptionId === subscriptionId) || null;
+}
+
+export async function createUser(email: string, passwordHash: string, provider = "password"): Promise<User> {
+  const client = supabase();
+  const record: User = { email, passwordHash, isPro: false, createdAt: new Date().toISOString(), provider };
 
   if (client) {
     const { error } = await client.from("users").insert({
       email,
       password_hash: passwordHash,
-      is_pro: false
+      is_pro: false,
+      provider
     });
     if (error) throw new Error(error.message);
     return record;
@@ -288,17 +311,69 @@ export async function createUser(email: string, passwordHash: string): Promise<U
   return record;
 }
 
-export async function setUserPro(email: string, isPro: boolean) {
+export async function findOrCreateOAuthUser(email: string, provider: string): Promise<User> {
+  const existing = await getUserByEmail(email);
+  if (existing) return existing;
+  return createUser(email, "", provider);
+}
+
+export async function updateUserPassword(email: string, passwordHash: string) {
   const client = supabase();
 
   if (client) {
-    const { error } = await client.from("users").update({ is_pro: isPro }).eq("email", email);
+    const { error } = await client.from("users").update({ password_hash: passwordHash }).eq("email", email);
     if (error) throw new Error(error.message);
     return;
   }
 
   const users = await readJsonFile<User>(usersFile);
-  const next = users.map((user) => (user.email === email ? { ...user, isPro } : user));
+  const next = users.map((user) => (user.email === email ? { ...user, passwordHash } : user));
+  await mkdir(storageDir, { recursive: true });
+  await writeFile(usersFile, JSON.stringify(next, null, 2));
+}
+
+export async function setUserPro(email: string, isPro: boolean) {
+  await updateUserFields(email, { is_pro: isPro }, (user) => ({ ...user, isPro }));
+}
+
+// Records subscription state (used by checkout verify and the webhook).
+export async function setUserSubscription(
+  email: string,
+  fields: { isPro?: boolean; subscriptionId?: string | null; subscriptionStatus?: string | null; currentPeriodEnd?: string | null }
+) {
+  await updateUserFields(
+    email,
+    {
+      ...(fields.isPro !== undefined ? { is_pro: fields.isPro } : {}),
+      ...(fields.subscriptionId !== undefined ? { subscription_id: fields.subscriptionId } : {}),
+      ...(fields.subscriptionStatus !== undefined ? { subscription_status: fields.subscriptionStatus } : {}),
+      ...(fields.currentPeriodEnd !== undefined ? { current_period_end: fields.currentPeriodEnd } : {})
+    },
+    (user) => ({
+      ...user,
+      ...(fields.isPro !== undefined ? { isPro: fields.isPro } : {}),
+      ...(fields.subscriptionId !== undefined ? { subscriptionId: fields.subscriptionId } : {}),
+      ...(fields.subscriptionStatus !== undefined ? { subscriptionStatus: fields.subscriptionStatus } : {}),
+      ...(fields.currentPeriodEnd !== undefined ? { currentPeriodEnd: fields.currentPeriodEnd } : {})
+    })
+  );
+}
+
+async function updateUserFields(
+  email: string,
+  supabaseFields: Record<string, unknown>,
+  fileUpdate: (user: User) => User
+) {
+  const client = supabase();
+
+  if (client) {
+    const { error } = await client.from("users").update(supabaseFields).eq("email", email);
+    if (error) throw new Error(error.message);
+    return;
+  }
+
+  const users = await readJsonFile<User>(usersFile);
+  const next = users.map((user) => (user.email === email ? fileUpdate(user) : user));
   await mkdir(storageDir, { recursive: true });
   await writeFile(usersFile, JSON.stringify(next, null, 2));
 }

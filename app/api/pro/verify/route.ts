@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { readSessionToken, SESSION_COOKIE } from "@/lib/auth";
-import { appendActivity, setUserPro } from "@/lib/storage";
+import { appendActivity, setUserPro, setUserSubscription } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
@@ -18,36 +18,50 @@ export async function POST(request: NextRequest) {
   }
 
   const payload = (await request.json().catch(() => null)) as {
-    razorpay_order_id?: string;
     razorpay_payment_id?: string;
+    razorpay_order_id?: string;
+    razorpay_subscription_id?: string;
     razorpay_signature?: string;
-    email?: string;
   } | null;
 
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = payload || {};
+  const paymentId = payload?.razorpay_payment_id;
+  const signature = payload?.razorpay_signature;
 
-  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+  if (!paymentId || !signature) {
     return NextResponse.json({ error: "Missing payment fields." }, { status: 400 });
   }
 
-  const expected = createHmac("sha256", secret)
-    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-    .digest("hex");
+  // Subscriptions sign as payment_id|subscription_id; one-time as order_id|payment_id.
+  const isSubscription = Boolean(payload?.razorpay_subscription_id);
+  const signedData = isSubscription
+    ? `${paymentId}|${payload?.razorpay_subscription_id}`
+    : `${payload?.razorpay_order_id}|${paymentId}`;
 
-  if (!safeEqualHex(expected, razorpay_signature)) {
+  if (!isSubscription && !payload?.razorpay_order_id) {
+    return NextResponse.json({ error: "Missing payment fields." }, { status: 400 });
+  }
+
+  const expected = createHmac("sha256", secret).update(signedData).digest("hex");
+  if (!safeEqualHex(expected, signature)) {
     return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
   }
 
-  // upgrade the logged-in account to Pro (best-effort)
   const session = readSessionToken(request.cookies.get(SESSION_COOKIE)?.value);
   if (session) {
-    await setUserPro(session.email, true).catch((error) => console.error("pro upgrade failed", error));
+    if (isSubscription) {
+      await setUserSubscription(session.email, {
+        isPro: true,
+        subscriptionId: payload?.razorpay_subscription_id,
+        subscriptionStatus: "active"
+      }).catch((error) => console.error("pro subscription save failed", error));
+    } else {
+      await setUserPro(session.email, true).catch((error) => console.error("pro upgrade failed", error));
+    }
   }
 
-  // record the successful purchase as an activity event (best-effort)
   await appendActivity({
-    type: "pro_purchase",
-    label: `${razorpay_order_id} ${session?.email || payload?.email || ""}`.trim().slice(0, 160),
+    type: isSubscription ? "pro_subscribed" : "pro_purchase",
+    label: `${payload?.razorpay_subscription_id || payload?.razorpay_order_id || ""} ${session?.email || ""}`.trim().slice(0, 160),
     timestamp: new Date().toISOString()
   }).catch((error) => console.error("pro purchase record failed", error));
 

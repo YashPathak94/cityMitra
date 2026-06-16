@@ -107,3 +107,40 @@ blocks anonymous access.)
 Both are flat files: fine for a single Node server, ephemeral on serverless. Move to
 Neon/Supabase before scaling. Rate limits protect `/api/ask` (10/min/IP),
 `/api/newsletter` (5/min/IP), `/api/activity` (120/min/IP), and admin login.
+
+## Accounts, Google sign-in, password reset, subscriptions
+
+CityMitra Pro supports email/password accounts, Google sign-in, password reset,
+and real monthly subscriptions with auto-renewal. All are env-gated and degrade
+gracefully when unset.
+
+### Required for accounts
+- `AUTH_SESSION_SECRET` — long random string (`openssl rand -hex 32`). Without it,
+  accounts are disabled in production.
+- Supabase `users` table (SQL in the Supabase section above). Add subscription columns:
+
+```sql
+alter table users add column if not exists provider text default 'password';
+alter table users add column if not exists subscription_id text;
+alter table users add column if not exists subscription_status text;
+alter table users add column if not exists current_period_end timestamptz;
+```
+
+### Google sign-in (optional)
+1. Google Cloud Console → Credentials → OAuth client (Web).
+2. Authorized redirect URI: `https://YOURDOMAIN/api/auth/google/callback`.
+3. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `NEXT_PUBLIC_GOOGLE_ENABLED=true`.
+
+### Password reset email (optional)
+- Set `RESEND_API_KEY` (resend.com) and `EMAIL_FROM` (a verified sender).
+- Without it, the reset link is returned in the API response (dev only) so the flow still works.
+
+### Monthly subscription with auto-renewal (Razorpay)
+1. Razorpay Dashboard → Subscriptions → Plans → create a monthly plan (₹ amount).
+2. Set `RAZORPAY_PLAN_ID` to that plan id. (Also needs `RAZORPAY_KEY_ID`/`_SECRET`
+   and `NEXT_PUBLIC_RAZORPAY_KEY_ID`.) With a plan id set, /pro uses subscriptions;
+   without it, it falls back to a one-time payment.
+3. Razorpay Dashboard → Settings → Webhooks → add `https://YOURDOMAIN/api/webhooks/razorpay`,
+   subscribe to subscription.charged / activated / cancelled / halted / completed,
+   and set the secret as `RAZORPAY_WEBHOOK_SECRET`. The webhook keeps Pro in sync on
+   renewals and cancellations. Users can cancel auto-renewal from /pro.

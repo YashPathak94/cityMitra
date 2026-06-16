@@ -69,3 +69,37 @@ export const sessionCookieOptions = {
 };
 
 export const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+// Password-reset token: stateless, signed, and bound to the current password
+// hash so it becomes single-use (changing the password invalidates it).
+export function createResetToken(email: string, passwordHash: string) {
+  const secret = sessionSecret();
+  if (!secret) return null;
+  const expiresAt = Date.now() + 60 * 60 * 1000; // 1 hour
+  const payload = `${email}|${expiresAt}`;
+  const signature = createHmac("sha256", secret).update(`${payload}|${passwordHash}`).digest("hex");
+  return Buffer.from(`${payload}|${signature}`).toString("base64url");
+}
+
+export function readResetToken(token: string, passwordHash: string): { email: string } | null {
+  const secret = sessionSecret();
+  if (!secret || !token) return null;
+
+  try {
+    const decoded = Buffer.from(token, "base64url").toString("utf-8");
+    const [email, expiresAt, signature] = decoded.split("|");
+    if (!email || !expiresAt || !signature) return null;
+
+    const expected = createHmac("sha256", secret).update(`${email}|${expiresAt}|${passwordHash}`).digest("hex");
+    if (!safeEqualHex(signature, expected)) return null;
+    if (Date.now() > Number(expiresAt)) return null;
+
+    return { email };
+  } catch {
+    return null;
+  }
+}
+
+export function googleConfigured() {
+  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+}

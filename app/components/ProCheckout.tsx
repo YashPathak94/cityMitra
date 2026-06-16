@@ -6,7 +6,8 @@ import { trackActivity } from "@/lib/tracking";
 
 type RazorpayResponse = {
   razorpay_payment_id: string;
-  razorpay_order_id: string;
+  razorpay_order_id?: string;
+  razorpay_subscription_id?: string;
   razorpay_signature: string;
 };
 
@@ -37,18 +38,20 @@ export default function ProCheckout({ priceInr, onPurchased }: { priceInr: numbe
     trackActivity({ type: "pro_checkout_start", label: "pro" });
 
     try {
-      const orderResponse = await fetch("/api/pro/checkout", { method: "POST" });
-      const orderData = (await orderResponse.json().catch(() => ({}))) as {
+      const checkoutResponse = await fetch("/api/pro/checkout", { method: "POST" });
+      const data = (await checkoutResponse.json().catch(() => ({}))) as {
+        mode?: "order" | "subscription";
         orderId?: string;
+        subscriptionId?: string;
         amount?: number;
         currency?: string;
         keyId?: string;
         error?: string;
       };
 
-      if (!orderResponse.ok || !orderData.orderId) {
+      if (!checkoutResponse.ok || (!data.orderId && !data.subscriptionId)) {
         setStatus("error");
-        setMessage(orderData.error || "Could not start checkout. Please try again.");
+        setMessage(data.error || "Could not start checkout. Please try again.");
         return;
       }
 
@@ -59,14 +62,15 @@ export default function ProCheckout({ priceInr, onPurchased }: { priceInr: numbe
         return;
       }
 
+      const isSubscription = data.mode === "subscription" && Boolean(data.subscriptionId);
       const razorpay = new window.Razorpay({
-        key: orderData.keyId,
-        amount: orderData.amount,
-        currency: orderData.currency,
+        key: data.keyId,
         name: "CityMitra Pro",
-        description: "CityMitra Pro membership",
-        order_id: orderData.orderId,
+        description: isSubscription ? "CityMitra Pro · monthly auto-renew" : "CityMitra Pro membership",
         theme: { color: "#ea580c" },
+        ...(isSubscription
+          ? { subscription_id: data.subscriptionId }
+          : { order_id: data.orderId, amount: data.amount, currency: data.currency }),
         handler: async (response: RazorpayResponse) => {
           setStatus("loading");
           const verifyResponse = await fetch("/api/pro/verify", {
@@ -76,8 +80,12 @@ export default function ProCheckout({ priceInr, onPurchased }: { priceInr: numbe
           });
           if (verifyResponse.ok) {
             setStatus("success");
-            setMessage("Welcome to CityMitra Pro! Your payment is confirmed.");
-            trackActivity({ type: "pro_purchase_confirmed", label: response.razorpay_order_id });
+            setMessage(
+              isSubscription
+                ? "You're subscribed to CityMitra Pro — it renews automatically each month."
+                : "Welcome to CityMitra Pro! Your payment is confirmed."
+            );
+            trackActivity({ type: "pro_purchase_confirmed", label: response.razorpay_subscription_id || response.razorpay_order_id });
             onPurchased?.();
           } else {
             setStatus("error");
