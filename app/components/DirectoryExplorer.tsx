@@ -1,8 +1,8 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Map, MapPin, Navigation } from "lucide-react";
+import { ChevronLeft, ChevronRight, Map, MapPin, Navigation, Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { CSSProperties, useEffect, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import { categories, CategoryKey, DirectoryItem } from "@/data/city-directory";
 import { NearbyCard, photoSearchImage } from "@/lib/city-intel";
 
@@ -43,8 +43,33 @@ export default function DirectoryExplorer({
   const SelectedCategoryIcon = selectedCategory?.icon;
   const activeCategoryResult = selectedItems[categoryFrameIndex] || selectedItems[0];
   const [hovered, setHovered] = useState(false);
+  const [citySearch, setCitySearch] = useState("");
+  const [categorySearch, setCategorySearch] = useState("");
   const reduceMotion = useReducedMotion();
   const resultCount = selectedItems.length;
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  const filteredCities = visibleCities.filter((item) => item.toLowerCase().includes(citySearch.trim().toLowerCase()));
+  const filteredCategories = categories.filter((item) =>
+    item.label.toLowerCase().includes(categorySearch.trim().toLowerCase())
+  );
+
+  // Bring the results into view after a pick so mobile users see what's next.
+  function revealResults() {
+    if (typeof window === "undefined") return;
+    if (window.innerWidth > 900) return; // desktop already shows it
+    window.setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+  }
+
+  function handleSelectCity(nextCity: string) {
+    onSelectCity(nextCity);
+    revealResults();
+  }
+
+  function handleSelectCategory(nextCategory: CategoryKey) {
+    onSelectCategory(nextCategory);
+    revealResults();
+  }
 
   useEffect(() => {
     if (hovered || reduceMotion || resultCount < 2) return;
@@ -68,49 +93,83 @@ export default function DirectoryExplorer({
 
       <div className="filters">
         <div className="filterBlock">
-          <span className="filterLabel">
-            <b>1</b> Choose your city
-          </span>
-          <div className="filterGroup" aria-label="City selector">
-            {visibleCities.map((item) => (
-              <motion.button
-                className={city === item ? "active" : ""}
-                key={item}
-                onClick={() => onSelectCity(item)}
-                whileHover={{ y: -3, scale: 1.04 }}
-                whileTap={{ scale: 0.94 }}
-                transition={chipSpring}
-              >
-                {item}
-              </motion.button>
-            ))}
+          <div className="filterTop">
+            <span className="filterLabel">
+              <b>1</b> Choose your city
+            </span>
+            <div className="filterSearch">
+              <Search size={15} />
+              <input
+                aria-label="Search city"
+                placeholder="Search city…"
+                value={citySearch}
+                onChange={(event) => setCitySearch(event.target.value)}
+              />
+            </div>
           </div>
-        </div>
-
-        <div className="filterBlock">
-          <span className="filterLabel">
-            <b>2</b> Pick a category in {city}
-          </span>
-          <div className="categoryGrid">
-            {categories.map((item) => {
-              const Icon = item.icon;
-              return (
+          <div className="filterGroup" aria-label="City selector">
+            {filteredCities.length > 0 ? (
+              filteredCities.map((item) => (
                 <motion.button
-                  className={category === item.key ? "category active" : "category"}
-                  key={item.key}
-                  onClick={() => onSelectCategory(item.key)}
-                  title={item.label}
+                  className={city === item ? "active" : ""}
+                  key={item}
+                  onClick={() => handleSelectCity(item)}
                   whileHover={{ y: -3, scale: 1.04 }}
                   whileTap={{ scale: 0.94 }}
                   transition={chipSpring}
                 >
-                  <Icon size={18} />
-                  <span>{item.label}</span>
+                  {item}
                 </motion.button>
-              );
-            })}
+              ))
+            ) : (
+              <span className="filterEmpty">No city matches “{citySearch}”.</span>
+            )}
           </div>
         </div>
+
+        <div className="filterBlock">
+          <div className="filterTop">
+            <span className="filterLabel">
+              <b>2</b> Pick a category in {city}
+            </span>
+            <div className="filterSearch">
+              <Search size={15} />
+              <input
+                aria-label="Search category"
+                placeholder="Search category…"
+                value={categorySearch}
+                onChange={(event) => setCategorySearch(event.target.value)}
+              />
+            </div>
+          </div>
+          <div className="categoryGrid">
+            {filteredCategories.length > 0 ? (
+              filteredCategories.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <motion.button
+                    className={category === item.key ? "category active" : "category"}
+                    key={item.key}
+                    onClick={() => handleSelectCategory(item.key)}
+                    title={item.label}
+                    whileHover={{ y: -3, scale: 1.04 }}
+                    whileTap={{ scale: 0.94 }}
+                    transition={chipSpring}
+                  >
+                    <Icon size={18} />
+                    <span>{item.label}</span>
+                  </motion.button>
+                );
+              })
+            ) : (
+              <span className="filterEmpty">No category matches “{categorySearch}”.</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="filterLabel resultsStepLabel" ref={resultsRef}>
+        <b>3</b> Your results — swipe the cards, then open the map
       </div>
 
       <div className="categoryResultFrame" aria-label={`${selectedCategory?.label || category} rotating category results`}>
