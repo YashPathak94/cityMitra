@@ -291,6 +291,7 @@ export default function Home() {
       <main id="main">
       <WelcomeIntro
         onAskAI={() => document.getElementById("ai")?.scrollIntoView({ behavior: "smooth" })}
+        onBrowseCategories={() => document.getElementById("directory")?.scrollIntoView({ behavior: "smooth" })}
         onEnableLocation={requestNearbyLocation}
       />
       <LocationPrompt

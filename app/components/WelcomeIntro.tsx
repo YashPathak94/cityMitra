@@ -1,13 +1,14 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowRight, Compass, MapPinned, Navigation, Sparkles, X } from "lucide-react";
+import { ArrowRight, Compass, LayoutGrid, MapPinned, Navigation, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const seenKey = "citymitra-welcome-seen";
 
 type WelcomeIntroProps = {
   onAskAI: () => void;
+  onBrowseCategories: () => void;
   onEnableLocation: () => void;
 };
 
@@ -17,7 +18,7 @@ const highlights = [
   { icon: MapPinned, text: "Maps, photos, and backup stops, synced to where you are" }
 ];
 
-export default function WelcomeIntro({ onAskAI, onEnableLocation }: WelcomeIntroProps) {
+export default function WelcomeIntro({ onAskAI, onBrowseCategories, onEnableLocation }: WelcomeIntroProps) {
   const [open, setOpen] = useState(false);
   const reduceMotion = useReducedMotion();
 
@@ -88,6 +89,17 @@ export default function WelcomeIntro({ onAskAI, onEnableLocation }: WelcomeIntro
                   </button>
                   <button
                     className="secondaryButton"
+                    type="button"
+                    onClick={() => {
+                      dismiss();
+                      onBrowseCategories();
+                    }}
+                  >
+                    <LayoutGrid size={15} />
+                    Browse categories
+                  </button>
+                  <button
+                    className="ghostButton"
                     type="button"
                     onClick={() => {
                       dismiss();
