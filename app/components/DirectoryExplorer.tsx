@@ -54,11 +54,11 @@ export default function DirectoryExplorer({
     item.label.toLowerCase().includes(categorySearch.trim().toLowerCase())
   );
 
-  // Bring the results into view after a pick so mobile users see what's next.
+  // Bring the results into view after a pick. block:"nearest" means it only
+  // scrolls when they're not already visible — smooth on both mobile and desktop.
   function revealResults() {
     if (typeof window === "undefined") return;
-    if (window.innerWidth > 900) return; // desktop already shows it
-    window.setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    window.setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 120);
   }
 
   function handleSelectCity(nextCity: string) {
