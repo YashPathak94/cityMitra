@@ -7,7 +7,7 @@ import { FormEvent, useEffect, useState } from "react";
 
 const navLinks: Array<{ href: string; id?: string; label: string }> = [
   { href: "/cities", label: "City Guides" },
-  { href: "#ai", id: "ai", label: "AI Guide" },
+  { href: "/chat", label: "AI Chat" },
   { href: "#directory", id: "directory", label: "Directory" },
   { href: "#nearby", id: "nearby", label: "Nearby Picks" },
   { href: "/pro", label: "Pro" }

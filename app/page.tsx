@@ -20,7 +20,7 @@ import {
 } from "@/lib/city-intel";
 import { mapDirectionsUrl, mapSearchUrl } from "@/lib/maps";
 import { trackActivity } from "@/lib/tracking";
-import ChatSection from "@/app/components/ChatSection";
+import AiTeaser from "@/app/components/AiTeaser";
 import DirectoryExplorer from "@/app/components/DirectoryExplorer";
 import Hero from "@/app/components/Hero";
 import LocationPrompt from "@/app/components/LocationPrompt";
@@ -38,7 +38,6 @@ export default function Home() {
   const [locationStatus, setLocationStatus] = useState("Use nearby location for smarter map routes.");
   const [categoryFrameIndex, setCategoryFrameIndex] = useState(0);
   const [nearbyFrameIndex, setNearbyFrameIndex] = useState(0);
-  const [question, setQuestion] = useState("");
   const [frameResetKey, setFrameResetKey] = useState(`${city}-${category}`);
 
   if (frameResetKey !== `${city}-${category}`) {
@@ -253,7 +252,6 @@ export default function Home() {
       return;
     }
 
-    setQuestion(`Build a route plan for ${city} with ${categoryLabel} stops, distance, map links, and backup services.`);
     document.getElementById("ai")?.scrollIntoView({ behavior: "smooth" });
     trackActivity({ type: "scene_action", city, category, label: "route_mode" });
   }
@@ -278,12 +276,8 @@ export default function Home() {
     }
 
     const activeCity = cityFromText || city;
-    const activeCategory = detectedCategory
-      ? categories.find((item) => item.key === detectedCategory)?.label
-      : categoryLabel;
-    setQuestion(`Plan ${activeCity} ${activeCategory || "city"} options with nearby maps, photos, route timing, and backup stops.`);
     trackActivity({ type: "search_submit", city: activeCity, category: detectedCategory || category, label: trimmedSearch });
-    document.getElementById("ai")?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById("directory")?.scrollIntoView({ behavior: "smooth" });
   }
 
   return (
@@ -329,17 +323,10 @@ export default function Home() {
         onSearchMap={openTrackedSearch}
       />
 
-      <ChatSection
+      <AiTeaser
         city={city}
         category={category}
         categoryLabel={categoryLabel}
-        question={question}
-        setQuestion={setQuestion}
-        userLocation={userLocation}
-        cityVisual={cityVisual}
-        nearbyCards={nearbyCards}
-        generatedCategoryResults={generatedCategoryResults}
-        onCityDetected={(detectedCity) => selectCity(detectedCity, "chat_detected")}
         nearbyPanel={
           <NearbyPanel
             city={city}

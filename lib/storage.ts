@@ -377,3 +377,80 @@ async function updateUserFields(
   await mkdir(storageDir, { recursive: true });
   await writeFile(usersFile, JSON.stringify(next, null, 2));
 }
+
+export type StoredConversation = {
+  id: string;
+  title: string;
+  messages: Array<{ role: "user" | "assistant"; content: string }>;
+  updatedAt: string;
+};
+
+const conversationsFile = path.join(storageDir, "conversations.json");
+
+type FileConversation = StoredConversation & { email: string };
+
+export async function listConversations(email: string): Promise<StoredConversation[]> {
+  const client = supabase();
+
+  if (client) {
+    const { data, error } = await client
+      .from("conversations")
+      .select("id, title, messages, updated_at")
+      .eq("email", email)
+      .order("updated_at", { ascending: false })
+      .limit(100);
+    if (error) throw new Error(error.message);
+    return (data || []).map((row) => ({
+      id: row.id as string,
+      title: row.title as string,
+      messages: (row.messages as StoredConversation["messages"]) || [],
+      updatedAt: row.updated_at as string
+    }));
+  }
+
+  const all = await readJsonFile<FileConversation>(conversationsFile);
+  return all
+    .filter((convo) => convo.email === email)
+    .map(({ email: _omit, ...rest }) => rest)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+export async function upsertConversation(email: string, convo: StoredConversation) {
+  const client = supabase();
+
+  if (client) {
+    const { error } = await client.from("conversations").upsert(
+      {
+        id: convo.id,
+        email,
+        title: convo.title,
+        messages: convo.messages,
+        updated_at: convo.updatedAt
+      },
+      { onConflict: "id" }
+    );
+    if (error) throw new Error(error.message);
+    return;
+  }
+
+  await mkdir(storageDir, { recursive: true });
+  const all = await readJsonFile<FileConversation>(conversationsFile);
+  const next = all.filter((item) => !(item.email === email && item.id === convo.id));
+  next.push({ email, ...convo });
+  await writeFile(conversationsFile, JSON.stringify(next.slice(-2000), null, 2));
+}
+
+export async function deleteConversation(email: string, id: string) {
+  const client = supabase();
+
+  if (client) {
+    const { error } = await client.from("conversations").delete().eq("email", email).eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
+
+  const all = await readJsonFile<FileConversation>(conversationsFile);
+  const next = all.filter((item) => !(item.email === email && item.id === id));
+  await mkdir(storageDir, { recursive: true });
+  await writeFile(conversationsFile, JSON.stringify(next, null, 2));
+}

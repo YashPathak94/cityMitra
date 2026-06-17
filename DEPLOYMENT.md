@@ -90,6 +90,16 @@ create table if not exists users (
   created_at timestamptz not null default now()
 );
 alter table users enable row level security;
+
+create table if not exists conversations (
+  id text primary key,
+  email text not null,
+  title text not null default 'New chat',
+  messages jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now()
+);
+create index if not exists conversations_email_idx on conversations (email, updated_at desc);
+alter table conversations enable row level security;
 ```
 
 (No public policies needed - the app uses the service-role key server-side, and RLS
