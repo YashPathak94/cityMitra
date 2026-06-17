@@ -2,9 +2,9 @@
 
 import { ChevronLeft, ChevronRight, Map, MapPin, Navigation, Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import { categories, CategoryKey, DirectoryItem } from "@/data/city-directory";
-import { NearbyCard, photoSearchImage } from "@/lib/city-intel";
+import { cityAliases, NearbyCard, photoSearchImage, titleCaseCity } from "@/lib/city-intel";
 
 const autoRotateIntervalMs = 1500;
 
@@ -71,6 +71,27 @@ export default function DirectoryExplorer({
     revealResults();
   }
 
+  // Resolve a free-typed city like the header search does: alias → existing chip
+  // → any title-cased city, so users can search ANY city, not just the chips.
+  function resolveTypedCity(raw: string) {
+    const query = raw.trim();
+    if (!query) return null;
+    const alias = cityAliases[query.toLowerCase()];
+    if (alias) return alias;
+    const chipMatch = filteredCities[0];
+    if (chipMatch) return chipMatch;
+    const titled = titleCaseCity(query);
+    return titled.length > 1 ? titled : null;
+  }
+
+  function submitCitySearch(event: FormEvent) {
+    event.preventDefault();
+    const resolved = resolveTypedCity(citySearch);
+    if (!resolved) return;
+    handleSelectCity(resolved);
+    setCitySearch("");
+  }
+
   useEffect(() => {
     if (hovered || reduceMotion || resultCount < 2) return;
 
@@ -97,15 +118,15 @@ export default function DirectoryExplorer({
             <span className="filterLabel">
               <b>1</b> Choose your city
             </span>
-            <div className="filterSearch">
+            <form className="filterSearch" onSubmit={submitCitySearch} role="search">
               <Search size={15} />
               <input
-                aria-label="Search city"
-                placeholder="Search city…"
+                aria-label="Search any city"
+                placeholder="Search any city…"
                 value={citySearch}
                 onChange={(event) => setCitySearch(event.target.value)}
               />
-            </div>
+            </form>
           </div>
           <div className="filterGroup" aria-label="City selector">
             {filteredCities.length > 0 ? (
@@ -122,7 +143,10 @@ export default function DirectoryExplorer({
                 </motion.button>
               ))
             ) : (
-              <span className="filterEmpty">No city matches “{citySearch}”.</span>
+              <button type="button" className="filterUseTyped" onClick={() => submitCitySearch({ preventDefault: () => {} } as FormEvent)}>
+                <Search size={14} />
+                Go to “{titleCaseCity(citySearch) || citySearch}”
+              </button>
             )}
           </div>
         </div>

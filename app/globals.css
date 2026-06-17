@@ -5630,3 +5630,25 @@ body {
     flex: 1;
   }
 }
+
+/* --- City search: "go to typed city" affordance --- */
+
+.filterUseTyped {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed var(--orange);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--orange);
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 10px 16px;
+  min-height: 44px;
+  transition: background 0.2s var(--smooth), transform 0.2s var(--smooth);
+}
+
+.filterUseTyped:hover {
+  background: #ffe9d8;
+  transform: translateY(-1px);
+}
