@@ -70,8 +70,9 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
     trackActivity({ type: "concierge_quick_action", city, category, label: bookingCategory });
   }
 
-  // When a category is selected, open the concierge with that category's local
-  // picks plus its matching booking options (skip the first render).
+  // Open the concierge only when the user actively switches category — never on
+  // first load or when returning from /chat (those don't change the category),
+  // and not when the city changes on its own (location restore/geolocation).
   useEffect(() => {
     if (!initialised.current) {
       initialised.current = true;
@@ -83,7 +84,7 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
       : [];
     setPip({ groups, local: localPicksFor(category) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, city]);
+  }, [category]);
 
   return (
     <section className="aiBand" id="ai">
