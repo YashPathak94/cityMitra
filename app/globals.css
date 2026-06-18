@@ -5889,8 +5889,13 @@ body {
   gap: 3px;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
   margin: 4px -6px;
   padding: 0 6px;
+}
+
+.chatSidebar {
+  min-height: 0;
 }
 
 .chatHistoryLabel {
@@ -5964,7 +5969,9 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 .chatTopbar {
@@ -6004,6 +6011,7 @@ body {
 
 .chatThread {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 24px 0;
 }
@@ -6323,4 +6331,190 @@ body {
   .aiTeaserGrid {
     grid-template-columns: 1fr;
   }
+}
+
+/* --- Chat sidebar: account / plan / auth --- */
+
+.chatAccount {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.chatAccountHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chatAccountAvatar {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--orange), #f97316);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.chatAccountInfo {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.chatAccountInfo strong {
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.planTag {
+  justify-self: start;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+}
+
+.planTag.pro {
+  background: rgba(5, 150, 105, 0.14);
+  color: var(--green);
+}
+
+.planTag.basic {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--muted);
+}
+
+.chatUpgrade {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--orange), #f97316);
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 9px 12px;
+}
+
+.chatUpgrade.ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--orange);
+}
+
+.chatAccountActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.chatAccountActions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.76rem;
+}
+
+.chatAccountActions button:hover {
+  color: var(--red);
+}
+
+.chatAccountNote {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.chatSignIn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 800;
+  padding: 10px 12px;
+  transition: border-color 0.2s var(--smooth);
+}
+
+.chatSignIn:hover {
+  border-color: var(--orange);
+}
+
+/* --- Concierge: local picks list --- */
+
+.conciergePipLocal {
+  display: grid;
+  gap: 6px;
+}
+
+.conciergePipLocal a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--white);
+  padding: 9px 11px;
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth), transform 0.2s var(--smooth);
+}
+
+.conciergePipLocal a:hover {
+  border-color: rgba(234, 88, 12, 0.5);
+  box-shadow: var(--glow);
+  transform: translateY(-1px);
+}
+
+.conciergeLocalIndex {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--orange);
+}
+
+.conciergeLocalText {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.conciergeLocalText b {
+  font-size: 0.84rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conciergeLocalText small {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.conciergePipLocal a svg {
+  flex-shrink: 0;
+  color: var(--muted);
 }

@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowUp,
+  Crown,
+  LogIn,
+  LogOut,
   Menu,
   MessageSquarePlus,
   Navigation,
@@ -14,7 +17,8 @@ import {
 } from "lucide-react";
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { buildConcierge } from "@/lib/booking";
-import { detectKnownCity } from "@/lib/city-intel";
+import { categories } from "@/data/city-directory";
+import { buildGeneratedResults, detectCategoryFromText, detectKnownCity } from "@/lib/city-intel";
 import {
   Conversation,
   deriveTitle,
@@ -44,8 +48,24 @@ const suggestions = [
   "Wholesale markets in Delhi"
 ];
 
+type LocalPicks = { label: string; city: string; items: Array<{ name: string; area: string; query: string }> };
+
 function freshConversation(): Conversation {
   return { id: newConversationId(), title: "New chat", messages: [starter], updatedAt: new Date().toISOString() };
+}
+
+// Builds curated local picks (e.g. wholesale markets, saree shops) for the
+// detected category + city, shown in the concierge alongside booking links.
+function buildLocalPicks(text: string, cityName: string): LocalPicks | null {
+  const categoryKey = detectCategoryFromText(text);
+  if (!categoryKey) return null;
+  const label = categories.find((item) => item.key === categoryKey)?.label || "Top picks";
+  const items = buildGeneratedResults(cityName, categoryKey, 12).map((result) => ({
+    name: result.name,
+    area: result.area,
+    query: result.query
+  }));
+  return items.length ? { label, city: cityName, items } : null;
 }
 
 export default function ChatWorkspace() {
@@ -56,13 +76,14 @@ export default function ChatWorkspace() {
   const [activeId, setActive] = useState<string>("");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [signedIn, setSignedIn] = useState(false);
+  const [account, setAccount] = useState<{ email: string; isPro: boolean } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [pipGroups, setPipGroups] = useState<ConciergeGroup[] | null>(null);
+  const [pip, setPip] = useState<{ groups: ConciergeGroup[]; local: LocalPicks | null } | null>(null);
   const [city, setCity] = useState("Delhi");
 
   const endRef = useRef<HTMLDivElement>(null);
   const seededRef = useRef(false);
+  const signedIn = Boolean(account);
 
   const active = conversations.find((convo) => convo.id === activeId) || null;
   const messages = active?.messages ?? [starter];
@@ -78,9 +99,9 @@ export default function ChatWorkspace() {
 
     fetch("/api/auth/me", { cache: "no-store" })
       .then((response) => response.json())
-      .then(async (data: { user: { email: string } | null }) => {
+      .then(async (data: { user: { email: string; isPro: boolean } | null }) => {
         if (!data.user) return;
-        setSignedIn(true);
+        setAccount({ email: data.user.email, isPro: Boolean(data.user.isPro) });
         const remoteResponse = await fetch("/api/chat/conversations", { cache: "no-store" });
         const remote = (await remoteResponse.json().catch(() => ({ conversations: [] }))) as { conversations: Conversation[] };
         if (remote.conversations?.length) {
@@ -137,6 +158,11 @@ export default function ChatWorkspace() {
     setSidebarOpen(false);
   }
 
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
+    setAccount(null);
+  }
+
   async function removeConversation(id: string) {
     const next = conversations.filter((convo) => convo.id !== id);
     const safeNext = next.length ? next : [freshConversation()];
@@ -175,9 +201,11 @@ export default function ChatWorkspace() {
 
     const detected = detectKnownCity(trimmed);
     if (detected) setCity(detected);
+    const activeCity = detected || city;
 
-    const groups = buildConcierge(trimmed, { city: detected || city, destination: detected || city });
-    if (groups.length) setPipGroups(groups);
+    const groups = buildConcierge(trimmed, { city: activeCity, destination: activeCity });
+    const local = buildLocalPicks(trimmed, activeCity);
+    if (groups.length || local) setPip({ groups, local });
 
     const history = conversations.find((c) => c.id === convoId)?.messages ?? [starter];
     const withUser: StoredMessage[] = [...history, { role: "user", content: trimmed }, { role: "assistant", content: "" }];
@@ -301,8 +329,45 @@ export default function ChatWorkspace() {
           ))}
         </div>
 
-        <div className="chatSidebarFoot">
-          {signedIn ? "Synced to your account" : "Saved on this device · log in to sync"}
+        <div className="chatAccount">
+          {account ? (
+            <>
+              <div className="chatAccountHead">
+                <span className="chatAccountAvatar">{account.email.charAt(0).toUpperCase()}</span>
+                <div className="chatAccountInfo">
+                  <strong title={account.email}>{account.email}</strong>
+                  <span className={account.isPro ? "planTag pro" : "planTag basic"}>
+                    {account.isPro ? "Pro plan" : "Basic plan"}
+                  </span>
+                </div>
+              </div>
+              {!account.isPro && (
+                <Link className="chatUpgrade" href="/pro">
+                  <Crown size={14} />
+                  Upgrade to Pro
+                </Link>
+              )}
+              <div className="chatAccountActions">
+                <span>Chats synced to your account</span>
+                <button type="button" onClick={logout}>
+                  <LogOut size={13} />
+                  Log out
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="chatAccountNote">You’re on the <b>Basic</b> plan. Chats are saved on this device.</p>
+              <Link className="chatSignIn" href="/pro">
+                <LogIn size={15} />
+                Sign in / Sign up
+              </Link>
+              <Link className="chatUpgrade ghost" href="/pro">
+                <Crown size={14} />
+                See Pro plan
+              </Link>
+            </>
+          )}
         </div>
       </aside>
 
@@ -374,9 +439,10 @@ export default function ChatWorkspace() {
       </section>
 
       <ConciergePip
-        groups={pipGroups}
+        groups={pip?.groups ?? null}
+        localPicks={pip?.local ?? null}
         city={city}
-        onClose={() => setPipGroups(null)}
+        onClose={() => setPip(null)}
         onOpen={(provider, bookingCategory) => trackActivity({ type: "concierge_open", city, label: `${bookingCategory}:${provider}` })}
       />
     </div>
