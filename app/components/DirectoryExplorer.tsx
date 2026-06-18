@@ -107,16 +107,16 @@ export default function DirectoryExplorer({
       <div className="sectionHeader">
         <div>
           <span className="sectionKicker">Destination Finder</span>
-          <h2>Choose a city and category</h2>
+          <h2>What are you looking for in {city}?</h2>
         </div>
-        <p>Built for quick decisions: where to go, what the area is known for, and how to avoid wasted trips.</p>
+        <p>Pick your city, tap a category, and get map-ready picks in seconds.</p>
       </div>
 
       <div className="filters">
         <div className="filterBlock">
           <div className="filterTop">
             <span className="filterLabel">
-              <b>1</b> Choose your city
+              <b>1</b> <MapPin size={14} /> Choose your city
             </span>
             <form className="filterSearch" onSubmit={submitCitySearch} role="search">
               <Search size={15} />

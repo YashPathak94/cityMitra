@@ -6551,3 +6551,115 @@ body {
   box-shadow: var(--glow);
   transform: translateY(-2px);
 }
+
+/* ============================================================
+   v7 — JustDial-style focused finder (city + category at top)
+   ============================================================ */
+
+.controlBand {
+  padding-top: 44px;
+}
+
+/* City selector: clean wrapping pill row on all screens */
+.controlBand .filterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  overflow: visible;
+  padding: 0;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.controlBand .filterGroup button {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Category icons as clean JustDial-style tiles (icon above label) */
+.controlBand .categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(98px, 1fr));
+  gap: 12px;
+  overflow: visible;
+  padding: 0;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.controlBand .category {
+  flex: 0 0 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  min-height: 104px;
+  padding: 16px 8px;
+  border-radius: 18px;
+  background: var(--white);
+  white-space: normal;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.controlBand .category svg {
+  width: 26px;
+  height: 26px;
+  color: var(--orange);
+}
+
+.controlBand .category span {
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.controlBand .category:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(234, 88, 12, 0.14);
+}
+
+.controlBand .category.active {
+  background: linear-gradient(135deg, var(--orange), #f97316);
+}
+
+.controlBand .category.active svg,
+.controlBand .category.active span {
+  color: #fff;
+}
+
+/* tighten the step labels into a cleaner, smaller cue */
+.controlBand .filterLabel {
+  font-size: 0.74rem;
+}
+
+@media (max-width: 640px) {
+  /* keep the same tidy tile grid on mobile (4 across), like JustDial */
+  .controlBand .categoryGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .controlBand .category {
+    min-height: 92px;
+    padding: 13px 6px;
+    border-radius: 15px;
+  }
+
+  .controlBand .category svg {
+    width: 23px;
+    height: 23px;
+  }
+
+  .controlBand .category span {
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .controlBand .categoryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -298,16 +298,6 @@ export default function Home() {
 
       <SiteHeader onSearch={applySearch} />
 
-      <Hero
-        city={city}
-        categoryLabel={categoryLabel}
-        cityVisual={cityVisual}
-        nearbyCount={nearbyCards.length}
-        userLocation={userLocation}
-        onSceneAction={handleSceneAction}
-        onOpenMap={openTrackedMap}
-      />
-
       <DirectoryExplorer
         city={city}
         category={category}
@@ -321,6 +311,16 @@ export default function Home() {
         onSetFrame={setCategoryFrameIndex}
         onOpenMap={openTrackedMap}
         onSearchMap={openTrackedSearch}
+      />
+
+      <Hero
+        city={city}
+        categoryLabel={categoryLabel}
+        cityVisual={cityVisual}
+        nearbyCount={nearbyCards.length}
+        userLocation={userLocation}
+        onSceneAction={handleSceneAction}
+        onOpenMap={openTrackedMap}
       />
 
       <AiTeaser
