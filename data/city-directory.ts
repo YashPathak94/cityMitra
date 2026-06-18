@@ -1,15 +1,25 @@
 import {
+  AirVent,
   Building2,
+  Bug,
   CarFront,
+  Dumbbell,
+  Flame,
   GraduationCap,
+  Hammer,
   HeartPulse,
   Hotel,
   Landmark,
   MapPin,
   Fuel,
+  Scissors,
+  Sparkles,
   ShoppingBag,
+  Truck,
   Utensils,
-  Volleyball
+  Volleyball,
+  Wrench,
+  Zap
 } from "lucide-react";
 
 export type CategoryKey =
@@ -26,7 +36,17 @@ export type CategoryKey =
   | "petrol"
   | "hotels"
   | "dinner"
-  | "sightseeing";
+  | "sightseeing"
+  | "plumber"
+  | "electrician"
+  | "carpenter"
+  | "pandit"
+  | "movers"
+  | "gym"
+  | "salon"
+  | "laundry"
+  | "acrepair"
+  | "pestcontrol";
 
 export type DirectoryItem = {
   name: string;
@@ -44,14 +64,24 @@ export type DirectoryItem = {
 export const categories = [
   { key: "markets", label: "Wholesale", icon: Building2 },
   { key: "sarees", label: "Sarees", icon: ShoppingBag },
-  { key: "electronics", label: "Electronics", icon: ShoppingBag },
+  { key: "electronics", label: "Electronics", icon: Zap },
   { key: "hospitals", label: "Hospitals", icon: HeartPulse },
   { key: "malls", label: "Malls", icon: Landmark },
   { key: "play", label: "Play Arena", icon: Volleyball },
   { key: "schools", label: "Schools", icon: GraduationCap },
   { key: "food", label: "Eateries", icon: Utensils },
-  { key: "grooming", label: "Grooming", icon: ShoppingBag },
+  { key: "grooming", label: "Grooming", icon: Sparkles },
+  { key: "salon", label: "Salon & Spa", icon: Scissors },
   { key: "repair", label: "Vehicle Repair", icon: CarFront },
+  { key: "plumber", label: "Plumber", icon: Wrench },
+  { key: "electrician", label: "Electrician", icon: Zap },
+  { key: "carpenter", label: "Carpenter", icon: Hammer },
+  { key: "pandit", label: "Pandit", icon: Flame },
+  { key: "movers", label: "Packers & Movers", icon: Truck },
+  { key: "gym", label: "Gym & Fitness", icon: Dumbbell },
+  { key: "laundry", label: "Laundry", icon: Sparkles },
+  { key: "acrepair", label: "AC Repair", icon: AirVent },
+  { key: "pestcontrol", label: "Pest Control", icon: Bug },
   { key: "petrol", label: "Petrol Pumps", icon: Fuel },
   { key: "hotels", label: "Hotels", icon: Hotel },
   { key: "dinner", label: "Dinner", icon: Utensils },

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Menu, Navigation, Search, Sparkles, X } from "lucide-react";
+import { LogIn, Menu, Navigation, Search, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -22,7 +22,15 @@ export default function SiteHeader({ onSearch }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const [account, setAccount] = useState<{ email: string } | null>(null);
   const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data: { user: { email: string } | null }) => setAccount(data.user))
+      .catch(() => setAccount(null));
+  }, []);
 
   useEffect(() => {
     function handleScroll() {
@@ -101,10 +109,20 @@ export default function SiteHeader({ onSearch }: SiteHeaderProps) {
               value={searchText}
             />
           </form>
-          <a className="navCta" href="#ai">
+          <a className="navCta" href="/chat">
             <Sparkles size={15} />
             Ask AI
           </a>
+          {account ? (
+            <Link className="navAccount" href="/pro" title={account.email} aria-label="Your account">
+              {account.email.charAt(0).toUpperCase()}
+            </Link>
+          ) : (
+            <Link className="navLogin" href="/pro">
+              <LogIn size={15} />
+              Log in
+            </Link>
+          )}
           <button
             className="navToggle"
             type="button"
@@ -141,6 +159,10 @@ export default function SiteHeader({ onSearch }: SiteHeaderProps) {
                 {link.label}
               </Link>
             ))}
+            <Link className="mobileLogin" href="/pro" onClick={() => setMenuOpen(false)}>
+              <LogIn size={15} />
+              {account ? account.email : "Log in / Sign up"}
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>

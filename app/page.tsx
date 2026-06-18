@@ -313,16 +313,6 @@ export default function Home() {
         onSearchMap={openTrackedSearch}
       />
 
-      <Hero
-        city={city}
-        categoryLabel={categoryLabel}
-        cityVisual={cityVisual}
-        nearbyCount={nearbyCards.length}
-        userLocation={userLocation}
-        onSceneAction={handleSceneAction}
-        onOpenMap={openTrackedMap}
-      />
-
       <AiTeaser
         city={city}
         category={category}
@@ -344,6 +334,16 @@ export default function Home() {
             onOpenNearbyOptions={openNearbyOptionsMap}
           />
         }
+      />
+
+      <Hero
+        city={city}
+        categoryLabel={categoryLabel}
+        cityVisual={cityVisual}
+        nearbyCount={nearbyCards.length}
+        userLocation={userLocation}
+        onSceneAction={handleSceneAction}
+        onOpenMap={openTrackedMap}
       />
 
       <CoverageSection />

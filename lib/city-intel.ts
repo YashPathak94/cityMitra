@@ -137,7 +137,17 @@ export const categoryResultBlueprints: Record<CategoryKey, string[]> = {
   petrol: ["petrol pump", "CNG station", "EV charging station", "highway fuel station", "24 hour petrol pump", "diesel pump", "fuel station with air", "petrol pump near market", "fuel station near hotel", "fuel station near route"],
   hotels: ["business hotel", "budget hotel", "family hotel", "premium hotel", "boutique stay", "hotel near railway station", "hotel near airport", "homestay", "resort", "hotel with parking"],
   dinner: ["fine dining restaurant", "rooftop restaurant", "family dinner restaurant", "date night restaurant", "local cuisine dinner", "buffet restaurant", "late night dinner", "veg restaurant", "non veg restaurant", "river view restaurant"],
-  sightseeing: ["heritage site", "viewpoint", "museum", "temple", "fort", "lake", "garden", "walking tour", "photo spot", "sunset point"]
+  sightseeing: ["heritage site", "viewpoint", "museum", "temple", "fort", "lake", "garden", "walking tour", "photo spot", "sunset point"],
+  salon: ["unisex salon", "bridal makeup studio", "spa and massage", "hair salon", "skin clinic", "nail studio", "men's grooming salon", "beauty parlour", "luxury spa", "wedding makeup artist"],
+  plumber: ["emergency plumber", "bathroom fitting plumber", "water tank cleaning", "pipe leakage repair", "tap and faucet repair", "motor and pump repair", "drainage cleaning", "kitchen sink plumber", "geyser installation", "24 hour plumber"],
+  electrician: ["emergency electrician", "house wiring electrician", "fan and light fitting", "inverter and battery repair", "MCB and fuse repair", "appliance electrician", "wiring fault repair", "switchboard repair", "electrical contractor", "24 hour electrician"],
+  carpenter: ["furniture carpenter", "modular kitchen carpenter", "door and window repair", "wardrobe maker", "bed and sofa repair", "wood polishing", "office furniture carpenter", "custom furniture maker", "carpentry contractor", "furniture assembly"],
+  pandit: ["pandit for puja", "marriage pandit", "griha pravesh pandit", "satyanarayan katha pandit", "havan and yagya pandit", "astrologer and pandit", "funeral rites pandit", "vastu pandit", "naamkaran pandit", "festival puja pandit"],
+  movers: ["packers and movers", "home shifting service", "office relocation", "bike and car transport", "local shifting service", "intercity packers movers", "storage and warehousing", "loading unloading service", "household goods movers", "verified packers movers"],
+  gym: ["gym and fitness center", "personal training gym", "crossfit box", "ladies gym", "yoga studio", "zumba and dance fitness", "weight training gym", "24 hour gym", "premium fitness club", "affordable gym"],
+  laundry: ["laundry and dry cleaning", "dry cleaners", "laundry pickup and delivery", "ironing service", "shoe and bag cleaning", "premium dry cleaning", "express laundry", "carpet and curtain cleaning", "wedding dress cleaning", "daily laundry service"],
+  acrepair: ["AC repair service", "AC installation", "AC gas refilling", "split AC service", "window AC repair", "AC amc service", "refrigerator repair", "AC technician near me", "central AC service", "24 hour AC repair"],
+  pestcontrol: ["pest control service", "cockroach control", "termite treatment", "bed bug treatment", "mosquito control", "rodent control", "general pest control", "herbal pest control", "commercial pest control", "termite inspection"]
 };
 
 export function titleCaseCity(value: string) {
