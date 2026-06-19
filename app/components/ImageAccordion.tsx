@@ -10,6 +10,9 @@ export type AccordionItem = {
   onClick?: () => void;
 };
 
+// Known-good Unsplash image used if a panel's image fails to load.
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=80";
+
 export default function ImageAccordion({ items, initialActive = 0 }: { items: AccordionItem[]; initialActive?: number }) {
   const [active, setActive] = useState(initialActive);
 
@@ -23,15 +26,26 @@ export default function ImageAccordion({ items, initialActive = 0 }: { items: Ac
             role="listitem"
             key={item.id}
             className={isActive ? "imgAccordionItem active" : "imgAccordionItem"}
-            style={{ backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0.05), rgba(15,23,42,0.78)), url("${item.image}")` }}
             onMouseEnter={() => setActive(index)}
             onFocus={() => setActive(index)}
             onClick={() => {
-              if (isActive) item.onClick?.();
-              else setActive(index);
+              setActive(index);
+              item.onClick?.();
             }}
             aria-label={item.title}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="imgAccordionImg"
+              src={item.image}
+              alt={item.title}
+              loading="lazy"
+              onError={(event) => {
+                const target = event.currentTarget;
+                if (target.src !== FALLBACK_IMAGE) target.src = FALLBACK_IMAGE;
+              }}
+            />
+            <span className="imgAccordionShade" />
             <span className="imgAccordionLabel">
               <b>{item.title}</b>
               {item.subtitle && isActive && <small>{item.subtitle}</small>}

@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronDown, ChevronUp, ExternalLink, MapPinned, Navigation } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, ListChecks, MapPinned, Navigation } from "lucide-react";
+import { useState } from "react";
 import { categories, CategoryKey } from "@/data/city-directory";
 import { NearbyCard, UserLocation } from "@/lib/city-intel";
 import ImageAccordion from "@/app/components/ImageAccordion";
@@ -44,6 +45,7 @@ export default function NearbyPanel({
   onOpenNearbyOptions
 }: NearbyPanelProps) {
   const activeNearbyPick = nearbyCards[nearbyFrameIndex] || nearbyCards[0];
+  const [showAll, setShowAll] = useState(false);
 
   return (
     <aside className="nearbyPanel nearbyPanelCompact" id="nearby" aria-label="Nearby map and places">
@@ -112,6 +114,31 @@ export default function NearbyPanel({
                 />
               ))}
             </div>
+
+            <button type="button" className="nearbyViewAllToggle" onClick={() => setShowAll((current) => !current)} aria-expanded={showAll}>
+              <ListChecks size={15} />
+              {showAll ? "Hide all 20" : "View all 20 suggestions"}
+              {showAll ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+
+            {showAll && (
+              <div className="nearbyAllDrawer" aria-label="All top 20 nearby picks">
+                {nearbyCards.map((item, index) => (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSetFrame(index);
+                      onOpenMap(item.query, `nearby_all_${item.name}`);
+                    }}
+                    key={`${city}-${category}-${index}-${item.name}`}
+                  >
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <b>{item.name}</b>
+                    <small>{item.area}</small>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <p>Ask CityMitra for live-style suggestions, then open the map search for that city.</p>
@@ -129,14 +156,6 @@ export default function NearbyPanel({
           }))}
         />
       )}
-
-      <div className="nearbyActions">
-        {["hospitals", "petrol pumps", "vehicle repair", "hotels"].map((item) => (
-          <button type="button" onClick={() => onOpenMap(`${item} near ${city}`, `backup_${item}`)} key={item}>
-            {item}
-          </button>
-        ))}
-      </div>
     </aside>
   );
 }

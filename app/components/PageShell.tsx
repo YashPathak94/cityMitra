@@ -14,9 +14,10 @@ export default function PageShell({ children }: { children: React.ReactNode }) {
             CityMitra
           </Link>
           <nav className="subpageLinks" aria-label="Site navigation">
-            <Link href="/cities">City Guides</Link>
-            <Link href="/#directory">Directory</Link>
-            <Link href="/#ai">AI Guide</Link>
+            <Link href="/">Home</Link>
+            <Link href="/cities">City Guide</Link>
+            <Link href="/chat">City Chat</Link>
+            <Link href="/#nearby">Top Picks</Link>
             <Link href="/about">About</Link>
             <Link href="/contact">Contact</Link>
           </nav>

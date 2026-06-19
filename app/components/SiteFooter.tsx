@@ -26,9 +26,10 @@ const footerColumns = [
   {
     title: "Explore",
     links: [
-      { label: "City Guides", href: "/cities" },
-      { label: "Directory", href: "/#directory" },
-      { label: "AI Guide", href: "/#ai" },
+      { label: "Home", href: "/" },
+      { label: "City Guide", href: "/cities" },
+      { label: "City Chat", href: "/chat" },
+      { label: "Top Picks", href: "/#nearby" },
       { label: "CityMitra Pro", href: "/pro" }
     ]
   },

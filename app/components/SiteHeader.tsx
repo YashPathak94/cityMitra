@@ -27,10 +27,10 @@ function LogoMark() {
 }
 
 const navLinks: Array<{ href: string; id?: string; label: string }> = [
-  { href: "/cities", label: "City Guides" },
-  { href: "/chat", label: "AI Chat" },
-  { href: "#directory", id: "directory", label: "Directory" },
-  { href: "#nearby", id: "nearby", label: "Nearby Picks" },
+  { href: "#top", label: "Home" },
+  { href: "/cities", label: "City Guide" },
+  { href: "/chat", label: "City Chat" },
+  { href: "#nearby", id: "nearby", label: "Top Picks" },
   { href: "/pro", label: "Pro" }
 ];
 
@@ -135,9 +135,8 @@ export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderP
               value={searchText}
             />
           </form>
-          <a className="navCta" href="/chat" aria-label="Ask the AI guide">
-            <Sparkles size={16} />
-            <span>Ask AI</span>
+          <a className="navCta navCtaIcon" href="/chat" aria-label="Ask the AI guide" title="Ask AI">
+            <Sparkles size={18} />
           </a>
           {account ? (
             <Link className="navAccount" href="/pro" title={account.email} aria-label="Your account">
