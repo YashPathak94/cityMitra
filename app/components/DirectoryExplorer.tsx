@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Map, MapPin, Navigation, Search } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Map, MapPin, Navigation, Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import { categories, CategoryKey, DirectoryItem } from "@/data/city-directory";
@@ -9,6 +9,17 @@ import { cityAliases, NearbyCard, photoSearchImage, titleCaseCity } from "@/lib/
 const autoRotateIntervalMs = 1500;
 
 const chipSpring = { type: "spring", stiffness: 420, damping: 24 } as const;
+
+// Staggered reveal for the category grid (21st.dev IconGrid pattern).
+const gridContainerVariants = {
+  hidden: { opacity: 1 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+} as const;
+
+const gridItemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120, damping: 14 } }
+} as const;
 
 type DirectoryExplorerProps = {
   city: string;
@@ -45,14 +56,63 @@ export default function DirectoryExplorer({
   const [hovered, setHovered] = useState(false);
   const [citySearch, setCitySearch] = useState("");
   const [categorySearch, setCategorySearch] = useState("");
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [collapsedHeight, setCollapsedHeight] = useState<number | null>(null);
+  const [fullHeight, setFullHeight] = useState<number | null>(null);
+  const [hiddenCategoryCount, setHiddenCategoryCount] = useState(0);
   const reduceMotion = useReducedMotion();
   const resultCount = selectedItems.length;
   const resultsRef = useRef<HTMLDivElement>(null);
+  const categoryGridRef = useRef<HTMLDivElement>(null);
 
   const filteredCities = visibleCities.filter((item) => item.toLowerCase().includes(citySearch.trim().toLowerCase()));
   const filteredCategories = categories.filter((item) =>
     item.label.toLowerCase().includes(categorySearch.trim().toLowerCase())
   );
+  const isSearchingCategories = categorySearch.trim().length > 0;
+
+  // Measure where the third row begins so the grid can show exactly two rows
+  // when collapsed — robust across phone/tablet/desktop column counts.
+  useEffect(() => {
+    const grid = categoryGridRef.current;
+    if (!grid) return;
+
+    const measure = () => {
+      const tiles = Array.from(grid.querySelectorAll<HTMLElement>("[data-cat-tile]"));
+      if (tiles.length === 0) {
+        setCollapsedHeight(null);
+        setHiddenCategoryCount(0);
+        return;
+      }
+      const rowTops: number[] = [];
+      tiles.forEach((tile) => {
+        const top = tile.offsetTop;
+        if (!rowTops.some((existing) => Math.abs(existing - top) < 4)) rowTops.push(top);
+      });
+      rowTops.sort((a, b) => a - b);
+      setFullHeight(grid.scrollHeight);
+      if (rowTops.length <= 2) {
+        setCollapsedHeight(null);
+        setHiddenCategoryCount(0);
+        return;
+      }
+      const row3Top = rowTops[2];
+      setCollapsedHeight(Math.max(0, row3Top - 2));
+      setHiddenCategoryCount(tiles.filter((tile) => tile.offsetTop >= row3Top - 2).length);
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, [filteredCategories.length]);
+
+  const canCollapseCategories = !isSearchingCategories && hiddenCategoryCount > 0;
+  const categoryGridMaxHeight = isSearchingCategories
+    ? undefined
+    : showAllCategories
+      ? fullHeight ?? undefined
+      : collapsedHeight ?? undefined;
 
   // Bring the results into view after a pick. Always scrolls the results step
   // to the top (under the fixed navbar via scroll-margin) on every device.
@@ -166,32 +226,59 @@ export default function DirectoryExplorer({
               />
             </div>
           </div>
-          <div className="categoryGrid">
-            {filteredCategories.length > 0 ? (
-              filteredCategories.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <motion.button
-                    className={category === item.key ? "category active" : "category"}
-                    key={item.key}
-                    onClick={() => handleSelectCategory(item.key)}
-                    title={item.label}
-                    whileHover={{ y: -3, scale: 1.04 }}
-                    whileTap={{ scale: 0.94 }}
-                    transition={chipSpring}
-                    style={{ ["--cat-tint" as string]: item.tint }}
-                  >
-                    <span className="categoryIcon" aria-hidden>
-                      <Icon size={20} />
-                    </span>
-                    <span>{item.label}</span>
-                  </motion.button>
-                );
-              })
-            ) : (
-              <span className="filterEmpty">No category matches “{categorySearch}”.</span>
-            )}
+          <div className="categoryGridWrap" style={{ maxHeight: categoryGridMaxHeight }}>
+            <motion.div
+              className="categoryGrid"
+              ref={categoryGridRef}
+              variants={gridContainerVariants}
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+            >
+              {filteredCategories.length > 0 ? (
+                filteredCategories.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <motion.button
+                      data-cat-tile
+                      className={category === item.key ? "category active" : "category"}
+                      key={item.key}
+                      onClick={() => handleSelectCategory(item.key)}
+                      title={item.label}
+                      variants={gridItemVariants}
+                      whileHover={{ y: -3, scale: 1.04 }}
+                      whileTap={{ scale: 0.94 }}
+                      style={{ ["--cat-tint" as string]: item.tint }}
+                    >
+                      <span className="categoryIcon" aria-hidden>
+                        <Icon size={20} />
+                      </span>
+                      <span>{item.label}</span>
+                    </motion.button>
+                  );
+                })
+              ) : (
+                <span className="filterEmpty">No category matches “{categorySearch}”.</span>
+              )}
+            </motion.div>
           </div>
+          {canCollapseCategories && (
+            <button
+              type="button"
+              className="categoryMoreBtn"
+              onClick={() => setShowAllCategories((current) => !current)}
+              aria-expanded={showAllCategories}
+            >
+              {showAllCategories ? (
+                <>
+                  Show less <ChevronUp size={16} />
+                </>
+              ) : (
+                <>
+                  +{hiddenCategoryCount} more categories <ChevronDown size={16} />
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
