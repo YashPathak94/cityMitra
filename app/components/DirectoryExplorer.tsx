@@ -84,8 +84,11 @@ export default function DirectoryExplorer({
       }
       const tileHeight = tiles[0].offsetHeight;
       const rowGap = parseFloat(getComputedStyle(grid).rowGap || "0") || 0;
-      const twoRowHeight = tileHeight * 2 + rowGap;
-      setHasHiddenCategories(grid.scrollHeight > twoRowHeight + 4);
+      // visible rows differ by breakpoint (2 on desktop, 3 on phones)
+      const wrapper = grid.parentElement;
+      const rows = wrapper ? parseInt(getComputedStyle(wrapper).getPropertyValue("--cat-rows"), 10) || 2 : 2;
+      const visibleHeight = tileHeight * rows + rowGap * (rows - 1);
+      setHasHiddenCategories(grid.scrollHeight > visibleHeight + 4);
     };
 
     measure();

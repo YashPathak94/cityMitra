@@ -135,18 +135,18 @@ export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderP
               value={searchText}
             />
           </form>
-          <a className="navCta" href="/chat">
-            <Sparkles size={15} />
-            Ask AI
+          <a className="navCta" href="/chat" aria-label="Ask the AI guide">
+            <Sparkles size={16} />
+            <span>Ask AI</span>
           </a>
           {account ? (
             <Link className="navAccount" href="/pro" title={account.email} aria-label="Your account">
               {account.email.charAt(0).toUpperCase()}
             </Link>
           ) : (
-            <Link className="navLogin" href="/pro">
-              <LogIn size={15} />
-              Log in
+            <Link className="navLogin" href="/signin" aria-label="Sign in">
+              <LogIn size={16} />
+              <span>Log in</span>
             </Link>
           )}
           <button
@@ -185,8 +185,8 @@ export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderP
                 {link.label}
               </Link>
             ))}
-            <Link className="mobileLogin" href="/pro" onClick={() => setMenuOpen(false)}>
-              <LogIn size={15} />
+            <Link className="mobileLogin" href={account ? "/pro" : "/signin"} onClick={() => setMenuOpen(false)}>
+              <LogIn size={16} />
               {account ? account.email : "Log in / Sign up"}
             </Link>
           </motion.div>

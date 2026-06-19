@@ -3560,15 +3560,21 @@ body {
 .navCta {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
+  height: 42px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--orange), #f97316);
   color: #fff;
   font-size: 0.85rem;
   font-weight: 800;
-  padding: 10px 18px;
+  padding: 0 18px;
   box-shadow: var(--glow);
   transition: transform 0.2s var(--smooth), box-shadow 0.2s var(--smooth);
+}
+
+.navCta svg {
+  flex: 0 0 auto;
 }
 
 .navCta:hover {
@@ -3612,9 +3618,20 @@ body {
 }
 
 @media (max-width: 720px) {
-  .navSearch:not(.mobileSearch),
-  .navCta {
+  .navSearch:not(.mobileSearch) {
     display: none;
+  }
+
+  /* keep Ask AI + Log in, but compact to icon-only square buttons */
+  .navCta span,
+  .navLogin span {
+    display: none;
+  }
+
+  .navCta,
+  .navLogin {
+    width: 42px;
+    padding: 0;
   }
 
   .mobileMenu {
@@ -3624,6 +3641,13 @@ body {
   .navToggle {
     display: inline-flex;
     position: static;
+  }
+}
+
+@media (max-width: 420px) {
+  /* on the smallest phones drop the quick Ask AI to save room */
+  .navCta {
+    display: none;
   }
 }
 
@@ -6609,7 +6633,7 @@ body {
 .controlBand .categoryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(98px, 1fr));
-  gap: 12px;
+  gap: var(--cat-gap, 12px);
   overflow: visible;
   padding: 0;
   mask-image: none;
@@ -6682,37 +6706,48 @@ body {
 }
 
 @media (max-width: 640px) {
-  /* keep the same tidy tile grid on mobile (4 across), like JustDial */
+  /* compact JustDial-style tile grid on mobile (override any rail leftovers) */
   .controlBand .categoryGrid {
+    display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
+    gap: var(--cat-gap, 8px);
+    overflow: visible;
+    mask-image: none;
+    -webkit-mask-image: none;
   }
 
-  .controlBand .category {
-    height: var(--cat-row-h, 84px);
-    padding: 9px 5px;
-    border-radius: 14px;
+  .controlBand .categoryGrid .category {
+    height: var(--cat-row-h, 78px);
+    min-height: 0;
+    padding: 7px 4px;
+    border-radius: 13px;
+    white-space: normal;
   }
 
   .controlBand .category .categoryIcon {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
   }
 
   .controlBand .category .categoryIcon svg {
-    width: 19px;
-    height: 19px;
+    width: 17px;
+    height: 17px;
   }
 
   .controlBand .category span:not(.categoryIcon) {
-    font-size: 0.72rem;
+    font-size: 0.66rem;
   }
 }
 
 @media (max-width: 380px) {
   .controlBand .categoryGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .controlBand .category .categoryIcon {
+    width: 30px;
+    height: 30px;
   }
 }
 
@@ -6742,15 +6777,21 @@ body {
 .navLogin {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
+  height: 42px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--white);
   color: var(--ink);
   font-size: 0.86rem;
   font-weight: 800;
-  padding: 9px 15px;
+  padding: 0 16px;
   transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth);
+}
+
+.navLogin svg {
+  flex: 0 0 auto;
 }
 
 .navLogin:hover {
@@ -6978,9 +7019,11 @@ body {
 --------------------------------------------------------------------------- */
 .categoryGridWrap {
   --cat-row-h: 100px;
+  --cat-gap: 12px;
+  --cat-rows: 2;
   overflow: hidden;
-  /* clip to exactly two rows of tiles + one row gap */
-  max-height: calc(var(--cat-row-h) * 2 + 12px);
+  /* clip to N rows of tiles plus the gaps between them */
+  max-height: calc(var(--cat-row-h) * var(--cat-rows) + var(--cat-gap) * (var(--cat-rows) - 1));
   transition: max-height 0.45s var(--smooth);
 }
 
@@ -6990,10 +7033,10 @@ body {
 
 @media (max-width: 640px) {
   .categoryGridWrap {
-    --cat-row-h: 84px;
-    /* on phones the grid is a one-row swipe rail, so never clip it */
-    max-height: none;
-    overflow: visible;
+    /* phones: smaller tiles, allow up to three rows before "Show more" */
+    --cat-row-h: 78px;
+    --cat-gap: 8px;
+    --cat-rows: 3;
   }
 }
 
@@ -7029,5 +7072,277 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .categoryGridWrap {
     transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   v9 — split-screen sign-in / sign-up
+--------------------------------------------------------------------------- */
+.authScreen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.authFormSide {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 72px 24px 48px;
+}
+
+.authBrand {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.authBrandMark {
+  width: 30px;
+  height: 30px;
+}
+
+.authCard {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.authCardHead {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.authCardHead h1 {
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.authCardHead p {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.authPanelForm {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.authPanelForm label {
+  font-size: 0.84rem;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.authPanelForm input {
+  height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  padding: 0 14px;
+  font-size: 16px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth);
+}
+
+.authPanelForm input:focus-visible {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.12);
+}
+
+.authPasswordWrap {
+  position: relative;
+  display: flex;
+}
+
+.authPasswordWrap input {
+  flex: 1;
+  padding-right: 44px;
+}
+
+.authPasswordToggle {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color 0.2s var(--smooth);
+}
+
+.authPasswordToggle:hover {
+  color: var(--ink);
+}
+
+.authPanelError {
+  color: var(--red);
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+.authPanelSubmit {
+  margin-top: 14px;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.2s var(--smooth), box-shadow 0.2s var(--smooth), opacity 0.2s var(--smooth);
+}
+
+.authPanelSubmit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.22);
+}
+
+.authPanelSubmit:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+.authToggleLine {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.authToggleLine button {
+  border: 0;
+  background: none;
+  color: var(--orange);
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.authPanelDivider {
+  position: relative;
+  text-align: center;
+}
+
+.authPanelDivider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--line);
+}
+
+.authPanelDivider span {
+  position: relative;
+  background: var(--paper);
+  padding: 0 12px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.authGoogleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 0.92rem;
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth);
+}
+
+.authGoogleBtn:hover {
+  border-color: var(--orange);
+  box-shadow: var(--glow);
+}
+
+.authAside {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(150deg, #fb923c 0%, #ea580c 42%, #2563eb 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 48px;
+}
+
+.authAsideGlow {
+  position: absolute;
+  inset: -20% 30% 40% -20%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), transparent 60%);
+  filter: blur(20px);
+}
+
+.authAsideQuote {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  color: #fff;
+  max-width: 420px;
+}
+
+.authAsideQuote p {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.35;
+  min-height: 4.2em;
+}
+
+.authAsideQuote cite {
+  display: block;
+  margin-top: 12px;
+  font-style: normal;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.typewriterCursor {
+  animation: typewriterBlink 1s step-end infinite;
+}
+
+@keyframes typewriterBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@media (max-width: 880px) {
+  .authScreen {
+    grid-template-columns: 1fr;
+  }
+
+  .authAside {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typewriterCursor {
+    animation: none;
   }
 }
