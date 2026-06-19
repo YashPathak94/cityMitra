@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   BedDouble,
@@ -10,17 +11,16 @@ import {
   MessageSquarePlus,
   Plane,
   Search,
-  Sparkles,
-  Stethoscope,
-  TrainFront,
-  UtensilsCrossed
+  ShoppingBag,
+  Sparkles
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { categories, CategoryKey } from "@/data/city-directory";
 import { buildBookingOptions, BookingCategory, bookingCategoryLabels, categoryToBooking } from "@/lib/booking";
-import { buildGeneratedResults } from "@/lib/city-intel";
+import { buildGeneratedResults, photoSearchImage } from "@/lib/city-intel";
 import { trackActivity } from "@/lib/tracking";
 import ConciergePip, { LocalPicks } from "@/app/components/ConciergePip";
+import ConciergeSelector, { ConciergePanel } from "@/app/components/ConciergeSelector";
 import { ConciergeGroup } from "@/app/components/ConciergeCard";
 
 type AiTeaserProps = {
@@ -30,16 +30,8 @@ type AiTeaserProps = {
   nearbyPanel: React.ReactNode;
 };
 
-const actionChips: Array<{ category: BookingCategory; label: string; icon: typeof Plane }> = [
-  { category: "hotels", label: "Book hotels", icon: BedDouble },
-  { category: "flights", label: "Book flights", icon: Plane },
-  { category: "trains", label: "Book trains", icon: TrainFront },
-  { category: "food", label: "Reserve a table", icon: UtensilsCrossed },
-  { category: "cabs", label: "Book a cab", icon: Car },
-  { category: "doctor", label: "Doctor visit", icon: Stethoscope }
-];
-
 export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }: AiTeaserProps) {
+  const router = useRouter();
   const [pip, setPip] = useState<{ groups: ConciergeGroup[]; local: LocalPicks | null } | null>(null);
   const initialised = useRef(false);
 
@@ -86,15 +78,66 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
 
+  const conciergePanels: ConciergePanel[] = [
+    {
+      key: "ai",
+      title: "Ask the AI Guide",
+      description: `Plan your ${city} trip in seconds`,
+      image: photoSearchImage(city, `${city} skyline travel`, 0),
+      icon: <Sparkles size={22} />,
+      actionLabel: "Open AI chat",
+      onAction: () => {
+        trackActivity({ type: "open_chat", city, category, label: "selector" });
+        router.push("/chat");
+      }
+    },
+    {
+      key: "cab",
+      title: "Book a Cab",
+      description: `Quick rides across ${city}`,
+      image: photoSearchImage(city, "taxi cab city street", 1),
+      icon: <Car size={22} />,
+      actionLabel: "Book a cab",
+      onAction: () => openBooking("cabs")
+    },
+    {
+      key: "flight",
+      title: "Book Flights",
+      description: `Fares to & from ${city}`,
+      image: photoSearchImage(city, "airplane airport travel", 2),
+      icon: <Plane size={22} />,
+      actionLabel: "Find flights",
+      onAction: () => openBooking("flights")
+    },
+    {
+      key: "hotel",
+      title: "Book Hotels",
+      description: `Top stays in ${city}`,
+      image: photoSearchImage(city, "hotel room interior", 3),
+      icon: <BedDouble size={22} />,
+      actionLabel: "Find hotels",
+      onAction: () => openBooking("hotels")
+    },
+    {
+      key: "wholesale",
+      title: "Explore Wholesale",
+      description: `Markets & bulk deals in ${city}`,
+      image: photoSearchImage(city, "wholesale market bazaar", 4),
+      icon: <ShoppingBag size={22} />,
+      actionLabel: "Explore markets",
+      onAction: () => document.getElementById("directory")?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+  ];
+
   return (
     <section className="aiBand" id="ai">
-      <div className="aiPanel">
+      <div className="aiPanel aiPanelStacked">
         <div className="aiIntro">
-          <span className="sectionKicker">AI Assistant</span>
-          <h2>Ask CityMitra before you leave</h2>
+          <span className="sectionKicker">AI Concierge</span>
+          <h2>Your AI city agent & booking concierge</h2>
           <p>
-            A focused city assistant for trip plans, market runs, hospitals, fuel stops, hotels, repairs, food, and
-            quick backups when plans change — with one-tap bookings and saved conversations.
+            Tap a concierge tab to book cabs, flights and hotels, explore wholesale markets, or open the AI guide for
+            trip plans, routes and backups — all tailored to {city}.
           </p>
           <div className="agentStack">
             <span>
@@ -114,52 +157,23 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
             <MessageSquarePlus size={18} />
             Open the AI Assistant
           </Link>
-        </div>
-
-        <div className="aiTeaserGrid">
-          <div className="aiTeaserCard">
-            <div className="aiTeaserPreview">
-              <div className="aiTeaserBubble assistant">
-                <span><Sparkles size={13} /> CityMitra</span>
-                <p>Tell me a city and what you need — I’ll map the spots, routes, and backups, then offer one-tap bookings.</p>
-              </div>
-              <div className="aiTeaserBubble user">
-                <p>Plan a weekend in {city}</p>
-              </div>
-            </div>
-
-            <div className="aiTeaserActions" aria-label="Quick booking concierge">
-              {actionChips.map((chip) => {
-                const Icon = chip.icon;
-                return (
-                  <button key={chip.category} type="button" onClick={() => openBooking(chip.category)}>
-                    <Icon size={14} />
-                    {chip.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="aiTeaserPrompts">
-              {prompts.map((prompt) => (
-                <Link
-                  key={prompt}
-                  href={chatHref(prompt)}
-                  onClick={() => trackActivity({ type: "open_chat", city, category, label: prompt })}
-                >
-                  {prompt}
-                  <ArrowRight size={14} />
-                </Link>
-              ))}
-            </div>
-
-            <Link className="aiTeaserCta" href={chatHref()} onClick={() => trackActivity({ type: "open_chat", city, category, label: "cta" })}>
-              Start chatting — it’s saved for you <ArrowRight size={16} />
-            </Link>
+          <div className="aiPromptRow">
+            {prompts.map((prompt) => (
+              <Link
+                key={prompt}
+                href={chatHref(prompt)}
+                onClick={() => trackActivity({ type: "open_chat", city, category, label: prompt })}
+              >
+                {prompt}
+                <ArrowRight size={13} />
+              </Link>
+            ))}
           </div>
-
-          {nearbyPanel}
         </div>
+
+        <ConciergeSelector panels={conciergePanels} />
+
+        {nearbyPanel}
       </div>
 
       <ConciergePip

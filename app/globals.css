@@ -3561,14 +3561,14 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  height: 42px;
+  gap: 6px;
+  height: 36px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--orange), #f97316);
   color: #fff;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  padding: 0 18px;
+  padding: 0 14px;
   box-shadow: var(--glow);
   transition: transform 0.2s var(--smooth), box-shadow 0.2s var(--smooth);
 }
@@ -3630,7 +3630,7 @@ body {
 
   .navCta,
   .navLogin {
-    width: 42px;
+    width: 36px;
     padding: 0;
   }
 
@@ -6778,15 +6778,15 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  height: 42px;
+  gap: 6px;
+  height: 36px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--white);
   color: var(--ink);
-  font-size: 0.86rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  padding: 0 16px;
+  padding: 0 13px;
   transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth);
 }
 
@@ -7344,5 +7344,155 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .typewriterCursor {
     animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   v10 — interactive concierge selector (expanding image panels)
+--------------------------------------------------------------------------- */
+.aiPanelStacked {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.aiPromptRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.aiPromptRow a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  padding: 7px 13px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink);
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth);
+}
+
+.aiPromptRow a:hover {
+  border-color: var(--orange);
+  box-shadow: var(--glow);
+}
+
+.conciergeSelector {
+  display: flex;
+  gap: 6px;
+  height: 380px;
+  width: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.conciergePanel {
+  position: relative;
+  flex: 1 1 0%;
+  min-width: 46px;
+  display: flex;
+  align-items: flex-end;
+  background-color: #18181b;
+  background-size: cover;
+  background-position: center;
+  border-radius: 18px;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+  transition: flex-grow 0.6s var(--smooth), opacity 0.5s var(--smooth), transform 0.5s var(--smooth), box-shadow 0.4s var(--smooth);
+}
+
+.conciergePanel.active {
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.4);
+}
+
+.conciergePanelLabel {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 18px;
+  width: 100%;
+}
+
+.conciergePanelIcon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+}
+
+.conciergePanelInfo {
+  min-width: 0;
+  color: #fff;
+  transition: opacity 0.4s var(--smooth), transform 0.4s var(--smooth);
+}
+
+.conciergePanel:not(.active) .conciergePanelInfo {
+  opacity: 0;
+  transform: translateX(16px);
+  pointer-events: none;
+}
+
+.conciergePanelTitle {
+  font-size: 1.2rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.conciergePanelDesc {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+}
+
+.conciergePanelAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding: 9px 15px;
+  cursor: pointer;
+  transition: transform 0.2s var(--smooth), box-shadow 0.2s var(--smooth);
+}
+
+.conciergePanelAction:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.28);
+}
+
+@media (max-width: 760px) {
+  .conciergeSelector {
+    flex-direction: column;
+    height: 460px;
+  }
+
+  .conciergePanelTitle,
+  .conciergePanelDesc {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .conciergePanel {
+    transition: opacity 0.3s linear;
+    transform: none !important;
   }
 }
