@@ -17,7 +17,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { categories, CategoryKey } from "@/data/city-directory";
 import { buildBookingOptions, BookingCategory, bookingCategoryLabels, categoryToBooking } from "@/lib/booking";
-import { buildGeneratedResults, photoSearchImage } from "@/lib/city-intel";
+import { buildGeneratedResults } from "@/lib/city-intel";
 import { trackActivity } from "@/lib/tracking";
 import ConciergePip, { LocalPicks } from "@/app/components/ConciergePip";
 import ConciergeSelector, { ConciergePanel } from "@/app/components/ConciergeSelector";
@@ -83,8 +83,8 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
       key: "ai",
       title: "Ask the AI Guide",
       description: `Plan your ${city} trip in seconds`,
-      image: photoSearchImage(city, `${city} skyline travel`, 0),
-      icon: <Sparkles size={22} />,
+      image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80",
+      icon: <Sparkles size={20} />,
       actionLabel: "Open AI chat",
       onAction: () => {
         trackActivity({ type: "open_chat", city, category, label: "selector" });
@@ -95,8 +95,8 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
       key: "cab",
       title: "Book a Cab",
       description: `Quick rides across ${city}`,
-      image: photoSearchImage(city, "taxi cab city street", 1),
-      icon: <Car size={22} />,
+      image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80",
+      icon: <Car size={20} />,
       actionLabel: "Book a cab",
       onAction: () => openBooking("cabs")
     },
@@ -104,8 +104,8 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
       key: "flight",
       title: "Book Flights",
       description: `Fares to & from ${city}`,
-      image: photoSearchImage(city, "airplane airport travel", 2),
-      icon: <Plane size={22} />,
+      image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=900&q=80",
+      icon: <Plane size={20} />,
       actionLabel: "Find flights",
       onAction: () => openBooking("flights")
     },
@@ -113,8 +113,8 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
       key: "hotel",
       title: "Book Hotels",
       description: `Top stays in ${city}`,
-      image: photoSearchImage(city, "hotel room interior", 3),
-      icon: <BedDouble size={22} />,
+      image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80",
+      icon: <BedDouble size={20} />,
       actionLabel: "Find hotels",
       onAction: () => openBooking("hotels")
     },
@@ -122,8 +122,8 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
       key: "wholesale",
       title: "Explore Wholesale",
       description: `Markets & bulk deals in ${city}`,
-      image: photoSearchImage(city, "wholesale market bazaar", 4),
-      icon: <ShoppingBag size={22} />,
+      image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80",
+      icon: <ShoppingBag size={20} />,
       actionLabel: "Explore markets",
       onAction: () => document.getElementById("directory")?.scrollIntoView({ behavior: "smooth", block: "start" })
     }
@@ -132,13 +132,18 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
   return (
     <section className="aiBand" id="ai">
       <div className="aiPanel aiPanelStacked">
-        <div className="aiIntro">
+        <div className="aiIntroHead">
           <span className="sectionKicker">AI Concierge</span>
-          <h2>Your AI city agent & booking concierge</h2>
+          <h2>Your AI city agent &amp; booking concierge</h2>
           <p>
             Tap a concierge tab to book cabs, flights and hotels, explore wholesale markets, or open the AI guide for
             trip plans, routes and backups — all tailored to {city}.
           </p>
+        </div>
+
+        <ConciergeSelector panels={conciergePanels} />
+
+        <div className="aiIntroActions">
           <div className="agentStack">
             <span>
               <Search size={16} />
@@ -153,7 +158,7 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
               Booking concierge
             </span>
           </div>
-          <Link className="primaryButton" href={chatHref()} onClick={() => trackActivity({ type: "open_chat", city, category, label: "intro" })}>
+          <Link className="primaryButton aiOpenBtn" href={chatHref()} onClick={() => trackActivity({ type: "open_chat", city, category, label: "intro" })}>
             <MessageSquarePlus size={18} />
             Open the AI Assistant
           </Link>
@@ -170,8 +175,6 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
             ))}
           </div>
         </div>
-
-        <ConciergeSelector panels={conciergePanels} />
 
         {nearbyPanel}
       </div>
