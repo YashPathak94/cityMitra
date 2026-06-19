@@ -7529,3 +7529,191 @@ body {
   margin: 0 auto;
   padding: 8px 0 56px;
 }
+
+/* ---------------------------------------------------------------------------
+   v11 — compact Nearby section + image accordion
+--------------------------------------------------------------------------- */
+.nearbyPanelCompact {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* one aligned bar replaces the tall location header + two full-width bars */
+.nearbyBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--white);
+  padding: 12px 16px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.nearbyBarHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.nearbyBarIcon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--orange) 14%, #fff);
+  color: var(--orange);
+}
+
+.nearbyBarHead strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.nearbyBarHead span {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.nearbyBarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nearbyLocBtn,
+.nearbyMapBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  transition: transform 0.2s var(--smooth), box-shadow 0.2s var(--smooth), border-color 0.2s var(--smooth);
+}
+
+.nearbyLocBtn {
+  background: var(--white);
+  color: var(--ink);
+}
+
+.nearbyLocBtn.on {
+  background: linear-gradient(135deg, var(--orange), #f97316);
+  border-color: transparent;
+  color: #fff;
+}
+
+.nearbyMapBtn {
+  background: var(--blue);
+  border-color: transparent;
+  color: #fff;
+}
+
+.nearbyLocBtn:hover,
+.nearbyMapBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.16);
+}
+
+.nearbyStatus {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: -4px 2px 0;
+}
+
+/* compact the Top-20 block inside the new layout */
+.nearbyPanelCompact .nearbyList {
+  margin: 0;
+}
+
+/* interactive image accordion (hover/tap to expand) */
+.imgAccordion {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  height: 190px;
+}
+
+.imgAccordionItem {
+  position: relative;
+  flex: 1 1 0%;
+  min-width: 50px;
+  border: 0;
+  padding: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: #18181b;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.14);
+  transition: flex-grow 0.6s var(--smooth);
+}
+
+.imgAccordionItem.active {
+  flex-grow: 6;
+}
+
+.imgAccordionLabel {
+  position: absolute;
+  inset: auto auto 13px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: #fff;
+  text-align: left;
+}
+
+.imgAccordionLabel b {
+  font-size: 1rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.imgAccordionLabel small {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+}
+
+.imgAccordionItem:not(.active) .imgAccordionLabel {
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.imgAccordionItem:not(.active) .imgAccordionLabel b {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.84rem;
+}
+
+@media (max-width: 640px) {
+  .imgAccordion {
+    height: 150px;
+  }
+
+  .imgAccordionItem {
+    min-width: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imgAccordionItem {
+    transition: none;
+  }
+}

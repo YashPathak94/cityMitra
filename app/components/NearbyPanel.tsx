@@ -3,6 +3,7 @@
 import { ChevronDown, ChevronUp, ExternalLink, MapPinned, Navigation } from "lucide-react";
 import { categories, CategoryKey } from "@/data/city-directory";
 import { NearbyCard, UserLocation } from "@/lib/city-intel";
+import ImageAccordion from "@/app/components/ImageAccordion";
 
 type PhotoBlock = {
   title: string;
@@ -45,22 +46,29 @@ export default function NearbyPanel({
   const activeNearbyPick = nearbyCards[nearbyFrameIndex] || nearbyCards[0];
 
   return (
-    <aside className="nearbyPanel" id="nearby" aria-label="Nearby map and places">
-      <div className="miniMap">
-        <MapPinned size={22} />
-        <span>{city}</span>
-        <strong>{userLocation?.city ? `Near you · ${categoryLabel}` : categoryLabel}</strong>
+    <aside className="nearbyPanel nearbyPanelCompact" id="nearby" aria-label="Nearby map and places">
+      <div className="nearbyBar">
+        <div className="nearbyBarHead">
+          <span className="nearbyBarIcon">
+            <MapPinned size={18} />
+          </span>
+          <div>
+            <strong>{city}</strong>
+            <span>{userLocation?.city ? `Near you · ${categoryLabel}` : categoryLabel}</span>
+          </div>
+        </div>
+        <div className="nearbyBarActions">
+          <button type="button" className={userLocation ? "nearbyLocBtn on" : "nearbyLocBtn"} onClick={onRequestLocation}>
+            <Navigation size={14} />
+            {userLocation ? "Location on" : "Use my location"}
+          </button>
+          <button type="button" className="nearbyMapBtn" onClick={onOpenNearbyOptions}>
+            Open Maps <ExternalLink size={14} />
+          </button>
+        </div>
       </div>
-      <div className="locationBox">
-        <button type="button" onClick={onRequestLocation}>
-          <Navigation size={15} />
-          {userLocation ? "Nearby location enabled" : "Use my nearby location"}
-        </button>
-        <p>{locationStatus}</p>
-      </div>
-      <button className="mapPrimaryLink" type="button" onClick={onOpenNearbyOptions}>
-        Show nearby options on Maps <ExternalLink size={15} />
-      </button>
+      <p className="nearbyStatus">{locationStatus}</p>
+
       <div className="nearbyList" key={`${city}-${category}-nearby`}>
         <div className="nearbyListHeader">
           <div>
@@ -104,45 +112,24 @@ export default function NearbyPanel({
                 />
               ))}
             </div>
-
-            <div className="nearbyAllDrawer" aria-label="All top 20 nearby picks">
-              <strong>All 20 smart nearby suggestions</strong>
-              <div>
-                {nearbyCards.map((item, index) => (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSetFrame(index);
-                      onOpenMap(item.query, `nearby_all_${item.name}`);
-                    }}
-                    key={`${city}-${category}-${index}-${item.name}`}
-                  >
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <b>{item.name}</b>
-                    <small>{item.area}</small>
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         ) : (
           <p>Ask CityMitra for live-style suggestions, then open the map search for that city.</p>
         )}
       </div>
-      <div className="photoBlocks">
-        {photoBlocks.map((item) => (
-          <button
-            className="photoBlock"
-            key={`${item.title}-${item.query}`}
-            onClick={() => onOpenMap(item.query, `photo_${item.title}`)}
-            style={{ backgroundImage: `linear-gradient(180deg, rgba(18, 20, 23, 0.05), rgba(18, 20, 23, 0.76)), url("${item.image}")` }}
-            type="button"
-          >
-            <span>{item.title}</span>
-            <small>{item.text}</small>
-          </button>
-        ))}
-      </div>
+
+      {photoBlocks.length > 0 && (
+        <ImageAccordion
+          items={photoBlocks.map((item) => ({
+            id: `${item.title}-${item.query}`,
+            title: item.title,
+            subtitle: item.text,
+            image: item.image,
+            onClick: () => onOpenMap(item.query, `photo_${item.title}`)
+          }))}
+        />
+      )}
+
       <div className="nearbyActions">
         {["hospitals", "petrol pumps", "vehicle repair", "hotels"].map((item) => (
           <button type="button" onClick={() => onOpenMap(`${item} near ${city}`, `backup_${item}`)} key={item}>
