@@ -5295,8 +5295,8 @@ body {
 /* --- Tighter, cleaner section headings --- */
 
 .controlBand .sectionHeader h2 {
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
-  line-height: 1.1;
+  font-size: clamp(1.3rem, 2.3vw, 1.8rem);
+  line-height: 1.12;
 }
 
 .aiIntro h2 {
@@ -5767,7 +5767,7 @@ body {
 /* --- AI section: cleaner intro --- */
 
 .aiBand {
-  padding: 80px 0 32px;
+  padding: 80px 0 10px;
 }
 
 .aiIntro {
@@ -6607,7 +6607,12 @@ body {
    ============================================================ */
 
 .controlBand {
-  padding-top: 44px;
+  padding-top: 14px;
+}
+
+/* keep the finder header compact so concierge + city + category fit one view */
+.controlBand .sectionHeader {
+  margin-bottom: 16px;
 }
 
 /* City selector: clean wrapping pill row on all screens */
