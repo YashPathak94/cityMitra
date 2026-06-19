@@ -57,9 +57,7 @@ export default function DirectoryExplorer({
   const [citySearch, setCitySearch] = useState("");
   const [categorySearch, setCategorySearch] = useState("");
   const [showAllCategories, setShowAllCategories] = useState(false);
-  const [collapsedHeight, setCollapsedHeight] = useState<number | null>(null);
-  const [fullHeight, setFullHeight] = useState<number | null>(null);
-  const [hiddenCategoryCount, setHiddenCategoryCount] = useState(0);
+  const [hasHiddenCategories, setHasHiddenCategories] = useState(false);
   const reduceMotion = useReducedMotion();
   const resultCount = selectedItems.length;
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -71,34 +69,23 @@ export default function DirectoryExplorer({
   );
   const isSearchingCategories = categorySearch.trim().length > 0;
 
-  // Measure where the third row begins so the grid can show exactly two rows
-  // when collapsed — robust across phone/tablet/desktop column counts.
+  // The grid is clipped to two rows by CSS; here we only detect whether any
+  // tiles spill past those two rows, so the toggle appears only when it has a
+  // job to do. scrollHeight is the full height (the wrapper does the clipping).
   useEffect(() => {
     const grid = categoryGridRef.current;
     if (!grid) return;
 
     const measure = () => {
-      const tiles = Array.from(grid.querySelectorAll<HTMLElement>("[data-cat-tile]"));
+      const tiles = grid.querySelectorAll<HTMLElement>("[data-cat-tile]");
       if (tiles.length === 0) {
-        setCollapsedHeight(null);
-        setHiddenCategoryCount(0);
+        setHasHiddenCategories(false);
         return;
       }
-      const rowTops: number[] = [];
-      tiles.forEach((tile) => {
-        const top = tile.offsetTop;
-        if (!rowTops.some((existing) => Math.abs(existing - top) < 4)) rowTops.push(top);
-      });
-      rowTops.sort((a, b) => a - b);
-      setFullHeight(grid.scrollHeight);
-      if (rowTops.length <= 2) {
-        setCollapsedHeight(null);
-        setHiddenCategoryCount(0);
-        return;
-      }
-      const row3Top = rowTops[2];
-      setCollapsedHeight(Math.max(0, row3Top - 2));
-      setHiddenCategoryCount(tiles.filter((tile) => tile.offsetTop >= row3Top - 2).length);
+      const tileHeight = tiles[0].offsetHeight;
+      const rowGap = parseFloat(getComputedStyle(grid).rowGap || "0") || 0;
+      const twoRowHeight = tileHeight * 2 + rowGap;
+      setHasHiddenCategories(grid.scrollHeight > twoRowHeight + 4);
     };
 
     measure();
@@ -107,12 +94,10 @@ export default function DirectoryExplorer({
     return () => observer.disconnect();
   }, [filteredCategories.length]);
 
-  const canCollapseCategories = !isSearchingCategories && hiddenCategoryCount > 0;
-  const categoryGridMaxHeight = isSearchingCategories
-    ? undefined
-    : showAllCategories
-      ? fullHeight ?? undefined
-      : collapsedHeight ?? undefined;
+  // Show the toggle only when there is something hidden and we're not filtering.
+  const canCollapseCategories = !isSearchingCategories && hasHiddenCategories;
+  // Reveal everything while searching, or when the user expanded the grid.
+  const showCategoryGridExpanded = isSearchingCategories || showAllCategories;
 
   // Bring the results into view after a pick. Always scrolls the results step
   // to the top (under the fixed navbar via scroll-margin) on every device.
@@ -173,20 +158,32 @@ export default function DirectoryExplorer({
       </div>
 
       <div className="filters">
+        <div className="finderSearchRow">
+          <form className="filterSearch" onSubmit={submitCitySearch} role="search">
+            <Search size={15} />
+            <input
+              aria-label="Search any city"
+              placeholder="Search any city…"
+              value={citySearch}
+              onChange={(event) => setCitySearch(event.target.value)}
+            />
+          </form>
+          <div className="filterSearch">
+            <Search size={15} />
+            <input
+              aria-label="Search category"
+              placeholder="Search category…"
+              value={categorySearch}
+              onChange={(event) => setCategorySearch(event.target.value)}
+            />
+          </div>
+        </div>
+
         <div className="filterBlock">
           <div className="filterTop">
             <span className="filterLabel">
               <b>1</b> <MapPin size={14} /> Choose your city
             </span>
-            <form className="filterSearch" onSubmit={submitCitySearch} role="search">
-              <Search size={15} />
-              <input
-                aria-label="Search any city"
-                placeholder="Search any city…"
-                value={citySearch}
-                onChange={(event) => setCitySearch(event.target.value)}
-              />
-            </form>
           </div>
           <div className="filterGroup" aria-label="City selector">
             {filteredCities.length > 0 ? (
@@ -216,17 +213,8 @@ export default function DirectoryExplorer({
             <span className="filterLabel">
               <b>2</b> Pick a category in {city}
             </span>
-            <div className="filterSearch">
-              <Search size={15} />
-              <input
-                aria-label="Search category"
-                placeholder="Search category…"
-                value={categorySearch}
-                onChange={(event) => setCategorySearch(event.target.value)}
-              />
-            </div>
           </div>
-          <div className="categoryGridWrap" style={{ maxHeight: categoryGridMaxHeight }}>
+          <div className={showCategoryGridExpanded ? "categoryGridWrap expanded" : "categoryGridWrap"}>
             <motion.div
               className="categoryGrid"
               ref={categoryGridRef}
@@ -274,7 +262,7 @@ export default function DirectoryExplorer({
                 </>
               ) : (
                 <>
-                  +{hiddenCategoryCount} more categories <ChevronDown size={16} />
+                  Show more <ChevronDown size={16} />
                 </>
               )}
             </button>

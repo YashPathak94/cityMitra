@@ -3487,6 +3487,7 @@ body {
   font-size: 0.86rem;
   font-weight: 700;
   color: var(--muted);
+  white-space: nowrap;
   transition: color 0.2s var(--smooth);
 }
 
@@ -5604,6 +5605,31 @@ body {
   color: var(--muted);
 }
 
+/* Both finder searches share one compact row at the top, side by side. */
+.finderSearchRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.finderSearchRow .filterSearch {
+  flex: 1 1 220px;
+  min-width: 0;
+  height: 42px;
+}
+
+.finderSearchRow .filterSearch input {
+  width: 100%;
+  flex: 1;
+}
+
+@media (max-width: 520px) {
+  .finderSearchRow .filterSearch {
+    flex: 1 1 100%;
+  }
+}
+
 .filterEmpty {
   color: var(--muted);
   font-size: 0.9rem;
@@ -6595,8 +6621,8 @@ body {
   flex-direction: column;
   justify-content: center;
   gap: 8px;
-  min-height: 86px;
-  padding: 12px 8px;
+  height: var(--cat-row-h, 98px);
+  padding: 10px 8px;
   border-radius: 16px;
   background: var(--white);
   white-space: normal;
@@ -6663,8 +6689,8 @@ body {
   }
 
   .controlBand .category {
-    min-height: 80px;
-    padding: 11px 5px;
+    height: var(--cat-row-h, 84px);
+    padding: 9px 5px;
     border-radius: 14px;
   }
 
@@ -6951,8 +6977,24 @@ body {
    v8c — category grid capped to two rows with a "More" control
 --------------------------------------------------------------------------- */
 .categoryGridWrap {
+  --cat-row-h: 100px;
   overflow: hidden;
-  transition: max-height 0.42s var(--smooth);
+  /* clip to exactly two rows of tiles + one row gap */
+  max-height: calc(var(--cat-row-h) * 2 + 12px);
+  transition: max-height 0.45s var(--smooth);
+}
+
+.categoryGridWrap.expanded {
+  max-height: 1600px;
+}
+
+@media (max-width: 640px) {
+  .categoryGridWrap {
+    --cat-row-h: 84px;
+    /* on phones the grid is a one-row swipe rail, so never clip it */
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 .categoryMoreBtn {
