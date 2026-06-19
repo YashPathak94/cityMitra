@@ -298,21 +298,6 @@ export default function Home() {
 
       <SiteHeader onSearch={applySearch} city={city} onSelectCity={selectCity} />
 
-      <DirectoryExplorer
-        city={city}
-        category={category}
-        visibleCities={visibleCities}
-        selectedItems={selectedItems}
-        exactDirectoryItems={exactDirectoryItems}
-        categoryFrameIndex={categoryFrameIndex}
-        onSelectCity={selectCity}
-        onSelectCategory={selectCategory}
-        onMoveFrame={moveCategoryFrame}
-        onSetFrame={setCategoryFrameIndex}
-        onOpenMap={openTrackedMap}
-        onSearchMap={openTrackedSearch}
-      />
-
       <AiTeaser
         city={city}
         category={category}
@@ -334,6 +319,21 @@ export default function Home() {
             onOpenNearbyOptions={openNearbyOptionsMap}
           />
         }
+      />
+
+      <DirectoryExplorer
+        city={city}
+        category={category}
+        visibleCities={visibleCities}
+        selectedItems={selectedItems}
+        exactDirectoryItems={exactDirectoryItems}
+        categoryFrameIndex={categoryFrameIndex}
+        onSelectCity={selectCity}
+        onSelectCategory={selectCategory}
+        onMoveFrame={moveCategoryFrame}
+        onSetFrame={setCategoryFrameIndex}
+        onOpenMap={openTrackedMap}
+        onSearchMap={openTrackedSearch}
       />
 
       <Hero

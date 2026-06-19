@@ -5,12 +5,8 @@ import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   BedDouble,
-  Bot,
   Car,
-  Compass,
-  MessageSquarePlus,
   Plane,
-  Search,
   ShoppingBag,
   Sparkles
 } from "lucide-react";
@@ -132,35 +128,12 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
   return (
     <section className="aiBand" id="ai">
       <div className="aiPanel aiPanelStacked">
-        <div className="aiIntroHead">
-          <span className="sectionKicker">AI Concierge</span>
-          <h2>Your AI city agent &amp; booking concierge</h2>
-          <p>
-            Tap a concierge tab to book cabs, flights and hotels, explore wholesale markets, or open the AI guide for
-            trip plans, routes and backups — all tailored to {city}.
-          </p>
-        </div>
-
         <ConciergeSelector panels={conciergePanels} />
 
         <div className="aiIntroActions">
-          <div className="agentStack">
-            <span>
-              <Search size={16} />
-              Intent finder
-            </span>
-            <span>
-              <Compass size={16} />
-              Route planner
-            </span>
-            <span>
-              <Bot size={16} />
-              Booking concierge
-            </span>
-          </div>
           <Link className="primaryButton aiOpenBtn" href={chatHref()} onClick={() => trackActivity({ type: "open_chat", city, category, label: "intro" })}>
-            <MessageSquarePlus size={18} />
-            Open the AI Assistant
+            <Sparkles size={18} />
+            Ask AI
           </Link>
           <div className="aiPromptRow">
             {prompts.map((prompt) => (
