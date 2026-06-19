@@ -298,28 +298,7 @@ export default function Home() {
 
       <SiteHeader onSearch={applySearch} city={city} onSelectCity={selectCity} />
 
-      <AiTeaser
-        city={city}
-        category={category}
-        categoryLabel={categoryLabel}
-        nearbyPanel={
-          <NearbyPanel
-            city={city}
-            category={category}
-            categoryLabel={categoryLabel}
-            userLocation={userLocation}
-            locationStatus={locationStatus}
-            nearbyCards={nearbyCards}
-            nearbyFrameIndex={nearbyFrameIndex}
-            photoBlocks={photoBlocks}
-            onRequestLocation={requestNearbyLocation}
-            onMoveFrame={moveNearbyFrame}
-            onSetFrame={setNearbyFrameIndex}
-            onOpenMap={openTrackedMap}
-            onOpenNearbyOptions={openNearbyOptionsMap}
-          />
-        }
-      />
+      <AiTeaser city={city} category={category} />
 
       <DirectoryExplorer
         city={city}
@@ -335,6 +314,24 @@ export default function Home() {
         onOpenMap={openTrackedMap}
         onSearchMap={openTrackedSearch}
       />
+
+      <section className="nearbyBand">
+        <NearbyPanel
+          city={city}
+          category={category}
+          categoryLabel={categoryLabel}
+          userLocation={userLocation}
+          locationStatus={locationStatus}
+          nearbyCards={nearbyCards}
+          nearbyFrameIndex={nearbyFrameIndex}
+          photoBlocks={photoBlocks}
+          onRequestLocation={requestNearbyLocation}
+          onMoveFrame={moveNearbyFrame}
+          onSetFrame={setNearbyFrameIndex}
+          onOpenMap={openTrackedMap}
+          onOpenNearbyOptions={openNearbyOptionsMap}
+        />
+      </section>
 
       <Hero
         city={city}

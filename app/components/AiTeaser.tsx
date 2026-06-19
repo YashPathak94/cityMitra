@@ -1,15 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  BedDouble,
-  Car,
-  Plane,
-  ShoppingBag,
-  Sparkles
-} from "lucide-react";
+import { BedDouble, Car, Plane, ShoppingBag, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { categories, CategoryKey } from "@/data/city-directory";
 import { buildBookingOptions, BookingCategory, bookingCategoryLabels, categoryToBooking } from "@/lib/booking";
@@ -22,25 +14,12 @@ import { ConciergeGroup } from "@/app/components/ConciergeCard";
 type AiTeaserProps = {
   city: string;
   category: CategoryKey;
-  categoryLabel: string;
-  nearbyPanel: React.ReactNode;
 };
 
-export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }: AiTeaserProps) {
+export default function AiTeaser({ city, category }: AiTeaserProps) {
   const router = useRouter();
   const [pip, setPip] = useState<{ groups: ConciergeGroup[]; local: LocalPicks | null } | null>(null);
   const initialised = useRef(false);
-
-  const prompts = [
-    `Plan a 2-day trip to ${city}`,
-    `Best ${categoryLabel.toLowerCase()} in ${city}`,
-    `${city} food and hidden gems`,
-    "Hotels, cabs and bookings"
-  ];
-
-  function chatHref(prompt?: string) {
-    return prompt ? `/chat?q=${encodeURIComponent(prompt)}` : "/chat";
-  }
 
   function localPicksFor(categoryKey: CategoryKey): LocalPicks {
     const label = categories.find((item) => item.key === categoryKey)?.label || "Top picks";
@@ -129,27 +108,6 @@ export default function AiTeaser({ city, category, categoryLabel, nearbyPanel }:
     <section className="aiBand" id="ai">
       <div className="aiPanel aiPanelStacked">
         <ConciergeSelector panels={conciergePanels} />
-
-        <div className="aiIntroActions">
-          <Link className="primaryButton aiOpenBtn" href={chatHref()} onClick={() => trackActivity({ type: "open_chat", city, category, label: "intro" })}>
-            <Sparkles size={18} />
-            Ask AI
-          </Link>
-          <div className="aiPromptRow">
-            {prompts.map((prompt) => (
-              <Link
-                key={prompt}
-                href={chatHref(prompt)}
-                onClick={() => trackActivity({ type: "open_chat", city, category, label: prompt })}
-              >
-                {prompt}
-                <ArrowRight size={13} />
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {nearbyPanel}
       </div>
 
       <ConciergePip
