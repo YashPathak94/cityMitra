@@ -6604,13 +6604,24 @@ body {
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
 }
 
-.controlBand .category svg {
-  width: 26px;
-  height: 26px;
-  color: var(--orange);
+.controlBand .category .categoryIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--cat-tint, var(--orange)) 14%, #fff);
+  color: var(--cat-tint, var(--orange));
+  transition: background 0.25s var(--smooth), transform 0.28s var(--smooth), box-shadow 0.25s var(--smooth);
 }
 
-.controlBand .category span {
+.controlBand .category .categoryIcon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.controlBand .category span:not(.categoryIcon) {
   font-size: 0.82rem;
   font-weight: 700;
   line-height: 1.2;
@@ -6621,12 +6632,21 @@ body {
   box-shadow: 0 16px 36px rgba(234, 88, 12, 0.14);
 }
 
+.controlBand .category:hover .categoryIcon {
+  background: color-mix(in srgb, var(--cat-tint, var(--orange)) 22%, #fff);
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--cat-tint, var(--orange)) 30%, transparent);
+}
+
 .controlBand .category.active {
   background: linear-gradient(135deg, var(--orange), #f97316);
 }
 
-.controlBand .category.active svg,
-.controlBand .category.active span {
+.controlBand .category.active .categoryIcon {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.controlBand .category.active span:not(.categoryIcon) {
   color: #fff;
 }
 
@@ -6648,12 +6668,18 @@ body {
     border-radius: 15px;
   }
 
-  .controlBand .category svg {
-    width: 23px;
-    height: 23px;
+  .controlBand .category .categoryIcon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
   }
 
-  .controlBand .category span {
+  .controlBand .category .categoryIcon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .controlBand .category span:not(.categoryIcon) {
     font-size: 0.72rem;
   }
 }
@@ -6666,21 +6692,23 @@ body {
 
 /* --- Animated category icons (JustDial-style pop) --- */
 
-.controlBand .category svg {
-  transition: transform 0.28s var(--smooth);
+.controlBand .category:hover .categoryIcon {
+  transform: scale(1.12) rotate(-6deg);
 }
 
-.controlBand .category:hover svg {
-  transform: scale(1.2) rotate(-6deg);
-}
-
-.controlBand .category.active svg {
+.controlBand .category.active .categoryIcon {
   animation: tilePulse 1.8s ease-in-out infinite;
 }
 
 @keyframes tilePulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.14); }
+  50% { transform: scale(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .controlBand .category.active .categoryIcon {
+    animation: none;
+  }
 }
 
 /* --- Header: login + account --- */
@@ -6730,5 +6758,157 @@ body {
   /* On phones the pill text can crowd; keep login compact */
   .navLogin span {
     display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   v8 — JustDial-style city picker in the header
+--------------------------------------------------------------------------- */
+.cityPicker {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.cityPickerButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 800;
+  padding: 9px 14px;
+  max-width: 180px;
+  cursor: pointer;
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth);
+}
+
+.cityPickerButton:hover {
+  border-color: var(--orange);
+  box-shadow: var(--glow);
+}
+
+.cityPickerButton span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cityPickerButton svg:first-child {
+  color: var(--orange);
+  flex: 0 0 auto;
+}
+
+.cityPickerButton .cityChevron {
+  flex: 0 0 auto;
+  color: var(--muted);
+  transition: transform 0.2s var(--smooth);
+}
+
+.cityPickerButton .cityChevron.open {
+  transform: rotate(180deg);
+}
+
+.cityPickerPanel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 60;
+  width: min(320px, 86vw);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 12px;
+  transform-origin: top left;
+}
+
+.cityPickerSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+  padding: 9px 12px;
+  margin-bottom: 10px;
+}
+
+.cityPickerSearch svg {
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.cityPickerSearch input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-family: inherit;
+}
+
+.cityPickerList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.cityPickerList button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  padding: 10px 11px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s var(--smooth);
+}
+
+.cityPickerList button svg:first-child {
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.cityPickerList button:hover {
+  background: var(--soft);
+}
+
+.cityPickerList button.active {
+  background: var(--soft);
+  color: var(--orange);
+  font-weight: 800;
+}
+
+.cityPickerList button.active svg:first-child {
+  color: var(--orange);
+}
+
+.cityPickerList button .cityPickCheck {
+  margin-left: auto;
+  color: var(--orange);
+}
+
+.cityPickerUseTyped {
+  color: var(--orange) !important;
+  font-weight: 800 !important;
+}
+
+@media (max-width: 720px) {
+  .cityPickerButton {
+    max-width: 140px;
+    padding: 8px 12px;
   }
 }

@@ -296,7 +296,7 @@ export default function Home() {
         onDismiss={dismissLocationPrompt}
       />
 
-      <SiteHeader onSearch={applySearch} />
+      <SiteHeader onSearch={applySearch} city={city} onSelectCity={selectCity} />
 
       <DirectoryExplorer
         city={city}

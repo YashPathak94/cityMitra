@@ -179,8 +179,11 @@ export default function DirectoryExplorer({
                     whileHover={{ y: -3, scale: 1.04 }}
                     whileTap={{ scale: 0.94 }}
                     transition={chipSpring}
+                    style={{ ["--cat-tint" as string]: item.tint }}
                   >
-                    <Icon size={18} />
+                    <span className="categoryIcon" aria-hidden>
+                      <Icon size={20} />
+                    </span>
                     <span>{item.label}</span>
                   </motion.button>
                 );

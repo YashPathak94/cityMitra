@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { LogIn, Menu, Navigation, Search, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import CityPicker from "./CityPicker";
 
 const navLinks: Array<{ href: string; id?: string; label: string }> = [
   { href: "/cities", label: "City Guides" },
@@ -15,9 +16,11 @@ const navLinks: Array<{ href: string; id?: string; label: string }> = [
 
 type SiteHeaderProps = {
   onSearch: (text: string) => void;
+  city?: string;
+  onSelectCity?: (city: string) => void;
 };
 
-export default function SiteHeader({ onSearch }: SiteHeaderProps) {
+export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderProps) {
   const [searchText, setSearchText] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -79,6 +82,8 @@ export default function SiteHeader({ onSearch }: SiteHeaderProps) {
           </span>
           CityMitra
         </a>
+
+        {city && onSelectCity && <CityPicker city={city} onSelect={onSelectCity} />}
 
         <nav className="glassNavLinks" aria-label="Primary navigation">
           {navLinks.map((link) => (
