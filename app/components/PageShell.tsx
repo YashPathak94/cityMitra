@@ -17,6 +17,7 @@ export default function PageShell({ children }: { children: React.ReactNode }) {
             <Link href="/">Home</Link>
             <Link href="/cities">City Guide</Link>
             <Link href="/chat">City Chat</Link>
+            <Link href="/travel-plan">Travel Plan</Link>
             <Link href="/#nearby">Top Picks</Link>
             <Link href="/about">About</Link>
             <Link href="/contact">Contact</Link>

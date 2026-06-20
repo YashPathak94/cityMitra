@@ -8192,3 +8192,445 @@ body {
     transition: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Travel Plan — AI travel-funding engine
+--------------------------------------------------------------------------- */
+.travelPlan {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 8px 0 40px;
+}
+
+.travelPlanHero {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.travelPlanBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  padding: 7px 14px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--orange);
+}
+
+.travelPlanHero h1 {
+  font-size: clamp(1.9rem, 4.4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.travelPlanHero h1 span {
+  background: linear-gradient(120deg, var(--orange), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.travelPlanHero p {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.travelPlanGrid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.15fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.travelPlanForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--white);
+  padding: 22px;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 88px;
+}
+
+.travelPlanForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.travelPlanForm label small {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.travelPlanForm input,
+.travelPlanForm select {
+  height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+  padding: 0 13px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth);
+}
+
+.travelPlanForm input:focus-visible,
+.travelPlanForm select:focus-visible {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.12);
+}
+
+.travelPlanPresets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: -4px;
+}
+
+.travelPlanPresets button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.2s var(--smooth), color 0.2s var(--smooth);
+}
+
+.travelPlanPresets button.active {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: var(--soft);
+}
+
+.travelPlanSubmit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 50px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--orange), #f97316);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.98rem;
+  cursor: pointer;
+  box-shadow: var(--glow);
+  transition: transform 0.2s var(--smooth), box-shadow 0.2s var(--smooth), opacity 0.2s var(--smooth);
+}
+
+.travelPlanSubmit:hover {
+  transform: translateY(-1px);
+}
+
+.travelPlanSubmit:disabled {
+  opacity: 0.7;
+  cursor: default;
+  transform: none;
+}
+
+.travelPlanError {
+  color: var(--red);
+  font-size: 0.85rem;
+}
+
+.travelPlanResult {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--white);
+  padding: 22px;
+  min-height: 320px;
+  box-shadow: var(--shadow);
+}
+
+.travelPlanEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 280px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.travelPlanEmpty h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.travelPlanEmpty p {
+  max-width: 340px;
+  font-size: 0.9rem;
+}
+
+.travelPlanSpinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid var(--line);
+  border-top-color: var(--orange);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.travelPlanHeadline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.travelPlanFreePct {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.travelPlanFreePct strong {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, var(--orange), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.travelPlanFreePct span {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  max-width: 180px;
+}
+
+.travelPlanSource {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.travelPlanSource.ai {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--orange), #f97316);
+  color: #fff;
+}
+
+.travelPlanStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.travelPlanStats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+  padding: 13px;
+}
+
+.travelPlanStats svg {
+  color: var(--orange);
+}
+
+.travelPlanStats b {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.travelPlanStats span {
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.travelPlanSummary {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+
+.travelPlanAllocation {
+  margin-bottom: 18px;
+}
+
+.travelPlanAllocation .allocBar {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: #dbeafe;
+  overflow: hidden;
+}
+
+.travelPlanAllocation .allocEquity {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--orange), #f97316);
+}
+
+.travelPlanAllocation small {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.travelPlanStrategy h3,
+.travelPlanInstruments h4 {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.travelPlanStrategy ol {
+  margin: 0 0 18px;
+  padding-left: 0;
+  list-style: none;
+  counter-reset: step;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.travelPlanStrategy li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 34px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.travelPlanStrategy li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--orange);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.travelPlanInstrGroup {
+  margin-bottom: 16px;
+}
+
+.travelPlanInstrGroup h4 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.travelPlanInstrGroup h4 svg {
+  color: var(--orange);
+}
+
+.travelPlanInstr {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--soft);
+  padding: 11px 13px;
+  margin-bottom: 8px;
+}
+
+.travelPlanInstr > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.travelPlanInstr strong {
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.travelPlanTag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 12%, #fff);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.travelPlanInstr p {
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.travelPlanDisclaimer {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+  font-size: 0.76rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 860px) {
+  .travelPlanGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .travelPlanForm {
+    position: static;
+  }
+}
+
+@media (max-width: 480px) {
+  .travelPlanStats {
+    grid-template-columns: 1fr;
+  }
+}
