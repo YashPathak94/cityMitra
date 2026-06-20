@@ -35,7 +35,7 @@ export default function Home() {
   const [category, setCategory] = useState<CategoryKey>("markets");
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
-  const [locationStatus, setLocationStatus] = useState("Use nearby location for smarter map routes.");
+  const [, setLocationStatus] = useState("Use nearby location for smarter map routes.");
   const [categoryFrameIndex, setCategoryFrameIndex] = useState(0);
   const [nearbyFrameIndex, setNearbyFrameIndex] = useState(0);
   const [frameResetKey, setFrameResetKey] = useState(`${city}-${category}`);
@@ -168,13 +168,6 @@ export default function Home() {
     const nextIndex = (categoryFrameIndex + direction + resultCount) % resultCount;
     setCategoryFrameIndex(nextIndex);
     trackActivity({ type: "category_result_frame", city, category, label: `${nextIndex + 1}` });
-  }
-
-  function moveNearbyFrame(direction: -1 | 1) {
-    const resultCount = nearbyCards.length || 1;
-    const nextIndex = (nearbyFrameIndex + direction + resultCount) % resultCount;
-    setNearbyFrameIndex(nextIndex);
-    trackActivity({ type: "nearby_result_frame", city, category, label: `${nextIndex + 1}` });
   }
 
   function openTrackedMap(query: string, label: string) {
@@ -333,12 +326,10 @@ export default function Home() {
           category={category}
           categoryLabel={categoryLabel}
           userLocation={userLocation}
-          locationStatus={locationStatus}
           nearbyCards={nearbyCards}
           nearbyFrameIndex={nearbyFrameIndex}
           photoBlocks={photoBlocks}
           onRequestLocation={requestNearbyLocation}
-          onMoveFrame={moveNearbyFrame}
           onSetFrame={setNearbyFrameIndex}
           onOpenMap={openTrackedMap}
           onOpenNearbyOptions={openNearbyOptionsMap}

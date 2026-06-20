@@ -1,7 +1,7 @@
 "use client";
 
-import { ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Clock, ListChecks, MapPinned } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowUpRight, Clock } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { categories, CategoryKey } from "@/data/city-directory";
 import { NearbyCard, UserLocation } from "@/lib/city-intel";
 import ImageAccordion from "@/app/components/ImageAccordion";
@@ -19,19 +19,48 @@ type NearbyPanelProps = {
   category: CategoryKey;
   categoryLabel: string;
   userLocation: UserLocation | null;
-  locationStatus: string;
   nearbyCards: NearbyCard[];
   nearbyFrameIndex: number;
   photoBlocks: PhotoBlock[];
   onRequestLocation: () => void;
-  onMoveFrame: (direction: -1 | 1) => void;
   onSetFrame: (index: number) => void;
   onOpenMap: (query: string, label: string) => void;
   onOpenNearbyOptions: () => void;
 };
 
+const unsplash = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=700&q=80`;
+const FALLBACK_IMAGE = unsplash("1524492412937-b28074a5d7da");
+
+// Premium imagery picked to match each pick's category.
+const CATEGORY_IMAGES: Partial<Record<CategoryKey, string>> = {
+  hotels: unsplash("1566073771259-6a8506099945"),
+  food: unsplash("1414235077428-338989a2e8c0"),
+  dinner: unsplash("1517248135467-4c7edcad34c4"),
+  markets: unsplash("1555396273-367ea4eb4db5"),
+  sarees: unsplash("1610030469983-98e550d6193c"),
+  electronics: unsplash("1498049794561-7780e7231661"),
+  malls: unsplash("1441986300917-64674bd600d8"),
+  hospitals: unsplash("1519494026892-80bbd2d6fd0d"),
+  petrol: unsplash("1545262810-77515befe149"),
+  repair: unsplash("1530046339160-ce3e530c7d2f"),
+  acrepair: unsplash("1530046339160-ce3e530c7d2f"),
+  plumber: unsplash("1530046339160-ce3e530c7d2f"),
+  electrician: unsplash("1621905251918-48416bd8575a"),
+  carpenter: unsplash("1530046339160-ce3e530c7d2f"),
+  movers: unsplash("1600518464441-9154a4dea21b"),
+  gym: unsplash("1571019613454-1cb2f99b2d8b"),
+  salon: unsplash("1560066984-138dadb4c035"),
+  grooming: unsplash("1503951914875-452162b0f3f1"),
+  schools: unsplash("1503676260728-1c00da094a0b"),
+  sightseeing: unsplash("1524492412937-b28074a5d7da")
+};
+
 function labelForCategory(key?: CategoryKey) {
   return categories.find((cat) => cat.key === key)?.label || "City";
+}
+
+function imageForCategory(key?: CategoryKey) {
+  return (key && CATEGORY_IMAGES[key]) || FALLBACK_IMAGE;
 }
 
 export default function NearbyPanel({
@@ -39,21 +68,17 @@ export default function NearbyPanel({
   category,
   categoryLabel,
   userLocation,
-  locationStatus,
   nearbyCards,
   nearbyFrameIndex,
   photoBlocks,
   onRequestLocation,
-  onMoveFrame,
   onSetFrame,
   onOpenMap,
   onOpenNearbyOptions
 }: NearbyPanelProps) {
-  const [showAll, setShowAll] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  // Keep the selected pick scrolled into view inside the carousel only — never
-  // scroll the whole page.
+  // Center the selected pick inside the carousel only — never scroll the page.
   useEffect(() => {
     const rail = carouselRef.current;
     if (!rail) return;
@@ -62,23 +87,9 @@ export default function NearbyPanel({
   }, [nearbyFrameIndex]);
 
   const total = nearbyCards.length;
-  const progress = total > 0 ? ((nearbyFrameIndex + 1) / total) * 100 : 0;
 
   return (
     <aside className="nearbyPanel nearbyPanelCompact" id="nearby" aria-label="Nearby map and places">
-      <div className="nearbyBar">
-        <div className="nearbyBarHead">
-          <span className="nearbyBarIcon">
-            <MapPinned size={18} />
-          </span>
-          <div>
-            <strong>{city}</strong>
-            <span>{userLocation?.city ? `Near you · ${categoryLabel}` : categoryLabel}</span>
-          </div>
-        </div>
-        <p className="nearbyStatus">{locationStatus}</p>
-      </div>
-
       <div className="nearbyList" key={`${city}-${category}-nearby`}>
         <div className="nearbyListHeader">
           <div>
@@ -87,45 +98,35 @@ export default function NearbyPanel({
               {userLocation?.city ? `${userLocation.city} live-route mode` : userLocation ? "Live-route mode" : "City-smart mode"} · {total} smart suggestions
             </span>
           </div>
-          {total > 0 && (
-            <div className="nearbyHeaderRight">
-              <span className="nearbyCounter">
-                {String(nearbyFrameIndex + 1).padStart(2, "0")} <i>/ {total}</i>
-              </span>
-              <div className="nearbyFrameControls" aria-label="Nearby picks controls">
-                <button type="button" onClick={() => onMoveFrame(-1)} aria-label="Previous nearby pick">
-                  <ChevronLeft size={16} />
-                </button>
-                <button type="button" onClick={() => onMoveFrame(1)} aria-label="Next nearby pick">
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {total > 0 ? (
-          <>
-            <div className="nearbyProgress" aria-hidden>
-              <span style={{ width: `${progress}%` }} />
-            </div>
-
-            <div className="nearbyCarousel" ref={carouselRef}>
-              {nearbyCards.map((item, index) => (
-                <button
-                  type="button"
-                  data-idx={index}
-                  className={index === nearbyFrameIndex ? "nearbyPickCard active" : "nearbyPickCard"}
-                  key={`${city}-${category}-${index}-${item.name}`}
-                  onClick={() => {
-                    onSetFrame(index);
-                    onOpenMap(item.query, `nearby_${item.name}`);
-                  }}
-                >
-                  <span className="nearbyPickTop">
-                    <span className="nearbyPickRank">{String(index + 1).padStart(2, "0")}</span>
-                    <span className="nearbyPickTag">{labelForCategory(item.category)}</span>
-                  </span>
+          <div className="nearbyCarousel" ref={carouselRef}>
+            {nearbyCards.map((item, index) => (
+              <button
+                type="button"
+                data-idx={index}
+                className={index === nearbyFrameIndex ? "nearbyPickCard active" : "nearbyPickCard"}
+                key={`${city}-${category}-${index}-${item.name}`}
+                onClick={() => {
+                  onSetFrame(index);
+                  onOpenMap(item.query, `nearby_${item.name}`);
+                }}
+              >
+                <span className="nearbyPickImg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imageForCategory(item.category)}
+                    alt={labelForCategory(item.category)}
+                    loading="lazy"
+                    onError={(event) => {
+                      const target = event.currentTarget;
+                      if (target.src !== FALLBACK_IMAGE) target.src = FALLBACK_IMAGE;
+                    }}
+                  />
+                  <span className="nearbyPickTag">{labelForCategory(item.category)}</span>
+                </span>
+                <span className="nearbyPickBody">
                   <strong className="nearbyPickName">{item.name}</strong>
                   <span className="nearbyPickArea">{item.area}</span>
                   <span className="nearbyPickFoot">
@@ -137,35 +138,10 @@ export default function NearbyPanel({
                       Open route <ArrowUpRight size={14} />
                     </span>
                   </span>
-                </button>
-              ))}
-            </div>
-
-            <button type="button" className="nearbyViewAllToggle" onClick={() => setShowAll((current) => !current)} aria-expanded={showAll}>
-              <ListChecks size={15} />
-              {showAll ? "Hide all" : `View all ${total} suggestions`}
-              {showAll ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
-
-            {showAll && (
-              <div className="nearbyAllDrawer" aria-label={`All ${total} nearby picks`}>
-                {nearbyCards.map((item, index) => (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSetFrame(index);
-                      onOpenMap(item.query, `nearby_all_${item.name}`);
-                    }}
-                    key={`${city}-${category}-all-${index}-${item.name}`}
-                  >
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <b>{item.name}</b>
-                    <small>{item.area}</small>
-                  </button>
-                ))}
-              </div>
-            )}
-          </>
+                </span>
+              </button>
+            ))}
+          </div>
         ) : (
           <p>Ask CityMitra for live-style suggestions, then open the map search for that city.</p>
         )}

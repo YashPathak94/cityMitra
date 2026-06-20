@@ -7926,15 +7926,14 @@ body {
   scroll-snap-align: start;
   flex: 0 0 auto;
   width: 246px;
-  min-height: 152px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
   text-align: left;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--white);
-  padding: 16px;
+  padding: 0;
+  overflow: hidden;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
   transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth), transform 0.2s var(--smooth);
@@ -7947,35 +7946,45 @@ body {
 
 .nearbyPickCard.active {
   border-color: transparent;
-  background: linear-gradient(160deg, #ffffff, var(--soft));
   box-shadow: 0 18px 40px rgba(234, 88, 12, 0.16);
   outline: 2px solid var(--orange);
   outline-offset: -2px;
 }
 
-.nearbyPickTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.nearbyPickImg {
+  position: relative;
+  display: block;
+  height: 108px;
+  background: #18181b;
 }
 
-.nearbyPickRank {
-  font-size: 1.5rem;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--orange);
+.nearbyPickImg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .nearbyPickTag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
   font-size: 0.66rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--blue);
-  background: color-mix(in srgb, var(--blue) 12%, #fff);
-  padding: 4px 9px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 4px 10px;
   border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
+}
+
+.nearbyPickBody {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 13px 14px 14px;
+  flex: 1;
 }
 
 .nearbyPickName {
