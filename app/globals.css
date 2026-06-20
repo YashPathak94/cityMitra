@@ -5781,7 +5781,7 @@ body {
 /* --- AI section: cleaner intro --- */
 
 .aiBand {
-  padding: 80px 0 10px;
+  padding: 50px 0 10px;
 }
 
 .aiIntro {
@@ -6646,6 +6646,8 @@ body {
   padding: 0 16px;
   border-radius: 999px;
   white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 /* Category icons as clean JustDial-style tiles (icon above label) */
