@@ -75,3 +75,22 @@ export function imageForCategory(category: CategoryKey | undefined, variant = 0)
   const theme = (category && CATEGORY_THEME[category]) || "city";
   return imageForTheme(theme, variant);
 }
+
+// Builds the URL for the cached, OpenAI-generated card image. The route
+// matches the image to the topic + city and falls back to the theme photo,
+// so this is always safe to use as an <img>/background source.
+export function cardImageUrl(opts: {
+  topic: string;
+  city?: string;
+  category?: CategoryKey;
+  theme?: ImageTheme;
+  variant?: number;
+}): string {
+  const params = new URLSearchParams();
+  params.set("topic", opts.topic);
+  if (opts.city) params.set("city", opts.city);
+  if (opts.category) params.set("category", opts.category);
+  if (opts.theme) params.set("theme", opts.theme);
+  if (opts.variant != null) params.set("v", String(opts.variant));
+  return `/api/card-image?${params.toString()}`;
+}

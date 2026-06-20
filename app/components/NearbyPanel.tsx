@@ -4,7 +4,7 @@ import { ArrowUpRight, Clock } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { categories, CategoryKey } from "@/data/city-directory";
 import { NearbyCard, UserLocation } from "@/lib/city-intel";
-import { imageForCategory } from "@/lib/category-images";
+import { cardImageUrl } from "@/lib/category-images";
 import ImageAccordion from "@/app/components/ImageAccordion";
 import NearbyDock from "@/app/components/NearbyDock";
 
@@ -86,7 +86,7 @@ export default function NearbyPanel({
                 <span className="nearbyPickImg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={imageForCategory(item.category, index)}
+                    src={cardImageUrl({ topic: item.name, city, category: item.category, variant: index })}
                     alt={labelForCategory(item.category)}
                     loading="lazy"
                     onError={(event) => {

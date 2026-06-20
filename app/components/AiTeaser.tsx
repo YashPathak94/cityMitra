@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { categories, CategoryKey } from "@/data/city-directory";
 import { buildBookingOptions, BookingCategory, bookingCategoryLabels, categoryToBooking } from "@/lib/booking";
 import { buildGeneratedResults } from "@/lib/city-intel";
-import { imageForTheme } from "@/lib/category-images";
+import { cardImageUrl } from "@/lib/category-images";
 import { trackActivity } from "@/lib/tracking";
 import ConciergePip, { LocalPicks } from "@/app/components/ConciergePip";
 import ConciergeSelector, { ConciergePanel } from "@/app/components/ConciergeSelector";
@@ -59,7 +59,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       key: "ai",
       title: "Ask the AI Guide",
       description: `Plan your ${city} trip in seconds`,
-      image: imageForTheme("ai"),
+      image: cardImageUrl({ topic: "City travel guide", city, theme: "ai" }),
       icon: <Sparkles size={20} />,
       actionLabel: "Open AI chat",
       onAction: () => {
@@ -71,7 +71,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       key: "cab",
       title: "Book a Cab",
       description: `Quick rides across ${city}`,
-      image: imageForTheme("cab"),
+      image: cardImageUrl({ topic: "Taxi cab ride", city, theme: "cab" }),
       icon: <Car size={20} />,
       actionLabel: "Book a cab",
       onAction: () => openBooking("cabs")
@@ -80,7 +80,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       key: "flight",
       title: "Book Flights",
       description: `Fares to & from ${city}`,
-      image: imageForTheme("flight"),
+      image: cardImageUrl({ topic: "Airplane flight", city, theme: "flight" }),
       icon: <Plane size={20} />,
       actionLabel: "Find flights",
       onAction: () => openBooking("flights")
@@ -89,7 +89,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       key: "hotel",
       title: "Book Hotels",
       description: `Top stays in ${city}`,
-      image: imageForTheme("hotel"),
+      image: cardImageUrl({ topic: "Hotel", city, theme: "hotel" }),
       icon: <BedDouble size={20} />,
       actionLabel: "Find hotels",
       onAction: () => openBooking("hotels")
@@ -98,7 +98,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       key: "wholesale",
       title: "Explore Wholesale",
       description: `Markets & bulk deals in ${city}`,
-      image: imageForTheme("wholesale"),
+      image: cardImageUrl({ topic: "Wholesale market", city, theme: "wholesale" }),
       icon: <ShoppingBag size={20} />,
       actionLabel: "Explore markets",
       onAction: () => document.getElementById("directory")?.scrollIntoView({ behavior: "smooth", block: "start" })
