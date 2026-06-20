@@ -61,7 +61,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       description: `Plan your ${city} trip in seconds`,
       image: cardImageUrl({ topic: "City travel guide", city, theme: "ai" }),
       icon: <Sparkles size={20} />,
-      actionLabel: "Open AI chat",
+      actionLabel: "Open City chat",
       onAction: () => {
         trackActivity({ type: "open_chat", city, category, label: "selector" });
         router.push("/chat");
