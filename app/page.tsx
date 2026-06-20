@@ -19,6 +19,7 @@ import {
   UserLocation
 } from "@/lib/city-intel";
 import { mapDirectionsUrl, mapSearchUrl } from "@/lib/maps";
+import { imageForTheme } from "@/lib/category-images";
 import { trackActivity } from "@/lib/tracking";
 import AiTeaser from "@/app/components/AiTeaser";
 import DirectoryExplorer from "@/app/components/DirectoryExplorer";
@@ -73,42 +74,12 @@ export default function Home() {
     position: "center"
   };
   const photoBlocks = [
-    {
-      title: "Hotels",
-      text: "Stays near the route",
-      image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80",
-      query: `best hotels in ${city}`
-    },
-    {
-      title: "Places",
-      text: "Must-cover spots",
-      image: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=80",
-      query: `best places to visit in ${city}`
-    },
-    {
-      title: "Fine Dining",
-      text: "Dinner without guesswork",
-      image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80",
-      query: `fine dining restaurants in ${city}`
-    },
-    {
-      title: "Hospitals",
-      text: "24x7 emergency care",
-      image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=80",
-      query: `hospitals near ${city}`
-    },
-    {
-      title: "Petrol Pumps",
-      text: "Fuel stops on the way",
-      image: "https://images.unsplash.com/photo-1545262810-77515befe149?auto=format&fit=crop&w=900&q=80",
-      query: `petrol pumps near ${city}`
-    },
-    {
-      title: "Vehicle Repair",
-      text: "Garages & quick fixes",
-      image: "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?auto=format&fit=crop&w=900&q=80",
-      query: `vehicle repair near ${city}`
-    }
+    { title: "Hotels", text: "Stays near the route", image: imageForTheme("hotel"), query: `best hotels in ${city}` },
+    { title: "Places", text: "Must-cover spots", image: imageForTheme("city"), query: `best places to visit in ${city}` },
+    { title: "Fine Dining", text: "Dinner without guesswork", image: imageForTheme("food"), query: `fine dining restaurants in ${city}` },
+    { title: "Hospitals", text: "24x7 emergency care", image: imageForTheme("hospital"), query: `hospitals near ${city}` },
+    { title: "Petrol Pumps", text: "Fuel stops on the way", image: imageForTheme("fuel"), query: `petrol pumps near ${city}` },
+    { title: "Vehicle Repair", text: "Garages & quick fixes", image: imageForTheme("repair"), query: `vehicle repair near ${city}` }
   ];
   const nearbyCards: NearbyCard[] = [...seededNearbyItems, ...topTwentyPicks].slice(0, 20);
 

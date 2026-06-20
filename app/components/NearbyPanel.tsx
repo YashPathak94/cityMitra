@@ -4,6 +4,7 @@ import { ArrowUpRight, Clock } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { categories, CategoryKey } from "@/data/city-directory";
 import { NearbyCard, UserLocation } from "@/lib/city-intel";
+import { imageForCategory } from "@/lib/category-images";
 import ImageAccordion from "@/app/components/ImageAccordion";
 import NearbyDock from "@/app/components/NearbyDock";
 
@@ -26,35 +27,6 @@ type NearbyPanelProps = {
   onOpenMap: (query: string, label: string) => void;
   onOpenNearbyOptions: () => void;
 };
-
-const unsplash = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=700&q=80`;
-
-// A diverse pool of premium city / travel / service photos, one per pick so all
-// 20 cards differ. Any that fails to load falls back to a distinct seeded image.
-const PICK_IMAGES = [
-  unsplash("1566073771259-6a8506099945"),
-  unsplash("1414235077428-338989a2e8c0"),
-  unsplash("1555396273-367ea4eb4db5"),
-  unsplash("1524492412937-b28074a5d7da"),
-  unsplash("1488646953014-85cb44e25828"),
-  unsplash("1502602898657-3e91760cbb34"),
-  unsplash("1480714378408-67cf0d13bc1b"),
-  unsplash("1517248135467-4c7edcad34c4"),
-  unsplash("1441986300917-64674bd600d8"),
-  unsplash("1498049794561-7780e7231661"),
-  unsplash("1571019613454-1cb2f99b2d8b"),
-  unsplash("1469854523086-cc02fe5d8800"),
-  unsplash("1506905925346-21bda4d32df4"),
-  unsplash("1507525428034-b723cf961d3e"),
-  unsplash("1501785888041-af3ef285b470"),
-  unsplash("1519494026892-80bbd2d6fd0d"),
-  unsplash("1503376780353-7e6692767b70"),
-  unsplash("1436491865332-7a61a109cc05"),
-  unsplash("1520250497591-112f2f40a3f4"),
-  unsplash("1517840901100-8179e982acb7"),
-  unsplash("1513475382585-d06e58bcb0e0"),
-  unsplash("1551882547-ff40c63fe5fa")
-];
 
 const seededFallback = (seed: string) => `https://picsum.photos/seed/${encodeURIComponent(seed)}/640/400`;
 
@@ -114,12 +86,12 @@ export default function NearbyPanel({
                 <span className="nearbyPickImg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={PICK_IMAGES[index % PICK_IMAGES.length]}
+                    src={imageForCategory(item.category, index)}
                     alt={labelForCategory(item.category)}
                     loading="lazy"
                     onError={(event) => {
                       const target = event.currentTarget;
-                      const fallback = seededFallback(`${item.name}-${index}`);
+                      const fallback = seededFallback(`${item.category || "city"}-${index}`);
                       if (target.src !== fallback) target.src = fallback;
                     }}
                   />
