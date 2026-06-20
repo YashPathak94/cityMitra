@@ -324,7 +324,6 @@ export default function Home() {
         <NearbyPanel
           city={city}
           category={category}
-          categoryLabel={categoryLabel}
           userLocation={userLocation}
           nearbyCards={nearbyCards}
           nearbyFrameIndex={nearbyFrameIndex}

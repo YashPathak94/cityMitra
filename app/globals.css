@@ -34,7 +34,15 @@ body {
   color: var(--ink);
   font-family: var(--font-sans, "Plus Jakarta Sans"), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* guard against any element forcing a horizontal scrollbar on mobile */
+img,
+svg,
+video {
+  max-width: 100%;
 }
 
 main {
@@ -268,7 +276,7 @@ button {
   color: var(--white);
   padding: 0 11px;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .heroGrid {
@@ -648,7 +656,7 @@ textarea:focus-visible {
   padding: 0 9px;
   color: var(--ink);
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 800;
   backdrop-filter: blur(16px);
 }
 
@@ -699,7 +707,7 @@ textarea:focus-visible {
   color: var(--white);
   padding: 8px 9px;
   font-size: 0.76rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .motionRouteBoard {
@@ -742,7 +750,7 @@ textarea:focus-visible {
   gap: 5px;
   color: var(--muted);
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 800;
   text-align: center;
 }
 
@@ -801,7 +809,7 @@ textarea:focus-visible {
   padding: 9px;
   color: var(--muted);
   font-size: 0.7rem;
-  font-weight: 900;
+  font-weight: 800;
   backdrop-filter: blur(14px);
 }
 
@@ -859,7 +867,7 @@ textarea:focus-visible {
   align-items: center;
   gap: 7px;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .cityImageCard span {
@@ -911,7 +919,7 @@ textarea:focus-visible {
   gap: 7px;
   color: rgba(255, 255, 255, 0.76);
   font-size: 0.74rem;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
 }
 
@@ -957,7 +965,7 @@ textarea:focus-visible {
   color: var(--blue);
   padding: 0 10px;
   font-size: 0.8rem;
-  font-weight: 900;
+  font-weight: 800;
   backdrop-filter: blur(14px);
 }
 
@@ -1329,7 +1337,7 @@ textarea:focus-visible {
   color: var(--blue);
   padding: 0 10px;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .altitude {
@@ -1340,7 +1348,7 @@ textarea:focus-visible {
   background: #eff6ff;
   color: var(--blue);
   font-size: 0.85rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .categoryMatrix {
@@ -1384,7 +1392,7 @@ textarea:focus-visible {
   background: var(--white);
   color: var(--ink);
   padding: 0 12px;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .intelControls div {
@@ -1397,7 +1405,7 @@ textarea:focus-visible {
 .intelControls span {
   color: var(--muted);
   font-size: 0.78rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .intelControls strong {
@@ -1424,7 +1432,7 @@ textarea:focus-visible {
   color: var(--muted);
   padding: 0 12px;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .intelTabs button.active {
@@ -1458,7 +1466,7 @@ textarea:focus-visible {
   align-items: center;
   gap: 9px;
   font-size: 1.05rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .intelFocusCard > header svg {
@@ -1495,7 +1503,7 @@ textarea:focus-visible {
   color: var(--ink);
   padding: 0 12px;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .resultFrameHeader > div {
@@ -1509,7 +1517,7 @@ textarea:focus-visible {
 .resultFrameHeader small {
   color: var(--muted);
   font-size: 0.76rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .resultFrameHeader strong {
@@ -1560,7 +1568,7 @@ textarea:focus-visible {
 .frameBackdrop span {
   color: #fed7aa;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
 }
 
@@ -1657,7 +1665,7 @@ textarea:focus-visible {
   border-radius: 8px;
   background: rgba(15, 23, 42, 0.92);
   color: var(--white);
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .resultIndex {
@@ -1669,7 +1677,7 @@ textarea:focus-visible {
   background: rgba(37, 99, 235, 0.1);
   color: var(--blue);
   font-size: 0.75rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .intelMeta {
@@ -1684,7 +1692,7 @@ textarea:focus-visible {
   color: var(--muted);
   padding: 5px 8px;
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .resultDots {
@@ -1717,7 +1725,7 @@ textarea:focus-visible {
 .intelOverview summary {
   cursor: pointer;
   color: var(--ink);
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .intelOverview > div {
@@ -1738,7 +1746,7 @@ textarea:focus-visible {
   padding: 9px;
   color: var(--ink);
   font-size: 0.8rem;
-  font-weight: 900;
+  font-weight: 800;
   text-align: left;
 }
 
@@ -1844,7 +1852,7 @@ textarea:focus-visible {
 }
 
 .askBox label {
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .chatHeader {
@@ -1950,7 +1958,7 @@ textarea:focus-visible {
   color: var(--blue);
   padding: 0 10px;
   font-size: 0.84rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .chatWindow {
@@ -1996,7 +2004,7 @@ textarea:focus-visible {
   display: block;
   margin-bottom: 6px;
   font-size: 0.75rem;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
   color: inherit;
 }
@@ -2157,7 +2165,7 @@ textarea {
 
 .miniMap span {
   font-size: 1.7rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .miniMap strong {
@@ -2174,7 +2182,7 @@ textarea {
   border-radius: 8px;
   background: linear-gradient(135deg, var(--blue), #1d4ed8);
   color: var(--white);
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .locationBox {
@@ -2196,7 +2204,7 @@ textarea {
   border-radius: 8px;
   background: linear-gradient(135deg, var(--orange), var(--blue));
   color: var(--white);
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .locationBox p {
@@ -2283,7 +2291,7 @@ textarea {
 .nearbyFocusCard .nearbyIndex {
   color: var(--orange);
   font-size: 0.76rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .nearbyFocusCard strong {
@@ -2302,7 +2310,7 @@ textarea {
   color: var(--blue);
   font-size: 0.78rem;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .nearbyDots {
@@ -2386,7 +2394,7 @@ textarea {
 .nearbyAllDrawer button span {
   color: var(--orange);
   font-size: 0.76rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .nearbyAllDrawer button b {
@@ -2424,7 +2432,7 @@ textarea {
 }
 
 .photoBlock span {
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .photoBlock small {
@@ -2449,7 +2457,7 @@ textarea {
   background: #fff;
   color: var(--blue);
   font-size: 0.84rem;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: capitalize;
 }
 
@@ -2474,7 +2482,7 @@ textarea {
   border-radius: 8px;
   background: linear-gradient(135deg, var(--orange), var(--blue));
   color: var(--white);
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .primaryButton:disabled {
@@ -2606,7 +2614,7 @@ textarea {
   border-radius: 8px;
   background: rgba(255, 253, 248, 0.08);
   color: var(--white);
-  font-weight: 900;
+  font-weight: 800;
   transition: transform 180ms var(--smooth), background 180ms var(--smooth);
 }
 
@@ -2644,7 +2652,7 @@ textarea {
 .newsletterCard label {
   color: rgba(255, 253, 248, 0.82);
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
 }
 
@@ -2804,7 +2812,7 @@ textarea {
 .adminStatGrid span {
   color: var(--muted);
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
 }
 
@@ -2843,7 +2851,7 @@ textarea {
   gap: 7px;
   color: var(--muted);
   font-size: 0.84rem;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
 }
 
@@ -2880,7 +2888,7 @@ textarea {
 .barList b {
   position: relative;
   z-index: 1;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .barList b {
@@ -2927,7 +2935,7 @@ textarea {
 
 .recentList time {
   font-size: 0.85rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .adminLoginPage {
@@ -7855,7 +7863,7 @@ body {
 
 .nearbyCounter {
   font-size: 0.98rem;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--ink);
   letter-spacing: -0.01em;
 }
