@@ -7833,3 +7833,343 @@ body {
     transition: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   v12 — right-edge nearby action dock + premium Top-20 carousel
+--------------------------------------------------------------------------- */
+/* status now rides inside the city bar */
+.nearbyBar .nearbyStatus {
+  margin: 0;
+  flex: 1 1 220px;
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* --- header counter + nav --- */
+.nearbyHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nearbyCounter {
+  font-size: 0.98rem;
+  font-weight: 900;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.nearbyCounter i {
+  font-style: normal;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.nearbyFrameControls {
+  display: flex;
+  gap: 6px;
+}
+
+.nearbyFrameControls button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth), transform 0.2s var(--smooth);
+}
+
+.nearbyFrameControls button:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  transform: translateY(-1px);
+}
+
+.nearbyProgress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+  margin: 2px 0 14px;
+}
+
+.nearbyProgress span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--orange), #f97316);
+  transition: width 0.35s var(--smooth);
+}
+
+/* --- premium horizontal pick carousel --- */
+.nearbyCarousel {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 2px 2px 12px;
+  scrollbar-width: none;
+}
+
+.nearbyCarousel::-webkit-scrollbar {
+  display: none;
+}
+
+.nearbyPickCard {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  width: 246px;
+  min-height: 152px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--white);
+  padding: 16px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth), transform 0.2s var(--smooth);
+}
+
+.nearbyPickCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
+}
+
+.nearbyPickCard.active {
+  border-color: transparent;
+  background: linear-gradient(160deg, #ffffff, var(--soft));
+  box-shadow: 0 18px 40px rgba(234, 88, 12, 0.16);
+  outline: 2px solid var(--orange);
+  outline-offset: -2px;
+}
+
+.nearbyPickTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nearbyPickRank {
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--orange);
+}
+
+.nearbyPickTag {
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 12%, #fff);
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+
+.nearbyPickName {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.nearbyPickArea {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.nearbyPickFoot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+}
+
+.nearbyPickEta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.77rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.nearbyPickEta svg {
+  color: var(--muted);
+}
+
+.nearbyPickCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.77rem;
+  font-weight: 800;
+  color: var(--orange);
+}
+
+/* --- right-edge action dock (desktop) --- */
+.nearbyDock {
+  position: fixed;
+  right: 0;
+  top: 42%;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nearbyDockTab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 188px;
+  height: 52px;
+  padding: 0 16px;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.9rem;
+  border-radius: 14px 0 0 14px;
+  transform: translateX(calc(100% - 52px));
+  box-shadow: -6px 10px 26px rgba(15, 23, 42, 0.18);
+  transition: transform 0.45s var(--smooth);
+}
+
+.nearbyDockTab:hover,
+.nearbyDockTab:focus-visible {
+  transform: translateX(0);
+  outline: none;
+}
+
+.nearbyDockIcon {
+  flex: 0 0 auto;
+  width: 20px;
+  display: grid;
+  place-items: center;
+}
+
+.nearbyDockLabel {
+  white-space: nowrap;
+}
+
+.dockLoc {
+  background: linear-gradient(135deg, #0891b2, #0ea5b7);
+}
+
+.dockLoc.on {
+  background: linear-gradient(135deg, var(--orange), #f97316);
+}
+
+.dockMap {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+/* --- floating dock (mobile) --- */
+.nearbyDockMobile {
+  display: none;
+}
+
+.nearbyDockToggle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, var(--orange), #f97316);
+  box-shadow: 0 14px 30px rgba(234, 88, 12, 0.35);
+}
+
+.nearbyDockFan {
+  position: absolute;
+  right: 4px;
+  bottom: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.3s var(--smooth), transform 0.3s var(--smooth);
+}
+
+.nearbyDockFan.open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.nearbyDockFab {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 48px;
+  padding: 0 17px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.26);
+}
+
+.nearbyDockScrim {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+@media (max-width: 900px) {
+  .nearbyDock {
+    display: none;
+  }
+
+  .nearbyDockMobile {
+    display: block;
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 120;
+  }
+}
+
+@media (max-width: 640px) {
+  .nearbyPickCard {
+    width: 84vw;
+    max-width: 280px;
+  }
+
+  .nearbyBar .nearbyStatus {
+    flex-basis: 100%;
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nearbyDockTab,
+  .nearbyCarousel,
+  .nearbyProgress span {
+    transition: none;
+  }
+}

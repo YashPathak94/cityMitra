@@ -1,10 +1,11 @@
 "use client";
 
-import { ChevronDown, ChevronUp, ExternalLink, ListChecks, MapPinned, Navigation } from "lucide-react";
-import { useState } from "react";
+import { ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Clock, ListChecks, MapPinned } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { categories, CategoryKey } from "@/data/city-directory";
 import { NearbyCard, UserLocation } from "@/lib/city-intel";
 import ImageAccordion from "@/app/components/ImageAccordion";
+import NearbyDock from "@/app/components/NearbyDock";
 
 type PhotoBlock = {
   title: string;
@@ -29,6 +30,10 @@ type NearbyPanelProps = {
   onOpenNearbyOptions: () => void;
 };
 
+function labelForCategory(key?: CategoryKey) {
+  return categories.find((cat) => cat.key === key)?.label || "City";
+}
+
 export default function NearbyPanel({
   city,
   category,
@@ -44,8 +49,20 @@ export default function NearbyPanel({
   onOpenMap,
   onOpenNearbyOptions
 }: NearbyPanelProps) {
-  const activeNearbyPick = nearbyCards[nearbyFrameIndex] || nearbyCards[0];
   const [showAll, setShowAll] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Keep the selected pick scrolled into view inside the carousel only — never
+  // scroll the whole page.
+  useEffect(() => {
+    const rail = carouselRef.current;
+    if (!rail) return;
+    const card = rail.querySelector<HTMLElement>(`[data-idx="${nearbyFrameIndex}"]`);
+    if (card) rail.scrollTo({ left: card.offsetLeft - 4, behavior: "smooth" });
+  }, [nearbyFrameIndex]);
+
+  const total = nearbyCards.length;
+  const progress = total > 0 ? ((nearbyFrameIndex + 1) / total) * 100 : 0;
 
   return (
     <aside className="nearbyPanel nearbyPanelCompact" id="nearby" aria-label="Nearby map and places">
@@ -59,70 +76,79 @@ export default function NearbyPanel({
             <span>{userLocation?.city ? `Near you · ${categoryLabel}` : categoryLabel}</span>
           </div>
         </div>
-        <div className="nearbyBarActions">
-          <button type="button" className={userLocation ? "nearbyLocBtn on" : "nearbyLocBtn"} onClick={onRequestLocation}>
-            <Navigation size={14} />
-            {userLocation ? "Location on" : "Use my location"}
-          </button>
-          <button type="button" className="nearbyMapBtn" onClick={onOpenNearbyOptions}>
-            Open Maps <ExternalLink size={14} />
-          </button>
-        </div>
+        <p className="nearbyStatus">{locationStatus}</p>
       </div>
-      <p className="nearbyStatus">{locationStatus}</p>
 
       <div className="nearbyList" key={`${city}-${category}-nearby`}>
         <div className="nearbyListHeader">
           <div>
-            <h3>Top 20 curated nearby picks</h3>
+            <h3>Top {total} curated nearby picks</h3>
             <span>
-              {userLocation?.city ? `${userLocation.city} live-route mode` : userLocation ? "Live-route mode" : "City-smart mode"} · {nearbyCards.length} smart suggestions
+              {userLocation?.city ? `${userLocation.city} live-route mode` : userLocation ? "Live-route mode" : "City-smart mode"} · {total} smart suggestions
             </span>
           </div>
-          <div className="nearbyFrameControls" aria-label="Nearby picks controls">
-            <button type="button" onClick={() => onMoveFrame(-1)} aria-label="Previous nearby pick">
-              <ChevronUp size={14} />
-            </button>
-            <button type="button" onClick={() => onMoveFrame(1)} aria-label="Next nearby pick">
-              <ChevronDown size={14} />
-            </button>
-          </div>
+          {total > 0 && (
+            <div className="nearbyHeaderRight">
+              <span className="nearbyCounter">
+                {String(nearbyFrameIndex + 1).padStart(2, "0")} <i>/ {total}</i>
+              </span>
+              <div className="nearbyFrameControls" aria-label="Nearby picks controls">
+                <button type="button" onClick={() => onMoveFrame(-1)} aria-label="Previous nearby pick">
+                  <ChevronLeft size={16} />
+                </button>
+                <button type="button" onClick={() => onMoveFrame(1)} aria-label="Next nearby pick">
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-        {nearbyCards.length > 0 ? (
-          <div className="nearbyDeck">
-            <button
-              className="nearbyFocusCard"
-              type="button"
-              onClick={() => activeNearbyPick && onOpenMap(activeNearbyPick.query, `nearby_${activeNearbyPick.name}`)}
-            >
-              <span className="nearbyIndex">{String(nearbyFrameIndex + 1).padStart(2, "0")} / {nearbyCards.length}</span>
-              <strong>{activeNearbyPick?.name}</strong>
-              <small>
-                {categories.find((cat) => cat.key === activeNearbyPick?.category)?.label || "City"} · {activeNearbyPick?.area} · {activeNearbyPick?.eta}
-              </small>
-              <em>{userLocation ? "Routes from your current location" : "Enable location for live-start routing"}</em>
-            </button>
 
-            <div className="nearbyDots" aria-label="Nearby picks progress">
+        {total > 0 ? (
+          <>
+            <div className="nearbyProgress" aria-hidden>
+              <span style={{ width: `${progress}%` }} />
+            </div>
+
+            <div className="nearbyCarousel" ref={carouselRef}>
               {nearbyCards.map((item, index) => (
                 <button
-                  aria-label={`Show ${item.name}`}
-                  className={index === nearbyFrameIndex ? "active" : ""}
-                  key={`${item.name}-nearby-dot-${index}`}
-                  onClick={() => onSetFrame(index)}
                   type="button"
-                />
+                  data-idx={index}
+                  className={index === nearbyFrameIndex ? "nearbyPickCard active" : "nearbyPickCard"}
+                  key={`${city}-${category}-${index}-${item.name}`}
+                  onClick={() => {
+                    onSetFrame(index);
+                    onOpenMap(item.query, `nearby_${item.name}`);
+                  }}
+                >
+                  <span className="nearbyPickTop">
+                    <span className="nearbyPickRank">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="nearbyPickTag">{labelForCategory(item.category)}</span>
+                  </span>
+                  <strong className="nearbyPickName">{item.name}</strong>
+                  <span className="nearbyPickArea">{item.area}</span>
+                  <span className="nearbyPickFoot">
+                    <span className="nearbyPickEta">
+                      <Clock size={13} />
+                      {item.eta}
+                    </span>
+                    <span className="nearbyPickCta">
+                      Open route <ArrowUpRight size={14} />
+                    </span>
+                  </span>
+                </button>
               ))}
             </div>
 
             <button type="button" className="nearbyViewAllToggle" onClick={() => setShowAll((current) => !current)} aria-expanded={showAll}>
               <ListChecks size={15} />
-              {showAll ? "Hide all 20" : "View all 20 suggestions"}
+              {showAll ? "Hide all" : `View all ${total} suggestions`}
               {showAll ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
 
             {showAll && (
-              <div className="nearbyAllDrawer" aria-label="All top 20 nearby picks">
+              <div className="nearbyAllDrawer" aria-label={`All ${total} nearby picks`}>
                 {nearbyCards.map((item, index) => (
                   <button
                     type="button"
@@ -130,7 +156,7 @@ export default function NearbyPanel({
                       onSetFrame(index);
                       onOpenMap(item.query, `nearby_all_${item.name}`);
                     }}
-                    key={`${city}-${category}-${index}-${item.name}`}
+                    key={`${city}-${category}-all-${index}-${item.name}`}
                   >
                     <span>{String(index + 1).padStart(2, "0")}</span>
                     <b>{item.name}</b>
@@ -139,7 +165,7 @@ export default function NearbyPanel({
                 ))}
               </div>
             )}
-          </div>
+          </>
         ) : (
           <p>Ask CityMitra for live-style suggestions, then open the map search for that city.</p>
         )}
@@ -156,6 +182,8 @@ export default function NearbyPanel({
           }))}
         />
       )}
+
+      <NearbyDock locationOn={Boolean(userLocation)} onLocation={onRequestLocation} onOpenMaps={onOpenNearbyOptions} />
     </aside>
   );
 }
