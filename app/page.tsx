@@ -19,7 +19,7 @@ import {
   UserLocation
 } from "@/lib/city-intel";
 import { mapDirectionsUrl, mapSearchUrl } from "@/lib/maps";
-import { cardImageUrl } from "@/lib/category-images";
+import { imageForTheme } from "@/lib/category-images";
 import { trackActivity } from "@/lib/tracking";
 import AiTeaser from "@/app/components/AiTeaser";
 import DirectoryExplorer from "@/app/components/DirectoryExplorer";
@@ -74,12 +74,12 @@ export default function Home() {
     position: "center"
   };
   const photoBlocks = [
-    { title: "Hotels", text: "Stays near the route", image: cardImageUrl({ topic: "Hotels", city, theme: "hotel" }), query: `best hotels in ${city}` },
-    { title: "Places", text: "Must-cover spots", image: cardImageUrl({ topic: "Tourist places", city, theme: "city" }), query: `best places to visit in ${city}` },
-    { title: "Fine Dining", text: "Dinner without guesswork", image: cardImageUrl({ topic: "Fine dining restaurant", city, theme: "food" }), query: `fine dining restaurants in ${city}` },
-    { title: "Hospitals", text: "24x7 emergency care", image: cardImageUrl({ topic: "Hospital", city, theme: "hospital" }), query: `hospitals near ${city}` },
-    { title: "Petrol Pumps", text: "Fuel stops on the way", image: cardImageUrl({ topic: "Petrol pump", city, theme: "fuel" }), query: `petrol pumps near ${city}` },
-    { title: "Vehicle Repair", text: "Garages & quick fixes", image: cardImageUrl({ topic: "Vehicle repair garage", city, theme: "repair" }), query: `vehicle repair near ${city}` }
+    { title: "Hotels", text: "Stays near the route", image: imageForTheme("hotel"), query: `best hotels in ${city}` },
+    { title: "Places", text: "Must-cover spots", image: imageForTheme("city"), query: `best places to visit in ${city}` },
+    { title: "Fine Dining", text: "Dinner without guesswork", image: imageForTheme("food"), query: `fine dining restaurants in ${city}` },
+    { title: "Hospitals", text: "24x7 emergency care", image: imageForTheme("hospital"), query: `hospitals near ${city}` },
+    { title: "Petrol Pumps", text: "Fuel stops on the way", image: imageForTheme("fuel"), query: `petrol pumps near ${city}` },
+    { title: "Vehicle Repair", text: "Garages & quick fixes", image: imageForTheme("repair"), query: `vehicle repair near ${city}` }
   ];
   const nearbyCards: NearbyCard[] = [...seededNearbyItems, ...topTwentyPicks].slice(0, 20);
 
