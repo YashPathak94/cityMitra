@@ -27,6 +27,7 @@ import Hero from "@/app/components/Hero";
 import LocationPrompt from "@/app/components/LocationPrompt";
 import WelcomeIntro from "@/app/components/WelcomeIntro";
 import NearbyPanel from "@/app/components/NearbyPanel";
+import Reveal from "@/app/components/Reveal";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 import { AboutSection, CoverageSection } from "@/app/components/MarketingSections";
@@ -276,20 +277,22 @@ export default function Home() {
 
       <AiTeaser city={city} category={category} />
 
-      <DirectoryExplorer
-        city={city}
-        category={category}
-        visibleCities={visibleCities}
-        selectedItems={selectedItems}
-        exactDirectoryItems={exactDirectoryItems}
-        categoryFrameIndex={categoryFrameIndex}
-        onSelectCity={selectCity}
-        onSelectCategory={selectCategory}
-        onMoveFrame={moveCategoryFrame}
-        onSetFrame={setCategoryFrameIndex}
-        onOpenMap={openTrackedMap}
-        onSearchMap={openTrackedSearch}
-      />
+      <Reveal>
+        <DirectoryExplorer
+          city={city}
+          category={category}
+          visibleCities={visibleCities}
+          selectedItems={selectedItems}
+          exactDirectoryItems={exactDirectoryItems}
+          categoryFrameIndex={categoryFrameIndex}
+          onSelectCity={selectCity}
+          onSelectCategory={selectCategory}
+          onMoveFrame={moveCategoryFrame}
+          onSetFrame={setCategoryFrameIndex}
+          onOpenMap={openTrackedMap}
+          onSearchMap={openTrackedSearch}
+        />
+      </Reveal>
 
       <section className="nearbyBand">
         <NearbyPanel
@@ -306,18 +309,24 @@ export default function Home() {
         />
       </section>
 
-      <Hero
-        city={city}
-        categoryLabel={categoryLabel}
-        cityVisual={cityVisual}
-        nearbyCount={nearbyCards.length}
-        userLocation={userLocation}
-        onSceneAction={handleSceneAction}
-        onOpenMap={openTrackedMap}
-      />
+      <Reveal>
+        <Hero
+          city={city}
+          categoryLabel={categoryLabel}
+          cityVisual={cityVisual}
+          nearbyCount={nearbyCards.length}
+          userLocation={userLocation}
+          onSceneAction={handleSceneAction}
+          onOpenMap={openTrackedMap}
+        />
+      </Reveal>
 
-      <CoverageSection />
-      <AboutSection />
+      <Reveal>
+        <CoverageSection />
+      </Reveal>
+      <Reveal>
+        <AboutSection />
+      </Reveal>
 
       <SiteFooter city={city} category={category} />
       </main>
