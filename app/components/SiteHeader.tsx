@@ -3,8 +3,9 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { LogIn, Menu, Search, Sparkles, X } from "lucide-react";
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import CityPicker from "./CityPicker";
+import CommandPalette from "./CommandPalette";
 
 function LogoMark() {
   return (
@@ -42,12 +43,24 @@ type SiteHeaderProps = {
 };
 
 export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderProps) {
-  const [searchText, setSearchText] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [account, setAccount] = useState<{ email: string } | null>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const reduceMotion = useReducedMotion();
+
+  // Cmd/Ctrl+K opens the command palette
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setPaletteOpen((open) => !open);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   useEffect(() => {
     fetch("/api/auth/me", { cache: "no-store" })
@@ -85,15 +98,6 @@ export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderP
     return () => observer.disconnect();
   }, []);
 
-  function submitSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmedSearch = searchText.trim();
-    if (!trimmedSearch) return;
-    onSearch(trimmedSearch);
-    setSearchText("");
-    setMenuOpen(false);
-  }
-
   return (
     <header className={scrolled ? "glassNav scrolled" : "glassNav"}>
       <div className="glassNavInner">
@@ -127,15 +131,11 @@ export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderP
         </nav>
 
         <div className="glassNavActions">
-          <form className="navSearch" onSubmit={submitSearch} role="search">
+          <button className="navSearchTrigger" type="button" onClick={() => setPaletteOpen(true)} aria-label="Search any city or category">
             <Search size={15} />
-            <input
-              aria-label="Search any city or category"
-              onChange={(event) => setSearchText(event.target.value)}
-              placeholder="Search city or category..."
-              value={searchText}
-            />
-          </form>
+            <span>Search city or category…</span>
+            <kbd>⌘K</kbd>
+          </button>
           <a className="navCta navCtaIcon" href="/chat" aria-label="Ask the AI guide" title="Ask AI">
             <Sparkles size={18} />
           </a>
@@ -170,16 +170,17 @@ export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderP
             exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
-            <form className="navSearch mobileSearch" onSubmit={submitSearch} role="search">
+            <button
+              type="button"
+              className="navSearchTrigger mobileSearchTrigger"
+              onClick={() => {
+                setMenuOpen(false);
+                setPaletteOpen(true);
+              }}
+            >
               <Search size={15} />
-              <input
-                aria-label="Search any city or category"
-                onChange={(event) => setSearchText(event.target.value)}
-                placeholder="Search city, food, hotels, repair..."
-                value={searchText}
-              />
-              <button type="submit">Go</button>
-            </form>
+              <span>Search city, food, hotels…</span>
+            </button>
             {navLinks.map((link) => (
               <Link key={link.label} href={link.href} onClick={() => setMenuOpen(false)}>
                 {link.label}
@@ -192,6 +193,8 @@ export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderP
           </motion.div>
         )}
       </AnimatePresence>
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onSearch={onSearch} onSelectCity={onSelectCity} />
     </header>
   );
 }
