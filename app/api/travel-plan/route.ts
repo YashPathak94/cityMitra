@@ -31,8 +31,14 @@ function sanitize(body: Record<string, unknown>): TravelPlanInput | null {
   const cards = Array.isArray(body.cards)
     ? body.cards.map((card) => String(card).slice(0, 60).trim()).filter(Boolean).slice(0, 4)
     : undefined;
+  const origin = String(body.origin || "").slice(0, 80).trim();
+  const travelers = Math.max(1, Math.min(20, Math.round(Number(body.travelers) || 1)));
+  const nights = Math.max(1, Math.min(60, Math.round(Number(body.nights) || 3)));
   return {
     destination,
+    origin: origin || undefined,
+    travelers,
+    nights,
     travelDateISO,
     targetBudget: Math.min(targetBudget, 100000000),
     monthlyCapacity: Number.isFinite(monthlyCapacityRaw) && monthlyCapacityRaw > 0 ? monthlyCapacityRaw : undefined,
@@ -149,12 +155,14 @@ export async function POST(request: NextRequest) {
     `India context only. Estimate realistic prices/durations from ${input.destination}'s typical origin cities. Prefer ` +
     `index funds for short horizons; name real well-known Indian options but keep them illustrative. Do NOT invent ` +
     `time-bound "current offers" — describe typical offer types. No guaranteed returns. Be tight; never confuse.\n\n` +
-    `Inputs: destination=${input.destination}, monthsToGo=${base.monthsToGo}, riskLevel=${input.riskLevel}, ` +
+    `Inputs: from=${input.origin || "user's city"}, to=${input.destination}, travellers=${input.travelers || 1}, ` +
+    `nights=${input.nights || 3}, monthsToGo=${base.monthsToGo}, riskLevel=${input.riskLevel}, ` +
     `targetBudget=₹${input.targetBudget}, recommendedMonthly=₹${base.recommendedMonthly}, ` +
     `projectedValue=₹${base.projectedValue}, investmentGains=₹${base.investmentGains}, cardSavings=₹${base.cardSavings}, ` +
     `freeTravelPct=${base.freeTravelPct}%, equity/debt=${base.allocation.equityPct}/${base.allocation.debtPct}, ` +
     `transportModes=${(input.modes || ["flight", "train", "bus", "car", "bike"]).join(",")}, ` +
     `userCards=${(input.cards || []).join(",") || "none provided"}.\n\n` +
+    `For transport, price the actual ${input.origin || "origin"}→${input.destination} route per mode (realistic INR for ${input.travelers || 1} traveller(s)) and pick the genuinely best mode. Size hotels for ${input.nights || 3} night(s).\n\n` +
     `Return ONLY JSON: {` +
     `"summary": string (<=420 chars, mention the freeTravelPct framing), ` +
     `"strategy": string[] (4-6 short imperative steps), ` +

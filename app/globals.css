@@ -9179,3 +9179,39 @@ ol.travelPlanStrategy li::before {
     height: 260px;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Travel Plan v3 — from/to, more inputs, tighter hero
+--------------------------------------------------------------------------- */
+.travelPlanRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.cardChips {
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+}
+
+.cardChips .chip {
+  background: var(--white);
+}
+
+/* tighten the scroll hero so it sits closer to its heading */
+.scrollContainer {
+  padding: 10px 8px 0;
+}
+
+.scrollCard {
+  margin-top: 6px;
+}
+
+.scrollHeader .travelPlanHero {
+  margin-bottom: 0;
+  gap: 10px;
+}

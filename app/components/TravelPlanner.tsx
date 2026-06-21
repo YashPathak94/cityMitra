@@ -22,22 +22,41 @@ import {
   X
 } from "lucide-react";
 import { FormEvent, useState } from "react";
-import { cities } from "@/data/city-directory";
+import { indiaCities } from "@/lib/india-cities";
 import type { RiskLevel, TransportMode, TravelPlan } from "@/lib/travel-plan";
 import { ContainerScroll } from "@/app/components/ContainerScroll";
 
 const inr = (value: number) => `₹${Math.max(0, Math.round(value)).toLocaleString("en-IN")}`;
 const budgetPresets = [25000, 50000, 100000, 200000, 500000];
-const destinations = Array.from(new Set([...cities, "Goa", "Manali", "Kerala", "Udaipur", "Rishikesh", "Shimla"]));
 const popularCards = [
   "HDFC Regalia",
-  "Axis Magnus",
-  "SBI Card ELITE",
-  "ICICI Amazon Pay",
-  "Amex Platinum Travel",
-  "Axis Atlas",
+  "HDFC Diners Club Black",
   "HDFC Millennia",
-  "SBI SimplyCLICK"
+  "HDFC Tata Neu Infinity",
+  "Axis Magnus",
+  "Axis Atlas",
+  "Axis Reserve",
+  "Axis ACE",
+  "Flipkart Axis",
+  "SBI Card ELITE",
+  "SBI Card PRIME",
+  "SBI SimplyCLICK",
+  "SBI Cashback",
+  "SBI IRCTC",
+  "ICICI Amazon Pay",
+  "ICICI Sapphiro",
+  "ICICI Emeralde",
+  "Amex Platinum Travel",
+  "Amex Membership Rewards",
+  "IDFC FIRST Wealth",
+  "Kotak White Reserve",
+  "RBL World Safari",
+  "AU LIT",
+  "Standard Chartered Smart",
+  "Yes Bank Marquee",
+  "Federal Scapia",
+  "IndusInd Legend",
+  "HSBC Cashback"
 ];
 
 const transportMeta: Record<TransportMode, { label: string; icon: typeof Plane }> = {
@@ -62,7 +81,10 @@ function defaultDate() {
 }
 
 export default function TravelPlanner() {
-  const [destination, setDestination] = useState<string>(cities[0] || "Goa");
+  const [origin, setOrigin] = useState<string>("");
+  const [destination, setDestination] = useState<string>("Goa");
+  const [travelers, setTravelers] = useState(2);
+  const [nights, setNights] = useState(4);
   const [travelDateISO, setTravelDateISO] = useState(defaultDate());
   const [targetBudget, setTargetBudget] = useState(100000);
   const [monthlyCapacity, setMonthlyCapacity] = useState("");
@@ -95,7 +117,10 @@ export default function TravelPlanner() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          origin,
           destination,
+          travelers,
+          nights,
           travelDateISO,
           targetBudget,
           monthlyCapacity: monthlyCapacity ? Number(monthlyCapacity) : undefined,
@@ -168,21 +193,38 @@ export default function TravelPlanner() {
 
       <div className="travelPlanGrid" id="planResult">
         <form className="travelPlanForm" onSubmit={submit}>
-          <label>
-            Destination
-            <select value={destination} onChange={(event) => setDestination(event.target.value)}>
-              {destinations.map((cityName) => (
-                <option key={cityName} value={cityName}>
-                  {cityName}
-                </option>
-              ))}
-            </select>
-          </label>
+          <datalist id="indiaCitiesList">
+            {indiaCities.map((cityName) => (
+              <option key={cityName} value={cityName} />
+            ))}
+          </datalist>
+
+          <div className="travelPlanRow">
+            <label>
+              From
+              <input list="indiaCitiesList" placeholder="Your city" value={origin} onChange={(event) => setOrigin(event.target.value)} />
+            </label>
+            <label>
+              To
+              <input list="indiaCitiesList" placeholder="Destination" value={destination} onChange={(event) => setDestination(event.target.value)} />
+            </label>
+          </div>
 
           <label>
             Travel date
             <input type="date" value={travelDateISO} min={new Date().toISOString().slice(0, 10)} onChange={(event) => setTravelDateISO(event.target.value)} />
           </label>
+
+          <div className="travelPlanRow">
+            <label>
+              Travellers
+              <input type="number" min={1} max={20} value={travelers} onChange={(event) => setTravelers(Math.max(1, Number(event.target.value) || 1))} />
+            </label>
+            <label>
+              Nights
+              <input type="number" min={1} max={60} value={nights} onChange={(event) => setNights(Math.max(1, Number(event.target.value) || 1))} />
+            </label>
+          </div>
 
           <label>
             Trip budget
@@ -212,7 +254,7 @@ export default function TravelPlanner() {
 
           <div className="travelPlanField">
             <span className="travelPlanFieldLabel">Your cards <small>(for tailored offers)</small></span>
-            <div className="travelPlanChips">
+            <div className="travelPlanChips cardChips">
               {popularCards.map((card) => (
                 <button type="button" key={card} className={cards.includes(card) ? "chip active" : "chip"} onClick={() => toggleCard(card)}>
                   {cards.includes(card) ? <Check size={14} /> : <Plus size={14} />} {card}

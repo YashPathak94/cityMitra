@@ -4,6 +4,9 @@ export type TransportMode = "flight" | "train" | "bus" | "car" | "bike";
 
 export type TravelPlanInput = {
   destination: string;
+  origin?: string;
+  travelers?: number;
+  nights?: number;
   travelDateISO: string;
   targetBudget: number;
   monthlyCapacity?: number;
@@ -183,6 +186,8 @@ export function buildCalculatorPlan(input: TravelPlanInput): TravelPlan {
   const freeTravelPct = budget > 0 ? Math.min(100, Math.round(((investmentGains + cardSavings) / budget) * 100)) : 0;
 
   const equityPct = EQUITY_BY_RISK[input.riskLevel];
+  const routeLabel = input.origin ? `${input.origin} → ${input.destination}` : input.destination;
+  const partyLabel = input.travelers && input.travelers > 1 ? ` for ${input.travelers} travellers` : "";
 
   return {
     destination: input.destination,
@@ -200,7 +205,7 @@ export function buildCalculatorPlan(input: TravelPlanInput): TravelPlan {
       `Invest about ₹${inr(monthly).toLocaleString("en-IN")}/month for ${months} month${months > 1 ? "s" : ""} at an illustrative ` +
       `${annual}% p.a. By your travel date your money could grow to ~₹${projectedValue.toLocaleString("en-IN")}, with ` +
       `~₹${investmentGains.toLocaleString("en-IN")} of that being growth. Add ~₹${cardSavings.toLocaleString("en-IN")} from smart card offers ` +
-      `and roughly ${freeTravelPct}% of your ${input.destination} trip is funded by returns and rewards — not your pocket.`,
+      `and roughly ${freeTravelPct}% of your ${routeLabel} trip${partyLabel} is funded by returns and rewards — not your pocket.`,
     strategy: [
       `Open an automated monthly SIP of ₹${inr(monthly).toLocaleString("en-IN")} the day after payday so it never gets skipped.`,
       `Split it ${equityPct}% growth / ${100 - equityPct}% stable to match a ${input.riskLevel}-risk, ${months}-month horizon.`,
