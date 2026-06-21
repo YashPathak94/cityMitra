@@ -10,3 +10,7 @@ pnpm-debug.log*
 .DS_Store
 .citymitra
 tsconfig.tsbuildinfo
+
+# Python cache (UI/UX skill scripts)
+__pycache__/
+*.pyc
