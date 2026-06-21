@@ -8634,3 +8634,548 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Travel Plan v2 — scroll hero, stacking cards, transport/hotels/cards visuals
+--------------------------------------------------------------------------- */
+/* sticky stacking needs a non-hidden overflow on the page shell */
+.pageShellMain {
+  overflow: visible;
+}
+
+/* ContainerScroll hero */
+.scrollContainer {
+  position: relative;
+  padding: 24px 8px 8px;
+}
+
+.scrollInner {
+  perspective: 1000px;
+}
+
+.scrollHeader {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.scrollCard {
+  max-width: 940px;
+  height: 320px;
+  margin: 18px auto 0;
+  border: 6px solid #1f2937;
+  border-radius: 28px;
+  background: #111827;
+  padding: 8px;
+  box-shadow: 0 30px 64px rgba(15, 23, 42, 0.32);
+}
+
+.scrollCardInner {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.planMock {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  color: #fff;
+  background: linear-gradient(150deg, #fb923c, #ea580c 45%, #2563eb);
+}
+
+.planMockTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.planMockPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.22);
+  padding: 4px 11px;
+  border-radius: 999px;
+}
+
+.planMockHeadline {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.planMockHeadline strong {
+  font-size: clamp(2.4rem, 6vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.planMockHeadline span {
+  font-size: 0.9rem;
+  font-weight: 700;
+  max-width: 200px;
+  opacity: 0.92;
+}
+
+.planMockBar {
+  display: flex;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.planMockBar span {
+  display: block;
+  height: 100%;
+}
+
+.planMockModes {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.planMockModes span {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* extra form fields */
+.travelPlanField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.travelPlanFieldLabel {
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.travelPlanFieldLabel small {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.travelPlanChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.travelPlanChips .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  padding: 7px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.2s var(--smooth), color 0.2s var(--smooth), background 0.2s var(--smooth);
+}
+
+.travelPlanChips .chip.active {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: var(--soft);
+}
+
+.travelPlanCustomCard {
+  display: flex;
+  gap: 8px;
+}
+
+.travelPlanCustomCard input {
+  flex: 1;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+  padding: 0 12px;
+  font-size: 16px;
+}
+
+.travelPlanCustomCard button {
+  width: 42px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--orange);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.travelPlanSelected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.travelPlanSelected span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--soft);
+  border-radius: 999px;
+  padding: 5px 6px 5px 11px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.travelPlanSelected button {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(15, 23, 42, 0.12);
+  cursor: pointer;
+}
+
+/* result container becomes a plain stack host */
+.travelPlanResult {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  min-height: 320px;
+}
+
+.travelPlanEmpty {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  padding: 30px;
+}
+
+/* stacking cards that scroll over each other */
+.planStack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.planStackCard {
+  position: sticky;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--white);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.1);
+  padding: 22px;
+}
+
+.planSectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 14px;
+}
+
+.planSectionTitle svg {
+  color: var(--orange);
+}
+
+.dealsTitle {
+  margin-top: 18px;
+}
+
+/* funding bar */
+.fundingBar {
+  display: flex;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.fundingBar span {
+  display: block;
+  height: 100%;
+}
+
+.fundReturns {
+  background: linear-gradient(90deg, var(--orange), #f97316);
+}
+
+.fundCards {
+  background: var(--blue);
+}
+
+.fundSelf {
+  background: #cbd5e1;
+}
+
+.fundingLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.fundingLegend i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+
+.dotReturns { background: var(--orange); }
+.dotCards { background: var(--blue); }
+.dotSelf { background: #cbd5e1; }
+
+/* transport comparison */
+.transportList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.transportRow {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+  padding: 12px 14px;
+}
+
+.transportRow.best {
+  border-color: var(--orange);
+  background: color-mix(in srgb, var(--orange) 7%, #fff);
+}
+
+.transportRow .transportMode {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 800;
+  font-size: 0.92rem;
+}
+
+.transportMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  float: right;
+}
+
+.transportPrice {
+  font-weight: 800;
+  font-size: 0.92rem;
+}
+
+.transportTime {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.transportBadge {
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--orange);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.transportBar {
+  height: 7px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  margin: 9px 0 7px;
+}
+
+.transportBar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--orange), #f97316);
+}
+
+.transportRow p {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* hotels */
+.hotelGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.hotelTier {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hotelTierName {
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--blue);
+}
+
+.hotelTier strong {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.hotelTier strong small {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.hotelPlatform {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--orange);
+}
+
+.hotelTier p {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* card advice */
+.cardAdviceList {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.cardAdvice {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--soft);
+  padding: 12px 14px;
+}
+
+.cardAdvice strong {
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.cardAdviceTag {
+  margin-left: 8px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 12%, #fff);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.cardAdvice p {
+  margin-top: 5px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* strategy (ol) + deals */
+ol.travelPlanStrategy {
+  margin: 0 0 4px;
+  padding-left: 0;
+  list-style: none;
+  counter-reset: step;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+ol.travelPlanStrategy li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 34px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+ol.travelPlanStrategy li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--orange);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.dealsList {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dealsList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.dealsList li svg {
+  color: var(--green);
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+@media (max-width: 860px) {
+  .planStackCard {
+    position: static;
+  }
+
+  .hotelGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .scrollCard {
+    height: 260px;
+  }
+}

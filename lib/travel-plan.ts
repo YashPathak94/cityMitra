@@ -1,11 +1,15 @@
 export type RiskLevel = "low" | "medium" | "high";
 
+export type TransportMode = "flight" | "train" | "bus" | "car" | "bike";
+
 export type TravelPlanInput = {
   destination: string;
   travelDateISO: string;
   targetBudget: number;
   monthlyCapacity?: number;
   riskLevel: RiskLevel;
+  modes?: TransportMode[];
+  cards?: string[];
 };
 
 export type PlanInstrument = {
@@ -13,6 +17,27 @@ export type PlanInstrument = {
   name: string;
   detail: string;
   tag?: string;
+};
+
+export type TransportOption = {
+  mode: TransportMode;
+  priceFrom: number;
+  duration: string;
+  note: string;
+  best?: boolean;
+};
+
+export type HotelTier = {
+  tier: string;
+  nightlyFrom: number;
+  platform: string;
+  note: string;
+};
+
+export type CardAdvice = {
+  card: string;
+  useFor: string;
+  benefit: string;
 };
 
 export type TravelPlan = {
@@ -30,6 +55,10 @@ export type TravelPlan = {
   summary: string;
   strategy: string[];
   instruments: PlanInstrument[];
+  transport: TransportOption[];
+  hotels: HotelTier[];
+  cardAdvice: CardAdvice[];
+  deals: string[];
   disclaimer: string;
   source: "ai" | "calculator";
 };
@@ -84,6 +113,60 @@ const fallbackInstruments = (risk: RiskLevel): PlanInstrument[] => {
   return [equity[0], equity[1], ...debt, ...cards];
 };
 
+const TRANSPORT_BASE: Record<TransportMode, { priceFrom: number; duration: string; note: string }> = {
+  flight: { priceFrom: 3500, duration: "1–3 hrs", note: "Fastest; book 3–6 weeks early for the lowest fares." },
+  train: { priceFrom: 600, duration: "6–18 hrs", note: "Best value; book on IRCTC as soon as the window opens." },
+  bus: { priceFrom: 500, duration: "8–20 hrs", note: "Cheapest AC option; sleeper coaches for overnight legs." },
+  car: { priceFrom: 2500, duration: "Flexible", note: "Door-to-door freedom; factor fuel + tolls + rest stops." },
+  bike: { priceFrom: 1200, duration: "Longest", note: "Cheapest on fuel and a real adventure; plan for fatigue." }
+};
+
+function buildTransport(modes?: TransportMode[]): TransportOption[] {
+  const chosen = modes && modes.length ? modes : (["flight", "train", "bus", "car", "bike"] as TransportMode[]);
+  const options = chosen.map((mode) => ({ mode, ...TRANSPORT_BASE[mode] }));
+  // mark the cheapest as best value
+  let bestIndex = 0;
+  options.forEach((option, index) => {
+    if (option.priceFrom < options[bestIndex].priceFrom) bestIndex = index;
+  });
+  return options.map((option, index) => ({ ...option, best: index === bestIndex }));
+}
+
+function buildHotels(): HotelTier[] {
+  return [
+    { tier: "Smart budget", nightlyFrom: 1200, platform: "OYO · Goibibo", note: "Clean, central stays for short trips." },
+    { tier: "Comfort 3–4★", nightlyFrom: 3000, platform: "MakeMyTrip · Booking", note: "Best balance of price, location and reviews." },
+    { tier: "Premium 5★", nightlyFrom: 7000, platform: "Booking · Agoda", note: "Splurge nights — pay with a hotel-rewards card." }
+  ];
+}
+
+function buildCardAdvice(cards?: string[]): CardAdvice[] {
+  const list = (cards || []).map((card) => card.trim()).filter(Boolean).slice(0, 4);
+  if (list.length === 0) {
+    return [
+      { card: "A co-branded travel card", useFor: "Flights & hotels", benefit: "Earn air-miles / 2–5% value back on travel spends." },
+      { card: "A flat-cashback card", useFor: "Everyday spends", benefit: "Sweep 1.5–2% cashback into your travel SIP." }
+    ];
+  }
+  return list.map((card, index) => ({
+    card,
+    useFor: index === 0 ? "Flights & big bookings" : index === 1 ? "Hotels & dining" : "Everyday spends",
+    benefit:
+      index === 0
+        ? "Put flight bookings here to maximise miles / accelerated rewards."
+        : index === 1
+          ? "Use for hotels & dining to capture category bonuses and offers."
+          : "Route daily spends here and redirect the cashback into your SIP."
+  }));
+}
+
+const DEFAULT_DEALS = [
+  "Book flights 3–6 weeks ahead and fly mid-week for the lowest fares.",
+  "Bundle hotel + flight as a package for an instant combined discount.",
+  "Pay via your card's offers portal for extra cashback on travel partners.",
+  "Set a fare alert now so you book the dip, not the spike."
+];
+
 export function buildCalculatorPlan(input: TravelPlanInput): TravelPlan {
   const months = monthsToTravel(input.travelDateISO);
   const annual = RETURN_BY_RISK[input.riskLevel];
@@ -128,6 +211,10 @@ export function buildCalculatorPlan(input: TravelPlanInput): TravelPlan {
       "One month before travel, move the corpus to a liquid fund so a market dip can't derail the trip."
     ],
     instruments: fallbackInstruments(input.riskLevel),
+    transport: buildTransport(input.modes),
+    hotels: buildHotels(),
+    cardAdvice: buildCardAdvice(input.cards),
+    deals: DEFAULT_DEALS,
     disclaimer: DISCLAIMER,
     source: "calculator"
   };
