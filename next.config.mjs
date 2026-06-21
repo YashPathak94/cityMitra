@@ -16,7 +16,15 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "geolocation=(self), camera=(), microphone=(), payment=()" }
+          { key: "Permissions-Policy", value: "geolocation=(self), camera=(), microphone=(), payment=()" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+          {
+            key: "Content-Security-Policy",
+            // Hardening directives only (no default-src) so image/script/style
+            // loading is unaffected, while clickjacking, base-uri, plugins and
+            // off-site form posting are locked down.
+            value: "base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
+          }
         ]
       },
       {

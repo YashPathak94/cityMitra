@@ -155,11 +155,11 @@ export default function TravelPlanner() {
               <Sparkles size={15} /> Industry-first · AI travel-funding engine
             </span>
             <h1>
-              Travel now. Let smart investing <span>pay the bill.</span>
+              Travel smarter. Let planned saving <span>ease the cost.</span>
             </h1>
             <p>
               Pick your destination, date, transport and cards. CityMitra&apos;s AI compares fares, hotels and card
-              offers, then builds a SIP + investing plan so your trip is funded by returns — not your pocket.
+              offers, then builds a SIP + savings plan to help you offset more of your trip cost — through planned saving, estimated rewards and verified discounts.
             </p>
           </div>
         }
@@ -171,7 +171,7 @@ export default function TravelPlanner() {
           </div>
           <div className="planMockHeadline">
             <strong>68%</strong>
-            <span>of your trip funded by returns + rewards</span>
+            <span>of trip cost you could offset</span>
           </div>
           <div className="planMockBar">
             <span style={{ width: "46%", background: "linear-gradient(90deg,#ea580c,#f97316)" }} />
@@ -306,7 +306,7 @@ export default function TravelPlanner() {
           </label>
 
           <button className="travelPlanSubmit" type="submit" disabled={loading}>
-            {loading ? "Building your plan…" : "Build my free-travel plan"}
+            {loading ? "Building your plan…" : "Build my savings plan"}
             {!loading && <ArrowRight size={17} />}
           </button>
           {error && <p className="travelPlanError">{error}</p>}
@@ -330,7 +330,7 @@ export default function TravelPlanner() {
                 <div className="travelPlanHeadline">
                   <div className="travelPlanFreePct">
                     <strong>{plan.freeTravelPct}%</strong>
-                    <span>of your trip funded by returns + rewards</span>
+                    <span>of trip cost you could offset</span>
                   </div>
                   <span className={plan.source === "ai" ? "travelPlanSource ai" : "travelPlanSource"}>
                     <Sparkles size={12} /> {plan.source === "ai" ? "AI recommended" : "Smart calculator"}

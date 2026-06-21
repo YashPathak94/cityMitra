@@ -204,8 +204,8 @@ export function buildCalculatorPlan(input: TravelPlanInput): TravelPlan {
     summary:
       `Invest about ₹${inr(monthly).toLocaleString("en-IN")}/month for ${months} month${months > 1 ? "s" : ""} at an illustrative ` +
       `${annual}% p.a. By your travel date your money could grow to ~₹${projectedValue.toLocaleString("en-IN")}, with ` +
-      `~₹${investmentGains.toLocaleString("en-IN")} of that being growth. Add ~₹${cardSavings.toLocaleString("en-IN")} from smart card offers ` +
-      `and roughly ${freeTravelPct}% of your ${routeLabel} trip${partyLabel} is funded by returns and rewards — not your pocket.`,
+      `~₹${investmentGains.toLocaleString("en-IN")} of that being potential growth (illustrative, not guaranteed). Add ~₹${cardSavings.toLocaleString("en-IN")} in estimated card rewards ` +
+      `and you could offset roughly ${freeTravelPct}% of your ${routeLabel} trip${partyLabel} cost through planned saving, estimated rewards and verified discounts.`,
     strategy: [
       `Open an automated monthly SIP of ₹${inr(monthly).toLocaleString("en-IN")} the day after payday so it never gets skipped.`,
       `Split it ${equityPct}% growth / ${100 - equityPct}% stable to match a ${input.riskLevel}-risk, ${months}-month horizon.`,
