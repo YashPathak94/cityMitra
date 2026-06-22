@@ -59,7 +59,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       key: "ai",
       title: "Ask the AI Guide",
       description: `Plan your ${city} trip in seconds`,
-      image: "/concierge-city-chat.svg",
+      image: "/concierge-city-chat.jpg",
       fallbackImage: imageForTheme("ai"),
       icon: <Sparkles size={20} />,
       actionLabel: "Open City chat",
