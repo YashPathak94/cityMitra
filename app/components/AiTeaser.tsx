@@ -56,10 +56,9 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
 
   const conciergePanels: ConciergePanel[] = [
     {
-      key: "ai",
-      title: "Ask the AI Guide",
+      key: "ai", 
       description: `Plan your ${city} trip in seconds`,
-      image: "/concierge-city-chat.jpg",
+      image: "/test.webp",
       fallbackImage: imageForTheme("ai"),
       icon: <Sparkles size={20} />,
       actionLabel: "Open City chat",
