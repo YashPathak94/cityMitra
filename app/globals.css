@@ -8199,7 +8199,7 @@ body {
 .travelPlan {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 8px 0 40px;
+  padding: 40px 0 40px;
 }
 
 .travelPlanHero {
@@ -9561,4 +9561,44 @@ ol.travelPlanStrategy li::before {
 #nearby,
 #coverage {
   scroll-margin-top: 84px;
+}
+
+/* ---------------------------------------------------------------------------
+   Destination finder — densified grid + tighter city/category hierarchy
+--------------------------------------------------------------------------- */
+/* denser category grid: more tiles per row, smaller tiles */
+.controlBand .categoryGrid {
+  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+  gap: 10px;
+}
+
+.categoryGridWrap {
+  --cat-row-h: 92px;
+  --cat-gap: 10px;
+}
+
+.controlBand .category .categoryIcon {
+  width: 38px;
+  height: 38px;
+}
+
+.controlBand .category .categoryIcon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.controlBand .category span:not(.categoryIcon) {
+  font-size: 0.76rem;
+}
+
+/* more compact city pills so the row reads denser */
+.controlBand .filterGroup button {
+  min-height: 38px;
+  padding: 0 13px;
+  font-size: 0.8rem;
+}
+
+/* tighten the gap between the city block and the category block */
+.filters {
+  gap: 14px;
 }

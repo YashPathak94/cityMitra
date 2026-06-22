@@ -24,7 +24,6 @@ import {
 import { FormEvent, useMemo, useState } from "react";
 import { indiaCities } from "@/lib/india-cities";
 import { buildCalculatorPlan, type RiskLevel, type TransportMode, type TravelPlan } from "@/lib/travel-plan";
-import { ContainerScroll } from "@/app/components/ContainerScroll";
 
 const inr = (value: number) => `₹${Math.max(0, Math.round(value)).toLocaleString("en-IN")}`;
 const budgetPresets = [25000, 50000, 100000, 200000, 500000];
@@ -167,48 +166,19 @@ export default function TravelPlanner() {
 
   return (
     <div className="travelPlan">
-      <ContainerScroll
-        titleComponent={
-          <div className="travelPlanHero">
-            <span className="travelPlanBadge">
-              <Sparkles size={15} /> Industry-first · AI travel-funding engine
-            </span>
-            <h1>
-              Travel smarter. Let planned saving <span>ease the cost.</span>
-            </h1>
-            <p>
-              Pick your destination, date, transport and cards. CityMitra&apos;s AI compares fares, hotels and card
-              offers, then builds a SIP + savings plan to help you offset more of your trip cost — through planned saving, estimated rewards and verified discounts.
-            </p>
-          </div>
-        }
-      >
-        <div className="planMock">
-          <div className="planMockTop">
-            <span>Goa · 6 months</span>
-            <span className="planMockPill"><Sparkles size={12} /> AI plan</span>
-          </div>
-          <div className="planMockHeadline">
-            <strong>68%</strong>
-            <span>of trip cost you could offset</span>
-          </div>
-          <div className="planMockBar">
-            <span style={{ width: "46%", background: "linear-gradient(90deg,#ea580c,#f97316)" }} />
-            <span style={{ width: "22%", background: "#2563eb" }} />
-            <span style={{ width: "32%", background: "#cbd5e1" }} />
-          </div>
-          <div className="planMockModes">
-            {allModes.map((mode) => {
-              const Icon = transportMeta[mode].icon;
-              return (
-                <span key={mode}>
-                  <Icon size={16} />
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      </ContainerScroll>
+      <header className="travelPlanHero">
+        <span className="travelPlanBadge">
+          <Sparkles size={15} /> Industry-first · AI travel-funding engine
+        </span>
+        <h1>
+          Travel smarter. Let planned saving <span>ease the cost.</span>
+        </h1>
+        <p>
+          Pick your destination, date, transport and cards. CityMitra&apos;s AI compares fares, hotels and card offers,
+          then builds a savings plan to help offset your trip cost — through planned saving, estimated rewards and
+          verified discounts.
+        </p>
+      </header>
 
       <div className="travelPlanGrid" id="planResult">
         <form className="travelPlanForm" onSubmit={submit}>
