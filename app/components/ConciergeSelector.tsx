@@ -8,6 +8,7 @@ export type ConciergePanel = {
   title: string;
   description: string;
   image: string;
+  fallbackImage?: string;
   icon: ReactNode;
   actionLabel: string;
   onAction: () => void;
@@ -35,7 +36,7 @@ export default function ConciergeSelector({ panels }: { panels: ConciergePanel[]
             key={panel.key}
             className={active ? "conciergePanel active" : "conciergePanel"}
             style={{
-              backgroundImage: `linear-gradient(to top, rgba(15,23,42,0.9), rgba(15,23,42,0.1)), url('${panel.image}')`,
+              backgroundImage: `linear-gradient(to top, rgba(15,23,42,0.9), rgba(15,23,42,0.1)), url('${panel.image}')${panel.fallbackImage ? `, url('${panel.fallbackImage}')` : ""}`,
               flexGrow: active ? 7 : 1,
               opacity: revealed.includes(index) ? 1 : 0,
               transform: revealed.includes(index) ? "translate(0)" : "translateX(-40px)"
