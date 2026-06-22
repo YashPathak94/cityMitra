@@ -1,7 +1,8 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-react";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode } from "react";
+import { imageForTheme } from "@/lib/category-images";
 
 export type ConciergePanel = {
   key: string;
@@ -14,58 +15,38 @@ export type ConciergePanel = {
   onAction: () => void;
 };
 
+// Banner grid: each card holds a fixed 3:1 banner so uploaded artwork sits
+// perfectly (no awkward cropping). The first card spans full width as a hero.
 export default function ConciergeSelector({ panels }: { panels: ConciergePanel[] }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [revealed, setRevealed] = useState<number[]>([]);
-
-  useEffect(() => {
-    const timers = panels.map((_, index) =>
-      setTimeout(() => setRevealed((prev) => (prev.includes(index) ? prev : [...prev, index])), 140 * index)
-    );
-    return () => timers.forEach((timer) => clearTimeout(timer));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panels.length]);
-
   return (
-    <div className="conciergeSelector" role="list">
-      {panels.map((panel, index) => {
-        const active = index === activeIndex;
-        return (
-          <div
-            role="listitem"
-            key={panel.key}
-            className={active ? "conciergePanel active" : "conciergePanel"}
-            style={{
-              backgroundImage: `linear-gradient(to top, rgba(15,23,42,0.9), rgba(15,23,42,0.1)), url('${panel.image}')${panel.fallbackImage ? `, url('${panel.fallbackImage}')` : ""}`,
-              flexGrow: active ? 7 : 1,
-              opacity: revealed.includes(index) ? 1 : 0,
-              transform: revealed.includes(index) ? "translate(0)" : "translateX(-40px)"
+    <div className="conciergeGrid" role="list">
+      {panels.map((panel, index) => (
+        <button
+          type="button"
+          role="listitem"
+          key={panel.key}
+          className={index === 0 ? "conciergeCard hero" : "conciergeCard"}
+          onClick={panel.onAction}
+          aria-label={`${panel.title} — ${panel.actionLabel}`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="conciergeCardImg"
+            src={panel.image}
+            alt={panel.title}
+            loading={index === 0 ? "eager" : "lazy"}
+            onError={(event) => {
+              const fallback = panel.fallbackImage || imageForTheme("city");
+              if (event.currentTarget.src !== fallback) event.currentTarget.src = fallback;
             }}
-            onClick={() => setActiveIndex(index)}
-            aria-current={active}
-          >
-            <div className="conciergePanelLabel">
-              <span className="conciergePanelIcon">{panel.icon}</span>
-              <div className="conciergePanelInfo">
-                <div className="conciergePanelTitle">{panel.title}</div>
-                <div className="conciergePanelDesc">{panel.description}</div>
-                {active && (
-                  <button
-                    type="button"
-                    className="conciergePanelAction"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      panel.onAction();
-                    }}
-                  >
-                    {panel.actionLabel} <ArrowUpRight size={15} />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      })}
+          />
+          <span className="conciergeCardChip">
+            {panel.icon}
+            {panel.actionLabel}
+            <ArrowUpRight size={15} />
+          </span>
+        </button>
+      ))}
     </div>
   );
 }
