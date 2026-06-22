@@ -133,7 +133,7 @@ export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderP
         <div className="glassNavActions">
           <button className="navSearchTrigger" type="button" onClick={() => setPaletteOpen(true)} aria-label="Search any city or category">
             <Search size={15} />
-            <span>Search city or category…</span>
+            <span>Search</span>
             <kbd>⌘K</kbd>
           </button>
           <a className="navCta navCtaIcon" href="/chat" aria-label="Ask the AI guide" title="Ask AI">
