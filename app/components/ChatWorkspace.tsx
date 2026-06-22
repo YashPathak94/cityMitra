@@ -384,7 +384,10 @@ export default function ChatWorkspace() {
           </Link>
         </header>
 
-        <div className="chatThread">
+        <div className="chatThread" role="log" aria-label="Conversation" aria-busy={loading}>
+          <p className="srOnly" role="status" aria-live="polite">
+            {loading ? "CityMitra is responding…" : ""}
+          </p>
           {showEmpty ? (
             <div className="chatWelcome">
               <span className="chatWelcomeMark"><Sparkles size={22} /></span>
@@ -415,7 +418,7 @@ export default function ChatWorkspace() {
           {loading && (
             <div className="chatRow assistant">
               <div className="chatAvatar"><Sparkles size={15} /></div>
-              <div className="typingRow"><i /><i /><i /></div>
+              <div className="typingRow" aria-hidden="true"><i /><i /><i /></div>
             </div>
           )}
           <div ref={endRef} />
@@ -428,6 +431,7 @@ export default function ChatWorkspace() {
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={onKeyDown}
               placeholder="Ask anything about a city… (Enter to send, Shift+Enter for a new line)"
+              aria-label="Message CityMitra"
               rows={1}
             />
             <button type="button" className="chatSend" onClick={() => send(input)} disabled={loading || !input.trim()} aria-label="Send">
