@@ -9416,3 +9416,93 @@ ol.travelPlanStrategy li::before {
     -webkit-backdrop-filter: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Travel Plan — calculator (live, math) vs AI research separation
+--------------------------------------------------------------------------- */
+.calcCard {
+  position: static;
+}
+
+.travelPlanSource.calc {
+  border-color: var(--line);
+  background: var(--soft);
+  color: var(--ink);
+}
+
+.travelPlanSource.warn {
+  border-color: transparent;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.calcMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 12px 0 4px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.calcMeta b {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.calcGuardrail {
+  margin-top: 12px;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.researchPrompt {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  background: var(--white);
+  padding: 22px;
+  text-align: center;
+  align-items: center;
+}
+
+.researchPromptIcon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--orange), #f97316);
+  color: #fff;
+}
+
+.researchPrompt h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.researchPrompt p {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 420px;
+}
+
+.researchHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.researchHeading {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}

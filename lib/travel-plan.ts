@@ -52,6 +52,8 @@ export type TravelPlan = {
   projectedValue: number;
   investmentGains: number;
   cardSavings: number;
+  cardFeeEstimate: number;
+  netCardRewards: number;
   outOfPocket: number;
   freeTravelPct: number;
   allocation: { equityPct: number; debtPct: number };
@@ -182,8 +184,10 @@ export function buildCalculatorPlan(input: TravelPlanInput): TravelPlan {
   const contributions = inr(monthly * months);
   const investmentGains = inr(projectedValue - contributions);
   const cardSavings = inr(budget * 0.04);
-  const outOfPocket = inr(budget - investmentGains - cardSavings);
-  const freeTravelPct = budget > 0 ? Math.min(100, Math.round(((investmentGains + cardSavings) / budget) * 100)) : 0;
+  const cardFeeEstimate = input.cards && input.cards.length ? 2000 : 0;
+  const netCardRewards = Math.max(0, cardSavings - cardFeeEstimate);
+  const outOfPocket = inr(budget - investmentGains - netCardRewards);
+  const freeTravelPct = budget > 0 ? Math.min(100, Math.round(((investmentGains + netCardRewards) / budget) * 100)) : 0;
 
   const equityPct = EQUITY_BY_RISK[input.riskLevel];
   const routeLabel = input.origin ? `${input.origin} → ${input.destination}` : input.destination;
@@ -198,13 +202,15 @@ export function buildCalculatorPlan(input: TravelPlanInput): TravelPlan {
     projectedValue,
     investmentGains,
     cardSavings,
+    cardFeeEstimate,
+    netCardRewards,
     outOfPocket,
     freeTravelPct,
     allocation: { equityPct, debtPct: 100 - equityPct },
     summary:
       `Invest about ₹${inr(monthly).toLocaleString("en-IN")}/month for ${months} month${months > 1 ? "s" : ""} at an illustrative ` +
       `${annual}% p.a. By your travel date your money could grow to ~₹${projectedValue.toLocaleString("en-IN")}, with ` +
-      `~₹${investmentGains.toLocaleString("en-IN")} of that being potential growth (illustrative, not guaranteed). Add ~₹${cardSavings.toLocaleString("en-IN")} in estimated card rewards ` +
+      `~₹${investmentGains.toLocaleString("en-IN")} of that being potential growth (illustrative, not guaranteed). Add ~₹${netCardRewards.toLocaleString("en-IN")} in estimated card rewards after annual fees ` +
       `and you could offset roughly ${freeTravelPct}% of your ${routeLabel} trip${partyLabel} cost through planned saving, estimated rewards and verified discounts.`,
     strategy: [
       `Open an automated monthly SIP of ₹${inr(monthly).toLocaleString("en-IN")} the day after payday so it never gets skipped.`,

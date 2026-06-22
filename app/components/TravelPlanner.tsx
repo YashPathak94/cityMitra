@@ -1,10 +1,10 @@
 "use client";
 
-import { motion } from "motion/react";
 import {
   ArrowRight,
   Bike,
   Bus,
+  Calculator,
   Car,
   Check,
   Clock,
@@ -21,9 +21,9 @@ import {
   Wallet,
   X
 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { indiaCities } from "@/lib/india-cities";
-import type { RiskLevel, TransportMode, TravelPlan } from "@/lib/travel-plan";
+import { buildCalculatorPlan, type RiskLevel, type TransportMode, type TravelPlan } from "@/lib/travel-plan";
 import { ContainerScroll } from "@/app/components/ContainerScroll";
 
 const inr = (value: number) => `₹${Math.max(0, Math.round(value)).toLocaleString("en-IN")}`;
@@ -143,7 +143,26 @@ export default function TravelPlanner() {
     }
   }
 
-  const fundTotal = plan ? plan.investmentGains + plan.cardSavings + plan.outOfPocket || 1 : 1;
+  // Deterministic calculator, recomputed live from the form (no AI, no network).
+  const liveCalc = useMemo(
+    () =>
+      buildCalculatorPlan({
+        origin,
+        destination,
+        travelers,
+        nights,
+        travelDateISO,
+        targetBudget,
+        monthlyCapacity: monthlyCapacity ? Number(monthlyCapacity) : undefined,
+        riskLevel,
+        modes,
+        cards
+      }),
+    [origin, destination, travelers, nights, travelDateISO, targetBudget, monthlyCapacity, riskLevel, modes, cards]
+  );
+
+  const calc = plan ?? liveCalc;
+  const fundTotal = calc.investmentGains + calc.netCardRewards + calc.outOfPocket || 1;
   const transportMax = plan && plan.transport.length ? Math.max(...plan.transport.map((t) => t.priceFrom || 1), 1) : 1;
 
   return (
@@ -313,53 +332,70 @@ export default function TravelPlanner() {
         </form>
 
         <div className="travelPlanResult">
+          {/* ===== Deterministic calculator — live, math only, no AI ===== */}
+          <section className="planStackCard calcCard">
+            <div className="travelPlanHeadline">
+              <div className="travelPlanFreePct">
+                <strong>{calc.freeTravelPct}%</strong>
+                <span>of trip cost you could offset</span>
+              </div>
+              <span className="travelPlanSource calc">
+                <Calculator size={12} /> Deterministic math
+              </span>
+            </div>
+
+            <div className="fundingBar" aria-label="Funding breakdown">
+              <span className="fundReturns" style={{ width: `${(calc.investmentGains / fundTotal) * 100}%` }} />
+              <span className="fundCards" style={{ width: `${(calc.netCardRewards / fundTotal) * 100}%` }} />
+              <span className="fundSelf" style={{ width: `${(calc.outOfPocket / fundTotal) * 100}%` }} />
+            </div>
+            <div className="fundingLegend">
+              <span><i className="dotReturns" /> Returns {inr(calc.investmentGains)}</span>
+              <span><i className="dotCards" /> Rewards after fees {inr(calc.netCardRewards)}</span>
+              <span><i className="dotSelf" /> Your top-up {inr(calc.outOfPocket)}</span>
+            </div>
+
+            <div className="travelPlanStats">
+              <div><Wallet size={16} /><b>{inr(calc.recommendedMonthly)}</b><span>save / month</span></div>
+              <div><PiggyBank size={16} /><b>{inr(calc.projectedValue)}</b><span>projected corpus</span></div>
+              <div><TrendingUp size={16} /><b>{inr(calc.investmentGains + calc.netCardRewards)}</b><span>growth + net rewards</span></div>
+              <div><Plane size={16} /><b>{inr(calc.outOfPocket)}</b><span>out of pocket</span></div>
+            </div>
+
+            <div className="calcMeta">
+              <span><b>{calc.monthsToGo} mo</b> horizon</span>
+              <span><b>{calc.assumedAnnualReturnPct}% p.a.</b> assumed ({riskLevel} risk)</span>
+              <span><b>{inr(calc.cardFeeEstimate)}/yr</b> est. card fee</span>
+              <span><b>{calc.allocation.equityPct}/{calc.allocation.debtPct}</b> growth/stable</span>
+            </div>
+
+            <p className="calcGuardrail">
+              Math estimate only — returns are illustrative ({calc.assumedAnnualReturnPct}% assumed, markets can fall) and travel
+              prices vary. Treat as a guardrail, not a quote. Not investment advice.
+            </p>
+          </section>
+
+          {/* ===== AI research candidates — only after submit ===== */}
           {!plan && !loading && (
-            <div className="travelPlanEmpty">
-              <Plane size={30} />
-              <h3>Your plan appears here</h3>
-              <p>Fill the details and we&apos;ll compare transport, hotels &amp; offers and show how to fund your {destination} trip.</p>
+            <div className="researchPrompt">
+              <span className="researchPromptIcon"><Sparkles size={22} /></span>
+              <h3>AI research candidates</h3>
+              <p>Submit to generate named card, mutual-fund and stock candidates, transport + hotel price targets and a month-by-month plan. These are starting points you must verify before acting.</p>
             </div>
           )}
 
-          {loading && <div className="travelPlanEmpty"><span className="travelPlanSpinner" />Comparing fares, hotels, offers &amp; building your plan…</div>}
+          {loading && <div className="travelPlanEmpty"><span className="travelPlanSpinner" />Researching cards, funds, transport &amp; hotels…</div>}
 
           {plan && !loading && (
             <div className="planStack">
-              {/* 1 · funding headline */}
-              <motion.section className="planStackCard" style={{ top: 84 }} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                <div className="travelPlanHeadline">
-                  <div className="travelPlanFreePct">
-                    <strong>{plan.freeTravelPct}%</strong>
-                    <span>of trip cost you could offset</span>
-                  </div>
-                  <span className={plan.source === "ai" ? "travelPlanSource ai" : "travelPlanSource"}>
-                    <Sparkles size={12} /> {plan.source === "ai" ? "AI recommended" : "Smart calculator"}
-                  </span>
-                </div>
+              <div className="researchHeader">
+                <h2 className="researchHeading">AI research candidates</h2>
+                <span className={plan.source === "ai" ? "travelPlanSource ai" : "travelPlanSource warn"}>
+                  <Sparkles size={12} /> {plan.source === "ai" ? "AI-generated · verify before acting" : "Sample data · AI unavailable, verify before acting"}
+                </span>
+              </div>
 
-                <div className="fundingBar" aria-label="How your trip is funded">
-                  <span className="fundReturns" style={{ width: `${(plan.investmentGains / fundTotal) * 100}%` }} />
-                  <span className="fundCards" style={{ width: `${(plan.cardSavings / fundTotal) * 100}%` }} />
-                  <span className="fundSelf" style={{ width: `${(plan.outOfPocket / fundTotal) * 100}%` }} />
-                </div>
-                <div className="fundingLegend">
-                  <span><i className="dotReturns" /> Returns {inr(plan.investmentGains)}</span>
-                  <span><i className="dotCards" /> Card rewards {inr(plan.cardSavings)}</span>
-                  <span><i className="dotSelf" /> Your top-up {inr(plan.outOfPocket)}</span>
-                </div>
-
-                <div className="travelPlanStats">
-                  <div><Wallet size={16} /><b>{inr(plan.recommendedMonthly)}</b><span>per month · {plan.monthsToGo} mo</span></div>
-                  <div><PiggyBank size={16} /><b>{inr(plan.projectedValue)}</b><span>projected corpus</span></div>
-                  <div><TrendingUp size={16} /><b>{inr(plan.investmentGains + plan.cardSavings)}</b><span>growth + rewards</span></div>
-                  <div><Plane size={16} /><b>{inr(plan.outOfPocket)}</b><span>out of pocket</span></div>
-                </div>
-                <p className="travelPlanSummary">{plan.summary}</p>
-                <div className="travelPlanAllocation">
-                  <span className="allocBar"><span className="allocEquity" style={{ width: `${plan.allocation.equityPct}%` }} /></span>
-                  <small>{plan.allocation.equityPct}% growth · {plan.allocation.debtPct}% stable</small>
-                </div>
-              </motion.section>
+              <p className="travelPlanSummary">{plan.summary}</p>
 
               {/* 2 · transport comparison */}
               {plan.transport.length > 0 && (
