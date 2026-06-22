@@ -299,7 +299,7 @@ export default function AdminPage() {
               <div key={item.label}>
                 <span>{item.label}</span>
                 <b>{item.count}</b>
-                <i style={{ width: `${Math.max(8, (item.count / maxEventCount) * 100)}%` }} />
+                <i aria-hidden="true" style={{ width: `${Math.max(8, (item.count / maxEventCount) * 100)}%` }} />
               </div>
             ))}
           </div>
@@ -312,7 +312,7 @@ export default function AdminPage() {
               <div key={item.label}>
                 <span>{item.label}</span>
                 <b>{item.count}</b>
-                <i style={{ width: `${Math.max(8, (item.count / maxEventCount) * 100)}%` }} />
+                <i aria-hidden="true" style={{ width: `${Math.max(8, (item.count / maxEventCount) * 100)}%` }} />
               </div>
             ))}
           </div>
@@ -325,7 +325,7 @@ export default function AdminPage() {
               <div key={item.label}>
                 <span>{item.label.replace(/_/g, " ")}</span>
                 <b>{item.count}</b>
-                <i style={{ width: `${Math.max(8, (item.count / maxEventCount) * 100)}%` }} />
+                <i aria-hidden="true" style={{ width: `${Math.max(8, (item.count / maxEventCount) * 100)}%` }} />
               </div>
             ))}
           </div>
@@ -375,7 +375,7 @@ export default function AdminPage() {
               <div key={item.label}>
                 <span>{item.label}</span>
                 <b>{item.count}</b>
-                <i style={{ width: `${Math.max(8, (item.count / maxLeadCount) * 100)}%` }} />
+                <i aria-hidden="true" style={{ width: `${Math.max(8, (item.count / maxLeadCount) * 100)}%` }} />
               </div>
             ))}
           </div>
@@ -388,7 +388,7 @@ export default function AdminPage() {
               <div key={item.label}>
                 <span>{item.label}</span>
                 <b>{item.count}</b>
-                <i style={{ width: `${Math.max(8, (item.count / maxLeadCount) * 100)}%` }} />
+                <i aria-hidden="true" style={{ width: `${Math.max(8, (item.count / maxLeadCount) * 100)}%` }} />
               </div>
             ))}
           </div>
@@ -401,7 +401,7 @@ export default function AdminPage() {
               <div key={item.label}>
                 <span>{item.label}</span>
                 <b>{item.count}</b>
-                <i style={{ width: `${Math.max(8, (item.count / maxLeadCount) * 100)}%` }} />
+                <i aria-hidden="true" style={{ width: `${Math.max(8, (item.count / maxLeadCount) * 100)}%` }} />
               </div>
             ))}
           </div>
