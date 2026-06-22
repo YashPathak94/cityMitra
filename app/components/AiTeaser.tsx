@@ -57,7 +57,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
   const conciergePanels: ConciergePanel[] = [
     {
       key: "ai", 
-      title:
+      title: "Ask City Guide",
       description: `Plan your ${city} trip in seconds`,
       image: "/test.webp",
       fallbackImage: imageForTheme("ai"),
