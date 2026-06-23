@@ -7786,118 +7786,159 @@ body {
   }
 }
 
-/* ------------------- Offers ribbon (flies in the header→concierge gap) ------------------- */
+/* ------------------- Offers ribbon (premium 3D flip banner, header→concierge gap) ------------------- */
 .offerRibbon {
   position: relative;
-  container-type: inline-size;
-  width: min(1320px, calc(100% - 32px));
-  height: 38px;
-  margin: 0 auto 6px;
-  overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background:
-    radial-gradient(120% 140% at 12% -20%, rgba(37, 99, 235, 0.1), transparent 55%),
-    linear-gradient(120deg, #eff6ff, #fff7ed 70%);
-}
-
-/* subtle dashed flight path down the middle */
-.offerRibbon::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 0;
-  border-top: 2px dashed rgba(37, 99, 235, 0.16);
-  transform: translateY(-50%);
-}
-
-.offerFlyer {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  z-index: 1;
   display: flex;
   align-items: center;
+  gap: 12px;
+  width: min(1320px, calc(100% - 32px));
+  height: 40px;
+  margin: 0 auto 6px;
+  padding: 0 16px;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  perspective: 700px;
+  background:
+    radial-gradient(140% 200% at 88% -40%, rgba(234, 88, 12, 0.55), transparent 55%),
+    linear-gradient(120deg, #0f1729, #1e293b 70%);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.2);
+  transition: box-shadow 0.3s var(--smooth), transform 0.3s var(--smooth);
+}
+
+.offerRibbon:hover {
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.3);
+}
+
+/* Hovering freezes the banner so users can read/act (timer also pauses) */
+.offerRibbon:hover .offerCard,
+.offerRibbon:hover .offerTag {
+  animation-play-state: paused;
+}
+
+.offerStage {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transform-style: preserve-3d;
+}
+
+.offerCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  transform-origin: center top;
+  backface-visibility: hidden;
+  animation: offerFlipIn 0.6s var(--smooth);
+}
+
+/* 3D flap-in, like a departure board */
+@keyframes offerFlipIn {
+  0% {
+    opacity: 0;
+    transform: rotateX(-90deg) translateY(-5px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: rotateX(0deg) translateY(0);
+  }
+}
+
+.offerBadge {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+}
+
+.offerText {
+  min-width: 0;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #fff;
   white-space: nowrap;
-  transform: translate(calc(-100% - 28px), -50%);
-  animation: offerFly 17s linear infinite;
-  will-change: transform;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.32);
 }
 
-@keyframes offerFly {
-  from {
-    transform: translate(calc(-100% - 28px), -50%);
-  }
-  to {
-    transform: translate(calc(100cqi + 28px), -50%);
-  }
-}
-
-.offerBanner {
+.offerTag {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  height: 26px;
-  padding: 0 14px 0 18px;
-  border-radius: 6px;
-  background: linear-gradient(120deg, #ea580c, #f97316);
+  gap: 5px;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #ef4444;
   color: #fff;
-  font-weight: 800;
-  font-size: 0.8rem;
-  letter-spacing: 0.01em;
-  box-shadow: 0 6px 16px rgba(234, 88, 12, 0.32);
-  /* notched ribbon tail on the trailing (left) edge */
-  clip-path: polygon(11px 0, 100% 0, 100% 100%, 11px 100%, 0 50%);
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+  animation: offerLivePulse 2s ease-out infinite;
 }
 
-.offerBannerIcon {
-  display: inline-flex;
-  opacity: 0.95;
-}
-
-.offerTow {
-  width: 26px;
-  height: 2px;
-  margin: 0 2px;
-  background: repeating-linear-gradient(90deg, rgba(37, 99, 235, 0.55) 0 4px, transparent 4px 8px);
-}
-
-.offerPlane {
-  width: 30px;
-  height: auto;
-  filter: drop-shadow(0 4px 6px rgba(37, 99, 235, 0.28));
-  animation: offerBob 2.6s ease-in-out infinite;
-}
-
-@keyframes offerBob {
-  0%,
+@keyframes offerLivePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(239, 68, 68, 0);
+  }
   100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
   }
 }
 
-.offerFlyerStatic {
-  left: 50%;
-  animation: none;
-  transform: translate(-50%, -50%);
+.offerDots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+}
+
+.offerDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: width 0.3s var(--smooth), background 0.3s var(--smooth);
+}
+
+.offerDot.active {
+  width: 16px;
+  background: #fff;
+}
+
+@media (max-width: 480px) {
+  .offerText {
+    font-size: 0.78rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .offerFlyer {
-    left: 50%;
+  .offerCard {
     animation: none;
-    transform: translate(-50%, -50%);
   }
 
-  .offerPlane {
+  .offerTag {
     animation: none;
   }
 }
+
 
 /* relocated "Nearby" section now sits below the destination finder */
 .nearbyBand {
