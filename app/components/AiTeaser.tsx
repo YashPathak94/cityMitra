@@ -59,7 +59,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       key: "ai", 
       title: "Ask City Guide",
       description: `Plan your ${city} trip in seconds`,
-      image: "/concierge-city-chat.webp",
+      image: "/concierge-city-chat1.webp",
       fallbackImage: imageForTheme("ai"),
       icon: <Sparkles size={20} />,
       actionLabel: "Open City chat",
