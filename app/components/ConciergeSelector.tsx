@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowUpRight } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 import { imageForTheme } from "@/lib/category-images";
 
@@ -14,9 +15,9 @@ export type ConciergePanel = {
   onAction: () => void;
 };
 
-// Image accordion of self-contained banners: the active panel expands to the
-// banner's native 7:2 ratio (so the artwork is never cropped and needs no text
-// overlay), while collapsed tabs show a small glass icon for wayfinding.
+// Premium image accordion: the active panel expands while the rest collapse to
+// slim, labelled rails. The artwork sits in a real <img> layer (kept crisp,
+// lazily decoded, with a graceful fallback) under a legibility scrim.
 export default function ConciergeSelector({ panels }: { panels: ConciergePanel[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [revealed, setRevealed] = useState<number[]>([]);
@@ -52,7 +53,8 @@ export default function ConciergeSelector({ panels }: { panels: ConciergePanel[]
             <img
               className="conciergePanelImg"
               src={panel.image}
-              alt={panel.title}
+              alt=""
+              aria-hidden="true"
               loading={index === 0 ? "eager" : "lazy"}
               decoding="async"
               onError={(event) => {
@@ -60,7 +62,25 @@ export default function ConciergeSelector({ panels }: { panels: ConciergePanel[]
                 if (event.currentTarget.src !== fallback) event.currentTarget.src = fallback;
               }}
             />
-            <span className="conciergePanelIcon" aria-hidden="true">{panel.icon}</span>
+            <span className="conciergePanelScrim" aria-hidden="true" />
+
+            {/* Collapsed state: a slim vertical rail so every tab stays identifiable */}
+            <span className="conciergePanelRail" aria-hidden="true">
+              <span className="conciergePanelIcon">{panel.icon}</span>
+              <span className="conciergePanelRailText">{panel.title}</span>
+            </span>
+
+            {/* Expanded state: full label + action pill */}
+            <span className="conciergePanelLabel">
+              <span className="conciergePanelIcon">{panel.icon}</span>
+              <span className="conciergePanelInfo">
+                <span className="conciergePanelTitle">{panel.title}</span>
+                <span className="conciergePanelDesc">{panel.description}</span>
+                <span className="conciergePanelAction">
+                  {panel.actionLabel} <ArrowUpRight size={15} />
+                </span>
+              </span>
+            </span>
           </button>
         );
       })}
