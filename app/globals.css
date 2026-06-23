@@ -5781,7 +5781,7 @@ body {
 /* --- AI section: cleaner intro --- */
 
 .aiBand {
-  padding: 50px 0 10px;
+  padding: 6px 0 10px;
 }
 
 .aiIntro {
@@ -7783,6 +7783,119 @@ body {
 
   .conciergeCarousel {
     display: block;
+  }
+}
+
+/* ------------------- Offers ribbon (flies in the header→concierge gap) ------------------- */
+.offerRibbon {
+  position: relative;
+  container-type: inline-size;
+  width: min(1320px, calc(100% - 32px));
+  height: 38px;
+  margin: 0 auto 6px;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(120% 140% at 12% -20%, rgba(37, 99, 235, 0.1), transparent 55%),
+    linear-gradient(120deg, #eff6ff, #fff7ed 70%);
+}
+
+/* subtle dashed flight path down the middle */
+.offerRibbon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 0;
+  border-top: 2px dashed rgba(37, 99, 235, 0.16);
+  transform: translateY(-50%);
+}
+
+.offerFlyer {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  transform: translate(calc(-100% - 28px), -50%);
+  animation: offerFly 17s linear infinite;
+  will-change: transform;
+}
+
+@keyframes offerFly {
+  from {
+    transform: translate(calc(-100% - 28px), -50%);
+  }
+  to {
+    transform: translate(calc(100cqi + 28px), -50%);
+  }
+}
+
+.offerBanner {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 26px;
+  padding: 0 14px 0 18px;
+  border-radius: 6px;
+  background: linear-gradient(120deg, #ea580c, #f97316);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+  box-shadow: 0 6px 16px rgba(234, 88, 12, 0.32);
+  /* notched ribbon tail on the trailing (left) edge */
+  clip-path: polygon(11px 0, 100% 0, 100% 100%, 11px 100%, 0 50%);
+}
+
+.offerBannerIcon {
+  display: inline-flex;
+  opacity: 0.95;
+}
+
+.offerTow {
+  width: 26px;
+  height: 2px;
+  margin: 0 2px;
+  background: repeating-linear-gradient(90deg, rgba(37, 99, 235, 0.55) 0 4px, transparent 4px 8px);
+}
+
+.offerPlane {
+  width: 30px;
+  height: auto;
+  filter: drop-shadow(0 4px 6px rgba(37, 99, 235, 0.28));
+  animation: offerBob 2.6s ease-in-out infinite;
+}
+
+@keyframes offerBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.offerFlyerStatic {
+  left: 50%;
+  animation: none;
+  transform: translate(-50%, -50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .offerFlyer {
+    left: 50%;
+    animation: none;
+    transform: translate(-50%, -50%);
+  }
+
+  .offerPlane {
+    animation: none;
   }
 }
 

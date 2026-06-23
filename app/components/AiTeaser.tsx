@@ -10,6 +10,7 @@ import { imageForTheme } from "@/lib/category-images";
 import { trackActivity } from "@/lib/tracking";
 import ConciergePip, { LocalPicks } from "@/app/components/ConciergePip";
 import ConciergeSelector, { ConciergePanel } from "@/app/components/ConciergeSelector";
+import OfferRibbon from "@/app/components/OfferRibbon";
 import { ConciergeGroup } from "@/app/components/ConciergeCard";
 
 type AiTeaserProps = {
@@ -108,6 +109,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
 
   return (
     <section className="aiBand" id="ai">
+      <OfferRibbon city={city} />
       <div className="aiPanel aiPanelStacked">
         <ConciergeSelector panels={conciergePanels} />
       </div>
