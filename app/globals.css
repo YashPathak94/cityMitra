@@ -7786,22 +7786,15 @@ body {
   }
 }
 
-/* ------------------- Offers ribbon (light banner, per-offer 3D scenes) ------------------- */
+/* ------------------- Offers ribbon (transparent motion banner, per-offer scenes) ------------------- */
 .offerRibbon {
   position: relative;
+  container-type: inline-size;
   width: min(1320px, calc(100% - 32px));
-  height: 64px;
+  height: 40px;
   margin: 0 auto 8px;
   overflow: hidden;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: linear-gradient(120deg, #ffffff, #fff7ed 72%);
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
-  transition: box-shadow 0.3s var(--smooth);
-}
-
-.offerRibbon:hover {
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+  background: none;
 }
 
 /* Hovering freezes every animated part so users can read/act */
@@ -7815,24 +7808,33 @@ body {
   animation-play-state: paused;
 }
 
+/* The whole scene + copy slides across the lane */
 .offerRow {
-  display: flex;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
-  height: 100%;
-  padding: 0 18px 0 10px;
-  animation: offerRowIn 0.5s var(--smooth);
+  gap: 12px;
+  white-space: nowrap;
+  transform: translate(calc(-100% - 30px), -50%);
+  animation: offerRun 16s linear infinite;
+  will-change: transform;
 }
 
-@keyframes offerRowIn {
+@keyframes offerRun {
   from {
-    opacity: 0;
-    transform: translateX(14px);
+    transform: translate(calc(-100% - 30px), -50%);
   }
   to {
-    opacity: 1;
-    transform: translateX(0);
+    transform: translate(calc(100cqi + 30px), -50%);
   }
+}
+
+.offerRowStatic {
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: none;
 }
 
 .offerMotifWrap {
@@ -7841,8 +7843,8 @@ body {
 }
 
 .offerMotif {
-  width: 122px;
-  height: 50px;
+  width: 90px;
+  height: 35px;
   display: block;
 }
 
@@ -8007,11 +8009,15 @@ body {
     font-size: 0.82rem;
   }
   .offerMotif {
-    width: 104px;
+    width: 82px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .offerRow {
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
   .offerRow,
   .offerCar,
   .offerP,

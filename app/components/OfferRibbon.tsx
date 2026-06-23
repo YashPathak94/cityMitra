@@ -115,28 +115,38 @@ function FootballScene() {
 export default function OfferRibbon({ city }: { city: string }) {
   const offers = useMemo(() => offersForToday(city, new Date()), [city]);
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [reduce, setReduce] = useState(false);
 
-  // Cycle offers on a timer; hovering pauses it (and freezes the scene via CSS).
   useEffect(() => {
-    if (paused || offers.length < 2) return;
-    const id = setInterval(() => setIndex((value) => (value + 1) % offers.length), 5200);
-    return () => clearInterval(id);
-  }, [paused, offers.length]);
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduce(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
-  const active = index % offers.length;
-  const offer = offers[active];
+  // The slide loop drives the cycle; with reduced motion fall back to a timer.
+  useEffect(() => {
+    if (!reduce || offers.length < 2) return;
+    const id = setInterval(() => setIndex((value) => (value + 1) % offers.length), 5000);
+    return () => clearInterval(id);
+  }, [reduce, offers.length]);
+
+  const offer = offers[index % offers.length];
 
   return (
-    <div
-      className="offerRibbon"
-      role="region"
-      aria-label="Special offers"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      {/* key remounts the row so each offer's scene replays from the start */}
-      <div className="offerRow" key={offer.id} aria-hidden="true">
+    <div className="offerRibbon" role="region" aria-label="Special offers">
+      <div
+        className={reduce ? "offerRow offerRowStatic" : "offerRow"}
+        aria-hidden="true"
+        onAnimationIteration={(event) => {
+          // Only the row's own slide loop advances the offer — ignore the
+          // popping / ball-pass iterations that bubble up from children.
+          if (!reduce && event.target === event.currentTarget) {
+            setIndex((value) => (value + 1) % offers.length);
+          }
+        }}
+      >
         <span className="offerMotifWrap">{offer.motif === "football" ? <FootballScene /> : <CarScene />}</span>
         <span className="offerCopy">
           <span className="offerBadge">{offer.icon}</span>
