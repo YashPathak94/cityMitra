@@ -1,10 +1,22 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Flag, Gift, PartyPopper, Plane, Sparkles, Sun, Tag, Trophy, Umbrella } from "lucide-react";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
+
 type Motif = "car" | "football";
-type Offer = { id: string; icon: ReactNode; text: string; tag?: string; motif: Motif };
+type Offer = { id: string; icon: ReactNode; text: string; tag?: string; motif: Motif; art?: string };
+
+// Drop real assets in /public and map them here to replace the built-in SVG
+// scenes. Supports images (.webp/.png/.gif/.apng/.svg/.avif), video (.mp4/.webm)
+// and Lottie (.json). Leave a slot empty ("") to keep the hand-built SVG scene.
+// A per-offer `art` (set in offersForToday) overrides the motif default below.
+const MOTIF_ART: Record<Motif, string> = {
+  car: "",
+  football: ""
+};
 
 // Date/occasion-aware offers. Kept as honest, generic travel teasers (no fake
 // "guaranteed" discounts) so the ribbon stays truthful while feeling timely.
@@ -112,6 +124,56 @@ function FootballScene() {
   );
 }
 
+// Loads a Lottie JSON from /public and renders it; calls onFail if it can't load.
+function LottieMotif({ src, onFail }: { src: string; onFail: () => void }) {
+  const [data, setData] = useState<unknown>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch(src)
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error("not found"))))
+      .then((json) => alive && setData(json))
+      .catch(() => alive && onFail());
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src]);
+  if (!data) return null;
+  return <Lottie className="offerMotifMedia" animationData={data} loop autoplay />;
+}
+
+// Renders a real asset when one is configured, otherwise the built-in SVG scene.
+function OfferMotif({ motif, art }: { motif: Motif; art?: string }) {
+  const [failed, setFailed] = useState(false);
+  const source = art && art.trim() ? art.trim() : "";
+
+  if (source && !failed) {
+    if (/\.(mp4|webm)$/i.test(source)) {
+      return (
+        <video
+          className="offerMotifMedia"
+          src={source}
+          autoPlay
+          loop
+          muted
+          playsInline
+          aria-hidden="true"
+          onError={() => setFailed(true)}
+        />
+      );
+    }
+    if (/\.(lottie|json)$/i.test(source)) {
+      return <LottieMotif src={source} onFail={() => setFailed(true)} />;
+    }
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img className="offerMotifMedia" src={source} alt="" aria-hidden="true" onError={() => setFailed(true)} />
+    );
+  }
+
+  return motif === "football" ? <FootballScene /> : <CarScene />;
+}
+
 export default function OfferRibbon({ city }: { city: string }) {
   const offers = useMemo(() => offersForToday(city, new Date()), [city]);
   const [index, setIndex] = useState(0);
@@ -147,7 +209,9 @@ export default function OfferRibbon({ city }: { city: string }) {
           }
         }}
       >
-        <span className="offerMotifWrap">{offer.motif === "football" ? <FootballScene /> : <CarScene />}</span>
+        <span className="offerMotifWrap">
+          <OfferMotif motif={offer.motif} art={offer.art || MOTIF_ART[offer.motif]} />
+        </span>
         <span className="offerCopy">
           <span className="offerBadge">{offer.icon}</span>
           <span className="offerText">{offer.text}</span>

@@ -7848,6 +7848,14 @@ body {
   display: block;
 }
 
+/* Real asset (image / video / Lottie) occupies the same slot as the SVG scene */
+.offerMotifMedia {
+  width: 90px;
+  height: 36px;
+  object-fit: contain;
+  display: block;
+}
+
 .offerCopy {
   display: flex;
   align-items: center;
@@ -8008,7 +8016,8 @@ body {
   .offerText {
     font-size: 0.82rem;
   }
-  .offerMotif {
+  .offerMotif,
+  .offerMotifMedia {
     width: 82px;
   }
 }
