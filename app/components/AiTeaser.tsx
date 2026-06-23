@@ -72,7 +72,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       key: "cab",
       title: "Book a Cab",
       description: `Quick rides across ${city}`,
-      image: imageForTheme("cab"),
+      image: "/concierge-book-cab.webp",
       icon: <Car size={20} />,
       actionLabel: "Book a cab",
       onAction: () => openBooking("cabs")
@@ -81,7 +81,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       key: "flight",
       title: "Book Flights",
       description: `Fares to & from ${city}`,
-      image: imageForTheme("flight"),
+      image: "/concierege-book-flights.webp",
       icon: <Plane size={20} />,
       actionLabel: "Find flights",
       onAction: () => openBooking("flights")
@@ -90,7 +90,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       key: "hotel",
       title: "Book Hotels",
       description: `Top stays in ${city}`,
-      image: imageForTheme("hotel"),
+      image: "/concierege-book-hotels.webp",
       icon: <BedDouble size={20} />,
       actionLabel: "Find hotels",
       onAction: () => openBooking("hotels")
@@ -99,7 +99,7 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
       key: "wholesale",
       title: "Explore Wholesale",
       description: `Markets & bulk deals in ${city}`,
-      image: imageForTheme("wholesale"),
+      image: "/concierge-explore-market.webp",
       icon: <ShoppingBag size={20} />,
       actionLabel: "Explore markets",
       onAction: () => document.getElementById("directory")?.scrollIntoView({ behavior: "smooth", block: "start" })

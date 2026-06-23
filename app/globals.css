@@ -7421,8 +7421,8 @@ body {
 
 .conciergeSelector {
   display: flex;
+  align-items: stretch;
   gap: 8px;
-  height: 230px;
   width: 100%;
   border-radius: 20px;
   overflow: hidden;
@@ -7437,12 +7437,10 @@ body {
   border: 0;
   margin: 0;
   font: inherit;
-  text-align: left;
   background: #0f1729;
   border-radius: 16px;
   cursor: pointer;
   overflow: hidden;
-  isolation: isolate;
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.16);
   transition: flex-grow 0.55s var(--smooth), opacity 0.5s var(--smooth), transform 0.5s var(--smooth), box-shadow 0.4s var(--smooth);
 }
@@ -7452,7 +7450,10 @@ body {
   outline-offset: 2px;
 }
 
+/* The active panel adopts the banner's native 7:2 ratio, so the artwork fills
+   it edge-to-edge with no cropping and needs no text overlay. */
 .conciergePanel.active {
+  aspect-ratio: 7 / 2;
   box-shadow: 0 20px 48px rgba(15, 23, 42, 0.36);
 }
 
@@ -7464,170 +7465,64 @@ body {
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: transform 0.6s var(--smooth);
 }
 
-.conciergePanel.active .conciergePanelImg {
-  transform: scale(1.05);
-}
-
-.conciergePanelScrim {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(to top, rgba(9, 13, 25, 0.94) 2%, rgba(9, 13, 25, 0.5) 36%, rgba(9, 13, 25, 0.06) 72%);
-}
-
-/* Collapsed rail — keeps slim tabs legible */
-.conciergePanelRail {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 14px;
-  padding: 14px 0;
-  opacity: 1;
-  transition: opacity 0.3s var(--smooth);
-}
-
-.conciergePanel.active .conciergePanelRail {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.conciergePanelRailText {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  color: rgba(255, 255, 255, 0.94);
-  white-space: nowrap;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
-}
-
-/* Expanded label */
-.conciergePanelLabel {
-  position: absolute;
-  inset: auto 0 0 0;
-  z-index: 2;
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  padding: 16px;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.4s var(--smooth) 0.08s, transform 0.4s var(--smooth) 0.08s;
-}
-
-.conciergePanel.active .conciergePanelLabel {
-  opacity: 1;
-  transform: translateY(0);
-}
-
+/* Collapsed tabs carry a small glass icon for wayfinding (no title text) */
 .conciergePanelIcon {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 1;
   display: grid;
   place-items: center;
   width: 40px;
   height: 40px;
-  flex: 0 0 auto;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(15, 23, 42, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.35s var(--smooth);
 }
 
-.conciergePanelInfo {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  color: #fff;
-}
-
-.conciergePanelTitle {
-  font-size: 1.05rem;
-  font-weight: 800;
-  white-space: nowrap;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
-}
-
-.conciergePanelDesc {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.88);
-  white-space: nowrap;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
-}
-
-.conciergePanelAction {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  align-self: flex-start;
-  margin-top: 11px;
-  border-radius: 999px;
-  background: #fff;
-  color: var(--ink);
-  font-weight: 800;
-  font-size: 0.78rem;
-  padding: 8px 14px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.28);
-  transition: transform 0.2s var(--smooth), background 0.2s var(--smooth);
-}
-
-.conciergePanel.active:hover .conciergePanelAction {
-  transform: translateY(-1px);
-  background: linear-gradient(120deg, #fff, #ffedd5);
+.conciergePanel.active .conciergePanelIcon {
+  opacity: 0;
+  pointer-events: none;
 }
 
 @media (max-width: 760px) {
   .conciergeSelector {
     flex-direction: column;
-    height: auto;
     gap: 10px;
   }
 
   .conciergePanel {
-    min-height: 64px;
+    min-height: 60px;
     transition: opacity 0.4s var(--smooth), box-shadow 0.4s var(--smooth);
   }
 
   .conciergePanel.active {
-    min-height: 192px;
+    min-height: 0;
   }
 
-  .conciergePanelRail {
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 12px;
-    padding: 0 16px;
-  }
-
-  .conciergePanelRailText {
-    writing-mode: horizontal-tb;
-    transform: none;
-    font-size: 0.95rem;
-  }
-
-  .conciergePanelTitle,
-  .conciergePanelDesc {
-    white-space: normal;
+  .conciergePanelIcon {
+    top: 50%;
+    bottom: auto;
+    transform: translate(-50%, -50%);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .conciergePanel,
-  .conciergePanelImg,
-  .conciergePanelLabel,
-  .conciergePanelRail {
+  .conciergePanel {
     transition: opacity 0.2s linear !important;
     transform: none !important;
+  }
+
+  .conciergePanelImg {
+    transition: none !important;
   }
 }
 
