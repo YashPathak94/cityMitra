@@ -34,17 +34,53 @@ function offersForToday(city: string, now: Date): Offer[] {
   return list;
 }
 
+function SoccerBall({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="11" fill="#fff" stroke="#0f172a" strokeWidth="1.2" />
+      <polygon points="12,6.5 16,9.5 14.5,14 9.5,14 8,9.5" fill="#0f172a" />
+      <path
+        d="M12 1.2 V5 M2.5 8.5 L7.5 10 M21.5 8.5 L16.5 10 M5.5 21 L9.2 15.5 M18.5 21 L14.8 15.5"
+        stroke="#0f172a"
+        strokeWidth="1.1"
+        fill="none"
+      />
+    </svg>
+  );
+}
+
+function PlayerDribbler() {
+  return (
+    <svg className="offerPlayer" viewBox="0 0 44 40" aria-hidden="true">
+      <circle cx="24" cy="8" r="4" fill="#fff" />
+      <path d="M24 12 q-3 6 -3 10" stroke="#fff" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+      <path d="M22 16 l-7 1.5 M22 16 l7 -1" stroke="#fff" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      <path d="M21 22 l-3 9" stroke="#fff" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+      <path className="offerKick" d="M21 22 l9 3" stroke="#fff" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function OfferRibbon({ city }: { city: string }) {
   const offers = useMemo(() => offersForToday(city, new Date()), [city]);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [reduce, setReduce] = useState(false);
 
-  // Cycle offers on a timer; hovering the banner pauses it so users can read/act.
   useEffect(() => {
-    if (paused || offers.length < 2) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduce(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // With motion reduced the scene parks centre, so cycle offers on a timer instead.
+  useEffect(() => {
+    if (!reduce || paused || offers.length < 2) return;
     const id = setInterval(() => setIndex((value) => (value + 1) % offers.length), 4200);
     return () => clearInterval(id);
-  }, [paused, offers.length]);
+  }, [reduce, paused, offers.length]);
 
   const active = index % offers.length;
   const offer = offers[active];
@@ -57,19 +93,34 @@ export default function OfferRibbon({ city }: { city: string }) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="offerStage">
-        {/* key remounts the card so the 3D flip-in replays on every change */}
-        <div className="offerCard" key={offer.id} aria-hidden="true">
+      {/* ambient footballs rolling across the lane */}
+      <span className="offerBallBg offerBallBg1" aria-hidden="true">
+        <SoccerBall />
+      </span>
+      <span className="offerBallBg offerBallBg2" aria-hidden="true">
+        <SoccerBall />
+      </span>
+
+      <div
+        className={reduce ? "offerScene offerSceneStatic" : "offerScene"}
+        aria-hidden="true"
+        onAnimationIteration={(event) => {
+          // Only the scene's own slide loop advances the offer — ignore the
+          // spinning-ball / kicking-leg iterations that bubble up.
+          if (!reduce && event.target === event.currentTarget) {
+            setIndex((value) => (value + 1) % offers.length);
+          }
+        }}
+      >
+        <span className="offerBanner">
           <span className="offerBadge">{offer.icon}</span>
           <span className="offerText">{offer.text}</span>
           {offer.tag && <span className="offerTag">{offer.tag}</span>}
-        </div>
-      </div>
-
-      <div className="offerDots" aria-hidden="true">
-        {offers.map((item, i) => (
-          <span key={item.id} className={i === active ? "offerDot active" : "offerDot"} />
-        ))}
+        </span>
+        <span className="offerDribble">
+          <PlayerDribbler />
+          <SoccerBall className="offerBall" />
+        </span>
       </div>
 
       <span className="srOnly">Special offers: {offers.map((item) => item.text).join(". ")}.</span>

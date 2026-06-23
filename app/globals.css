@@ -7786,76 +7786,76 @@ body {
   }
 }
 
-/* ------------------- Offers ribbon (premium 3D flip banner, header→concierge gap) ------------------- */
+/* ------------------- Offers ribbon (football motion banner, header→concierge gap) ------------------- */
 .offerRibbon {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  container-type: inline-size;
   width: min(1320px, calc(100% - 32px));
   height: 40px;
   margin: 0 auto 6px;
-  padding: 0 16px;
   overflow: hidden;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  perspective: 700px;
   background:
-    radial-gradient(140% 200% at 88% -40%, rgba(234, 88, 12, 0.55), transparent 55%),
+    radial-gradient(140% 200% at 88% -40%, rgba(234, 88, 12, 0.5), transparent 55%),
     linear-gradient(120deg, #0f1729, #1e293b 70%);
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.2);
-  transition: box-shadow 0.3s var(--smooth), transform 0.3s var(--smooth);
+  transition: box-shadow 0.3s var(--smooth);
 }
 
 .offerRibbon:hover {
   box-shadow: 0 16px 34px rgba(15, 23, 42, 0.3);
 }
 
-/* Hovering freezes the banner so users can read/act (timer also pauses) */
-.offerRibbon:hover .offerCard,
+/* Hovering freezes every moving part so users can read/act */
+.offerRibbon:hover .offerScene,
+.offerRibbon:hover .offerBall,
+.offerRibbon:hover .offerKick,
+.offerRibbon:hover .offerBallBg,
+.offerRibbon:hover .offerBallBg svg,
 .offerRibbon:hover .offerTag {
   animation-play-state: paused;
 }
 
-.offerStage {
-  flex: 1 1 auto;
-  min-width: 0;
-  height: 100%;
-  display: flex;
+/* The offer + player + ball slide across the lane as one moving banner */
+.offerScene {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 1;
+  display: inline-flex;
   align-items: center;
-  transform-style: preserve-3d;
+  gap: 14px;
+  white-space: nowrap;
+  transform: translate(calc(-100% - 30px), -50%);
+  animation: offerRun 14s linear infinite;
+  will-change: transform;
 }
 
-.offerCard {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  transform-origin: center top;
-  backface-visibility: hidden;
-  animation: offerFlipIn 0.6s var(--smooth);
+@keyframes offerRun {
+  from {
+    transform: translate(calc(-100% - 30px), -50%);
+  }
+  to {
+    transform: translate(calc(100cqi + 30px), -50%);
+  }
 }
 
-/* 3D flap-in, like a departure board */
-@keyframes offerFlipIn {
-  0% {
-    opacity: 0;
-    transform: rotateX(-90deg) translateY(-5px);
-  }
-  60% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: rotateX(0deg) translateY(0);
-  }
+.offerBanner {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 13px;
+  border-radius: 9px;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .offerBadge {
   display: grid;
   place-items: center;
-  width: 27px;
-  height: 27px;
+  width: 26px;
+  height: 26px;
   flex: 0 0 auto;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.16);
@@ -7864,13 +7864,10 @@ body {
 }
 
 .offerText {
-  min-width: 0;
   font-size: 0.84rem;
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.32);
 }
 
@@ -7878,7 +7875,6 @@ body {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
   font-size: 0.62rem;
   font-weight: 900;
   letter-spacing: 0.09em;
@@ -7903,39 +7899,106 @@ body {
   }
 }
 
-.offerDots {
-  display: flex;
+/* Player dribbling a spinning ball */
+.offerDribble {
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  flex: 0 0 auto;
+  gap: 3px;
 }
 
-.offerDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.3);
-  transition: width 0.3s var(--smooth), background 0.3s var(--smooth);
+.offerPlayer {
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-.offerDot.active {
-  width: 16px;
-  background: #fff;
+.offerKick {
+  transform-box: fill-box;
+  transform-origin: 0 0;
+  animation: offerKickMove 0.66s ease-in-out infinite alternate;
 }
 
-@media (max-width: 480px) {
+@keyframes offerKickMove {
+  from {
+    transform: rotate(-13deg);
+  }
+  to {
+    transform: rotate(15deg);
+  }
+}
+
+.offerBall {
+  width: 17px;
+  height: 17px;
+  animation: offerSpin 0.85s linear infinite;
+}
+
+@keyframes offerSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Faint footballs rolling in the background */
+.offerBallBg {
+  position: absolute;
+  top: 28%;
+  left: 0;
+  opacity: 0.16;
+  transform: translateX(-40px);
+  animation: offerDriftX 10s linear infinite;
+}
+
+.offerBallBg2 {
+  top: 60%;
+  opacity: 0.12;
+  animation-duration: 13s;
+  animation-delay: -5s;
+}
+
+.offerBallBg svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  animation: offerSpin 1.1s linear infinite;
+}
+
+@keyframes offerDriftX {
+  from {
+    transform: translateX(-40px);
+  }
+  to {
+    transform: translateX(calc(100cqi + 40px));
+  }
+}
+
+.offerSceneStatic {
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: none;
+}
+
+@container (max-width: 480px) {
   .offerText {
     font-size: 0.78rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .offerCard {
+  .offerScene {
+    left: 50%;
+    transform: translate(-50%, -50%);
     animation: none;
   }
 
+  .offerBall,
+  .offerKick,
   .offerTag {
     animation: none;
+  }
+
+  .offerBallBg {
+    display: none;
   }
 }
 
