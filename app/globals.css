@@ -7419,6 +7419,11 @@ body {
   box-shadow: var(--glow);
 }
 
+/* Concierge layout switch: accordion on desktop, carousel on mobile */
+.conciergeCarousel {
+  display: none;
+}
+
 .conciergeSelector {
   display: flex;
   gap: 8px;
@@ -7585,40 +7590,9 @@ body {
   background: linear-gradient(120deg, #fff, #ffedd5);
 }
 
-@media (max-width: 760px) {
-  .conciergeSelector {
-    flex-direction: column;
-    height: auto;
-    gap: 10px;
-  }
-
-  .conciergePanel {
-    min-height: 64px;
-    transition: opacity 0.4s var(--smooth), box-shadow 0.4s var(--smooth);
-  }
-
-  .conciergePanel.active {
-    min-height: 192px;
-  }
-
-  .conciergePanelRail {
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 12px;
-    padding: 0 16px;
-  }
-
-  .conciergePanelRailText {
-    writing-mode: horizontal-tb;
-    transform: none;
-    font-size: 0.95rem;
-  }
-
-  .conciergePanelTitle,
-  .conciergePanelDesc {
-    white-space: normal;
-  }
+/* Collapsed panels never receive incidental clicks on their hidden CTA */
+.conciergePanel:not(.active) .conciergePanelLabel {
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -7628,6 +7602,187 @@ body {
   .conciergePanelRail {
     transition: opacity 0.2s linear !important;
     transform: none !important;
+  }
+}
+
+/* ----------------------------- Mobile carousel ----------------------------- */
+.cCarousel {
+  width: 100%;
+}
+
+.cCarouselViewport {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+.cCarouselTrack {
+  display: flex;
+  transition: transform 0.45s var(--smooth);
+}
+
+.cSlide {
+  flex: 0 0 100%;
+  min-width: 100%;
+}
+
+.cSlideBanner {
+  position: relative;
+  aspect-ratio: 7 / 2;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0f1729;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18);
+}
+
+.cSlideBanner img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.cSlideCaption {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 4px 2px;
+}
+
+.cSlideIcon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: rgba(234, 88, 12, 0.12);
+  color: var(--orange);
+}
+
+.cSlideText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.cSlideTitle {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.cSlideDesc {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cSlideCta {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--orange);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.78rem;
+  padding: 10px 15px;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(234, 88, 12, 0.3);
+  transition: transform 0.2s var(--smooth);
+}
+
+.cSlideCta:active {
+  transform: scale(0.97);
+}
+
+.cArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.22);
+  cursor: pointer;
+}
+
+.cArrowPrev {
+  left: 8px;
+}
+
+.cArrowNext {
+  right: 8px;
+}
+
+.cControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding-top: 12px;
+}
+
+.cDots {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.cDot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.22);
+  cursor: pointer;
+  transition: width 0.3s var(--smooth), background 0.3s var(--smooth);
+}
+
+.cDot.active {
+  width: 22px;
+  background: var(--orange);
+}
+
+.cPause {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cCarouselTrack {
+    transition: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .conciergeAccordion {
+    display: none;
+  }
+
+  .conciergeCarousel {
+    display: block;
   }
 }
 
