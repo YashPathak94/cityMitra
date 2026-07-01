@@ -114,22 +114,22 @@ export function buildBookingOptions(category: BookingCategory, context: BookingC
     case "hotels":
       return [
         {
-          provider: "booking",
-          label: "Booking.com",
-          url: withAffiliate(`https://www.booking.com/searchresults.html?ss=${enc(destination)}`, "booking"),
-          note: `Stays in ${destination || "your city"}`
-        },
-        {
           provider: "makemytrip",
           label: "MakeMyTrip",
-          url: withAffiliate("https://www.makemytrip.com/hotels/", "makemytrip"),
-          note: "Wallet offers, India-wide"
+          url: "https://bitli.in/81Z7UFA",
+          note: "Maximize your travel savings with MakeMyTrip Hotels!"
+        },
+        {
+          provider: "booking",
+          label: "Booking.com",
+          url: "https://bitli.in/UHJePR8",
+          note: "Upto 15% Off on all Bookings"
         },
         {
           provider: "agoda",
           label: "Agoda",
-          url: withAffiliate("https://www.agoda.com/", "agoda"),
-          note: "Strong deals across Asia"
+          url: "https://bitli.in/P7onPo4",
+          note: "Get Upto 60% Off on Hotels & Activities"
         },
         {
           provider: "scapia",
