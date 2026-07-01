@@ -93,10 +93,16 @@ export function buildBookingOptions(category: BookingCategory, context: BookingC
     case "flights":
       return [
         {
-          provider: "makemytrip",
-          label: "MakeMyTrip",
-          url: withAffiliate("https://www.makemytrip.com/flights/", "makemytrip"),
-          note: "India-first fares and offers"
+          provider: "cleartrip",
+          label: "Cleartrip",
+          url: "https://bitli.in/LOOLR4q",
+          note: "Get Upto 25% Off (Max: Rs 1500) on Domestic Flights Using Code: CTDOM"
+        },
+        {
+          provider: "expedia",
+          label: "Expedia",
+          url: "https://bitli.in/5Tq7btE",
+          note: "Upto 60% Off on Hotel Bookings"
         },
         {
           provider: "skyscanner",
