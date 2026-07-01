@@ -27,6 +27,7 @@ import Hero from "@/app/components/Hero";
 import LocationPrompt from "@/app/components/LocationPrompt";
 import WelcomeIntro from "@/app/components/WelcomeIntro";
 import NearbyPanel from "@/app/components/NearbyPanel";
+import OffersSection from "@/app/components/OffersSection";
 import Reveal from "@/app/components/Reveal";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
@@ -276,6 +277,10 @@ export default function Home() {
       <SiteHeader onSearch={applySearch} city={city} onSelectCity={selectCity} />
 
       <AiTeaser city={city} category={category} />
+
+      <Reveal>
+        <OffersSection />
+      </Reveal>
 
       <Reveal>
         <DirectoryExplorer

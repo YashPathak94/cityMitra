@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowRight, CornerDownLeft, MapPin, Search, Sparkles } from "lucide-react";
+import { ArrowRight, CornerDownLeft, MapPin, Search, Sparkles, Tag } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { categories } from "@/data/city-directory";
@@ -63,6 +63,7 @@ export default function CommandPalette({ open, onClose, onSearch, onSelectCity }
       { label: "Open City Chat", href: "/chat", icon: <Sparkles size={16} />, keys: "chat ai assistant guide" },
       { label: "Build a Travel Plan", href: "/travel-plan", icon: <ArrowRight size={16} />, keys: "travel plan savings calculator funding" },
       { label: "Browse City Guides", href: "/cities", icon: <MapPin size={16} />, keys: "city guide guides" },
+      { label: "View Offers & Deals", href: "/offers", icon: <Tag size={16} />, keys: "offers deals discounts coupons" },
       { label: "Jump to Top Picks", href: "#nearby", icon: <ArrowRight size={16} />, keys: "top picks nearby" },
       { label: "CityMitra Pro", href: "/pro", icon: <Sparkles size={16} />, keys: "pro upgrade premium" }
     ];
