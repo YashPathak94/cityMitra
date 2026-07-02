@@ -124,10 +124,7 @@ export default function SiteFooter({ city, category }: SiteFooterProps) {
         </div>
 
         {footerColumns.map((column) => (
-          <div
-            className={column.title === "Explore" ? "footerLinks footerLinksExplore" : "footerLinks"}
-            key={column.title}
-          >
+          <div className="footerLinks" key={column.title}>
             <h3>{column.title}</h3>
             {column.links.map((link) => (
               <a key={link.label} href={link.href}>
