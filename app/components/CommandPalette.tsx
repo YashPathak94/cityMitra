@@ -62,7 +62,6 @@ export default function CommandPalette({ open, onClose, onSearch, onSelectCity }
     const actions: Array<{ label: string; href: string; icon: ReactNode; keys: string }> = [
       { label: "Open City Chat", href: "/chat", icon: <Sparkles size={16} />, keys: "chat ai assistant guide" },
       { label: "Build a Travel Plan", href: "/travel-plan", icon: <ArrowRight size={16} />, keys: "travel plan savings calculator funding" },
-      { label: "Plan a Route", href: "/route-planner", icon: <MapPin size={16} />, keys: "route planner directions road trip hop points" },
       { label: "Browse City Guides", href: "/cities", icon: <MapPin size={16} />, keys: "city guide guides" },
       { label: "View Offers & Deals", href: "/offers", icon: <Tag size={16} />, keys: "offers deals discounts coupons" },
       { label: "Jump to Top Picks", href: "#nearby", icon: <ArrowRight size={16} />, keys: "top picks nearby" },
