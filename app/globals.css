@@ -3888,6 +3888,11 @@ body {
   .footerGrid {
     grid-template-columns: 1fr;
   }
+
+  /* Explore just repeats the main nav — drop it on phones to save scroll length */
+  .footerLinksExplore {
+    display: none;
+  }
 }
 
 /* --- Scroll areas (custom scrollbars + edge fades) --- */
@@ -10268,6 +10273,11 @@ ol.travelPlanStrategy li::before {
 
   .dealChip {
     height: 52px;
+  }
+
+  /* The rail itself is the browse-more affordance on phones — drop the link */
+  .dealsViewAll {
+    display: none;
   }
 }
 
