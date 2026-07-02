@@ -3516,6 +3516,94 @@ body {
   border: 1px solid var(--line);
 }
 
+/* Playful pop-up character on the "Offers" nav link — peeks up periodically
+   and on hover, nudging users toward the deals rail. Desktop nav only; the
+   mobile menu link stays plain. */
+.navPeek {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 10px);
+  animation: navPeekPop 6s ease-in-out infinite;
+}
+
+@keyframes navPeekPop {
+  0%,
+  10% {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  22%,
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -4px);
+  }
+  75%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+}
+
+.navPeekPerson {
+  width: 30px;
+  height: 26px;
+  display: block;
+  filter: drop-shadow(0 3px 5px rgba(15, 23, 42, 0.25));
+}
+
+.navPeekWave {
+  transform-box: fill-box;
+  transform-origin: bottom left;
+  animation: navPeekWaveMotion 0.7s ease-in-out infinite;
+}
+
+@keyframes navPeekWaveMotion {
+  0%,
+  100% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(18deg);
+  }
+}
+
+.navPeekBubble {
+  white-space: nowrap;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: var(--orange);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
+}
+
+/* Hovering the link holds the character up, reinforcing the click prompt */
+.glassNavLinks a:hover .navPeek {
+  opacity: 1;
+  transform: translate(-50%, -4px);
+  animation-play-state: paused;
+}
+
+.navPeekStatic {
+  opacity: 1;
+  transform: translate(-50%, -4px);
+  animation: none;
+}
+
+.navPeekStatic .navPeekWave {
+  animation: none;
+}
+
 .glassNavActions {
   display: flex;
   align-items: center;
