@@ -127,22 +127,6 @@ export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderP
                 />
               )}
               <span>{link.label}</span>
-              {link.label === "Offers" && (
-                <span className={reduceMotion ? "navPeek navPeekStatic" : "navPeek"} aria-hidden="true">
-                  <svg viewBox="0 0 40 34" className="navPeekPerson">
-                    <path d="M8 34 Q8 20 20 20 Q32 20 32 34 Z" fill="#2563eb" />
-                    <circle cx="20" cy="14" r="8" fill="#f7c9a0" stroke="#b45309" strokeWidth="0.8" />
-                    <circle cx="17" cy="13" r="1" fill="#1f2937" />
-                    <circle cx="23" cy="13" r="1" fill="#1f2937" />
-                    <path d="M16 17 Q20 20 24 17" stroke="#7c2d12" strokeWidth="1.2" fill="none" strokeLinecap="round" />
-                    <g className="navPeekWave">
-                      <path d="M28 23 q9 -3 9 -13" stroke="#f7c9a0" strokeWidth="3.2" fill="none" strokeLinecap="round" />
-                      <circle cx="37" cy="10" r="3.2" fill="#f7c9a0" />
-                    </g>
-                  </svg>
-                  <span className="navPeekBubble">Click here!</span>
-                </span>
-              )}
             </Link>
           ))}
         </nav>
