@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, ChevronLeft, ChevronRight, Tag } from "lucide-react";
+import { ArrowRight, Tag } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { offers } from "@/data/offers";
@@ -51,24 +51,18 @@ export default function OffersSection() {
     }, delay);
   }
 
-  function scrollByCard(direction: 1 | -1) {
+  // No visible arrow buttons — the rail is still keyboard-reachable (Tab into
+  // it, then use the arrow keys) and swipeable/scrollable by touch or mouse.
+  function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     const rail = railRef.current;
     if (!rail) return;
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+    event.preventDefault();
     pause();
     const card = rail.querySelector<HTMLElement>(".dealChip");
-    const step = (card?.offsetWidth || 176) + 10;
-    rail.scrollBy({ left: step * direction, behavior: "smooth" });
+    const step = (card?.offsetWidth || 150) + 8;
+    rail.scrollBy({ left: step * (event.key === "ArrowRight" ? 1 : -1), behavior: "smooth" });
     resume(900);
-  }
-
-  function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "ArrowRight") {
-      event.preventDefault();
-      scrollByCard(1);
-    } else if (event.key === "ArrowLeft") {
-      event.preventDefault();
-      scrollByCard(-1);
-    }
   }
 
   return (
@@ -82,45 +76,25 @@ export default function OffersSection() {
         </Link>
       </div>
 
-      <div className="dealsRailWrap">
-        <button
-          type="button"
-          className="dealsArrow dealsArrowPrev"
-          aria-label="Scroll to previous offers"
-          onClick={() => scrollByCard(-1)}
-        >
-          <ChevronLeft size={18} />
-        </button>
-
-        <div
-          className="dealsRail"
-          ref={railRef}
-          tabIndex={0}
-          role="group"
-          aria-label="Offers — use the left and right arrow keys to scroll"
-          onKeyDown={onKeyDown}
-          onMouseEnter={pause}
-          onMouseLeave={() => resume(0)}
-          onFocus={pause}
-          onBlur={() => resume(0)}
-          onTouchStart={pause}
-          onTouchEnd={() => resume(700)}
-        >
-          {LOOP_OFFERS.map((offer, i) => (
-            <div className="dealsRailItem" key={`${offer.id}-${i}`}>
-              <OfferChip offer={offer} duplicate={i >= offers.length} />
-            </div>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          className="dealsArrow dealsArrowNext"
-          aria-label="Scroll to next offers"
-          onClick={() => scrollByCard(1)}
-        >
-          <ChevronRight size={18} />
-        </button>
+      <div
+        className="dealsRail"
+        ref={railRef}
+        tabIndex={0}
+        role="group"
+        aria-label="Offers — use the left and right arrow keys to scroll"
+        onKeyDown={onKeyDown}
+        onMouseEnter={pause}
+        onMouseLeave={() => resume(0)}
+        onFocus={pause}
+        onBlur={() => resume(0)}
+        onTouchStart={pause}
+        onTouchEnd={() => resume(700)}
+      >
+        {LOOP_OFFERS.map((offer, i) => (
+          <div className="dealsRailItem" key={`${offer.id}-${i}`}>
+            <OfferChip offer={offer} duplicate={i >= offers.length} />
+          </div>
+        ))}
       </div>
     </section>
   );
