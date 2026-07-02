@@ -10075,12 +10075,16 @@ ol.travelPlanStrategy li::before {
    (full banner cards, restored from the earlier richer design)
 --------------------------------------------------------------------------- */
 .dealsBand {
-  width: min(1320px, calc(100% - 32px));
+  /* Matches .controlBand's width so the offers rail lines up edge-to-edge
+     with the destination finder directly below it. */
+  width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
   padding: 8px 0;
 }
 
 .dealsHeader {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -10123,7 +10127,9 @@ ol.travelPlanStrategy li::before {
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  scroll-snap-type: x proximity;
+  /* No scroll-snap here on purpose — it fights the continuous JS-driven
+     autoplay (scrollLeft nudged every frame), which either freezes the
+     drift or snaps arrow-key/button scrolls straight back to place. */
   padding: 4px 2px 8px;
   scrollbar-width: none;
 }
@@ -10141,7 +10147,6 @@ ol.travelPlanStrategy li::before {
 .dealsRailItem {
   flex: 0 0 auto;
   width: min(184px, 58vw);
-  scroll-snap-align: start;
 }
 
 .dealsArrow {

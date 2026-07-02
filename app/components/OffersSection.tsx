@@ -23,7 +23,7 @@ export default function OffersSection() {
 
     let last = performance.now();
     let frame = requestAnimationFrame(tick);
-    const pxPerSecond = 26;
+    const pxPerSecond = 38;
 
     function tick(now: number) {
       const dt = (now - last) / 1000;
