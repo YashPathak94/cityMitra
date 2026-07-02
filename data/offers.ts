@@ -24,7 +24,7 @@ export const offerCategoryLabels: Record<OfferCategory, string> = {
   cards: "Cards"
 };
 
-export const offers: Offer[] = [
+const rawOffers: Offer[] = [
   {
     id: "makemytrip-hotels",
     provider: "MakeMyTrip",
@@ -124,5 +124,19 @@ export const offers: Offer[] = [
     badge: "Reward card",
     url: "https://bitli.in/4ZO1jKN",
     accent: "#8b1e3f"
+  },
+  {
+    id: "tripadvisor",
+    provider: "Tripadvisor",
+    category: "hotels",
+    tagline: "Dream Your Next Trip with Trip Advisor",
+    badge: "Plan your trip",
+    url: "https://bitli.in/hIxh7l8",
+    accent: "#00af87"
   }
 ];
+
+// Live offers first, "Coming soon" placeholders always last — keeps the rail
+// feeling complete without deprioritising real, clickable deals. Sort is
+// stable, so entries within each group keep their authored order above.
+export const offers: Offer[] = [...rawOffers].sort((a, b) => Number(Boolean(b.url)) - Number(Boolean(a.url)));

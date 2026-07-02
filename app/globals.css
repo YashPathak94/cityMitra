@@ -1080,13 +1080,11 @@ textarea:focus-visible {
   padding: 74px 0;
 }
 
-.controlBand,
 .monetizeBand,
 .coverage {
   position: relative;
 }
 
-.controlBand::before,
 .monetizeBand::before,
 .coverage::before {
   display: block;
@@ -6621,7 +6619,7 @@ body {
    ============================================================ */
 
 .controlBand {
-  padding-top: 14px;
+  padding-top: 4px;
 }
 
 /* keep the finder header compact so concierge + city + category fit one view */
@@ -10079,7 +10077,7 @@ ol.travelPlanStrategy li::before {
      the concierge banner directly above it. */
   width: min(1320px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 8px 0;
+  padding: 6px 0 2px;
 }
 
 .dealsHeader {
