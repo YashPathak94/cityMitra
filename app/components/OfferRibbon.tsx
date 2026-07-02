@@ -1,13 +1,23 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Flag, Gift, PartyPopper, Plane, Sparkles, Sun, Tag, Trophy, Umbrella } from "lucide-react";
+import { ArrowUpRight, Flag, Gift, PartyPopper, Plane, ShoppingBag, Sparkles, Sun, Tag, Trophy, Umbrella } from "lucide-react";
 import { ReactNode, useEffect, useMemo, useState } from "react";
+import { trackActivity } from "@/lib/tracking";
 
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
-type Motif = "car" | "football";
-type Offer = { id: string; icon: ReactNode; text: string; tag?: string; motif: Motif; art?: string };
+type Motif = "car" | "football" | "shopping";
+type Offer = {
+  id: string;
+  icon: ReactNode;
+  text: string;
+  tag?: string;
+  motif: Motif;
+  art?: string;
+  url?: string;
+  popup?: string;
+};
 
 // Drop real assets in /public and map them here to replace the built-in SVG
 // scenes. Supports images (.webp/.png/.gif/.apng/.svg/.avif), video (.mp4/.webm)
@@ -15,7 +25,8 @@ type Offer = { id: string; icon: ReactNode; text: string; tag?: string; motif: M
 // A per-offer `art` (set in offersForToday) overrides the motif default below.
 const MOTIF_ART: Record<Motif, string> = {
   car: "",
-  football: ""
+  football: "",
+  shopping: ""
 };
 
 // Date/occasion-aware offers. Kept as honest, generic travel teasers (no fake
@@ -25,13 +36,30 @@ function offersForToday(city: string, now: Date): Offer[] {
   const day = now.getDate();
   const time = now.getTime();
   const list: Offer[] = [];
-  const add = (id: string, icon: ReactNode, text: string, motif: Motif = "car", tag?: string) =>
-    list.push({ id, icon, text, motif, tag });
+  const add = (
+    id: string,
+    icon: ReactNode,
+    text: string,
+    motif: Motif = "car",
+    tag?: string,
+    url?: string,
+    popup?: string
+  ) => list.push({ id, icon, text, motif, tag, url, popup });
 
   // FIFA World Cup 2026: Jun 11 – Jul 19, 2026 — surfaced first while it runs
   if (time >= Date.UTC(2026, 5, 11) && time <= Date.UTC(2026, 6, 19, 23, 59)) {
     add("fifa", <Trophy size={15} />, "FIFA World Cup 2026 is live — watch at fan zones & screenings", "football", "LIVE");
   }
+
+  add(
+    "myntra",
+    <ShoppingBag size={15} />,
+    "Myntra: Get 50-80% Off Across Top Brands",
+    "shopping",
+    "SALE",
+    "https://myntr.it/tMi60uY",
+    "MEGA SAVINGS SALE IS LIVE!"
+  );
 
   if (month === 1 && day >= 18) add("republic", <Flag size={15} />, "Republic Day weekend — explore India");
   if (month === 3 && day <= 18) add("holi", <PartyPopper size={15} />, "Holi getaways — plan ahead");
@@ -124,6 +152,39 @@ function FootballScene() {
   );
 }
 
+// A shopping bag swinging gently with a sale tag and twinkling sparkles.
+function ShoppingScene() {
+  return (
+    <svg className="offerMotif" viewBox="0 0 132 52" aria-hidden="true">
+      <defs>
+        <linearGradient id="offerBagGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fb923c" />
+          <stop offset="1" stopColor="#ea580c" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="66" cy="47" rx="40" ry="4" fill="rgba(15,23,42,0.1)" />
+
+      <g className="offerBagSwing">
+        <path d="M52 20 Q52 8 66 8 Q80 8 80 20" stroke="#7c2d12" strokeWidth="3" fill="none" strokeLinecap="round" />
+        <path d="M46 20 L86 20 L82 46 Q66 50 50 46 Z" fill="url(#offerBagGrad)" stroke="#c2410c" strokeWidth="1" />
+        <g transform="translate(66,31)">
+          <rect x="-13" y="-9" width="26" height="18" rx="4" fill="#fff" />
+          <text x="0" y="4" textAnchor="middle" fontSize="9" fontWeight="900" fill="#ea580c">
+            50%
+          </text>
+        </g>
+      </g>
+
+      <g className="offerSparkle offerSparkle1" fill="#fbbf24">
+        <path d="M20 14 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6 Z" />
+      </g>
+      <g className="offerSparkle offerSparkle2" fill="#fbbf24">
+        <path d="M111 30 l1.3 3.2 3.2 1.3 -3.2 1.3 -1.3 3.2 -1.3 -3.2 -3.2 -1.3 3.2 -1.3 Z" />
+      </g>
+    </svg>
+  );
+}
+
 // Loads a Lottie JSON from /public and renders it; calls onFail if it can't load.
 function LottieMotif({ src, onFail }: { src: string; onFail: () => void }) {
   const [data, setData] = useState<unknown>(null);
@@ -171,7 +232,9 @@ function OfferMotif({ motif, art }: { motif: Motif; art?: string }) {
     );
   }
 
-  return motif === "football" ? <FootballScene /> : <CarScene />;
+  if (motif === "football") return <FootballScene />;
+  if (motif === "shopping") return <ShoppingScene />;
+  return <CarScene />;
 }
 
 export default function OfferRibbon({ city }: { city: string }) {
@@ -198,26 +261,48 @@ export default function OfferRibbon({ city }: { city: string }) {
 
   return (
     <div className="offerRibbon" role="region" aria-label="Special offers">
-      <div
-        className={reduce ? "offerRow offerRowStatic" : "offerRow"}
-        aria-hidden="true"
-        onAnimationIteration={(event) => {
-          // Only the row's own slide loop advances the offer — ignore the
-          // popping / ball-pass iterations that bubble up from children.
-          if (!reduce && event.target === event.currentTarget) {
-            setIndex((value) => (value + 1) % offers.length);
-          }
-        }}
-      >
-        <span className="offerMotifWrap">
-          <OfferMotif motif={offer.motif} art={offer.art || MOTIF_ART[offer.motif]} />
-        </span>
-        <span className="offerCopy">
-          <span className="offerBadge">{offer.icon}</span>
-          <span className="offerText">{offer.text}</span>
-          {offer.tag && <span className="offerTag">{offer.tag}</span>}
-        </span>
+      {/* Clips only the sliding motion — kept separate from .offerRibbon so the
+          hover popup below can float outside the 40px lane without being cut off. */}
+      <div className="offerRibbonTrack">
+        <div
+          className={reduce ? "offerRow offerRowStatic" : "offerRow"}
+          aria-hidden="true"
+          onAnimationIteration={(event) => {
+            // Only the row's own slide loop advances the offer — ignore the
+            // popping / ball-pass iterations that bubble up from children.
+            if (!reduce && event.target === event.currentTarget) {
+              setIndex((value) => (value + 1) % offers.length);
+            }
+          }}
+        >
+          <span className="offerMotifWrap">
+            <OfferMotif motif={offer.motif} art={offer.art || MOTIF_ART[offer.motif]} />
+          </span>
+          <span className="offerCopy">
+            <span className="offerBadge">{offer.icon}</span>
+            <span className="offerText">{offer.text}</span>
+            {offer.tag && <span className="offerTag">{offer.tag}</span>}
+          </span>
+        </div>
       </div>
+
+      {/* Real, keyboard-reachable click target — the sliding row above is purely
+          decorative (aria-hidden, constantly moving), so this is where "click
+          here" and the sale callout actually live and actually work. */}
+      {offer.url && offer.popup && (
+        <a
+          className="offerHoverPopup"
+          href={offer.url}
+          target="_blank"
+          rel="noopener noreferrer sponsored"
+          onClick={() => trackActivity({ type: "offer_click", label: offer.id })}
+        >
+          <strong>{offer.popup}</strong>
+          <span>
+            Click here <ArrowUpRight size={13} />
+          </span>
+        </a>
+      )}
 
       <span className="srOnly">Special offers: {offers.map((item) => item.text).join(". ")}.</span>
     </div>

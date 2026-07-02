@@ -7749,18 +7749,36 @@ body {
   width: min(1320px, calc(100% - 32px));
   height: 40px;
   margin: 0 auto 8px;
-  overflow: hidden;
   background: none;
 }
 
-/* Hovering freezes every animated part so users can read/act */
+/* Clips only the sliding row — kept separate from .offerRibbon so the hover
+   popup can float above the 40px lane without being cut off. */
+.offerRibbonTrack {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Hovering (or focusing the popup link) freezes every animated part so users can read/act */
 .offerRibbon:hover .offerRow,
 .offerRibbon:hover .offerPerson,
 .offerRibbon:hover .offerSpeech,
 .offerRibbon:hover .offerCar,
 .offerRibbon:hover .offerPassBall,
 .offerRibbon:hover .offerP,
-.offerRibbon:hover .offerTag {
+.offerRibbon:hover .offerBagSwing,
+.offerRibbon:hover .offerSparkle,
+.offerRibbon:hover .offerTag,
+.offerRibbon:focus-within .offerRow,
+.offerRibbon:focus-within .offerPerson,
+.offerRibbon:focus-within .offerSpeech,
+.offerRibbon:focus-within .offerCar,
+.offerRibbon:focus-within .offerPassBall,
+.offerRibbon:focus-within .offerP,
+.offerRibbon:focus-within .offerBagSwing,
+.offerRibbon:focus-within .offerSparkle,
+.offerRibbon:focus-within .offerTag {
   animation-play-state: paused;
 }
 
@@ -7968,6 +7986,96 @@ body {
   }
 }
 
+/* --- Shopping scene: swinging sale bag + twinkling sparkles --- */
+.offerBagSwing {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: offerBagSwing 2.6s ease-in-out infinite;
+}
+
+@keyframes offerBagSwing {
+  0%,
+  100% {
+    transform: rotate(-6deg);
+  }
+  50% {
+    transform: rotate(6deg);
+  }
+}
+
+.offerSparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: offerSparkleTwinkle 1.6s ease-in-out infinite;
+}
+
+.offerSparkle2 {
+  animation-delay: 0.5s;
+}
+
+@keyframes offerSparkleTwinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+/* Real click target for offers with a popup — hidden until hovered/focused,
+   floats above the ribbon's 40px lane so it's never clipped. */
+.offerHoverPopup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--orange), #f97316);
+  color: #fff;
+  padding: 9px 18px;
+  box-shadow: 0 16px 34px rgba(234, 88, 12, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.9);
+  transition: opacity 0.22s var(--smooth), transform 0.22s var(--smooth);
+}
+
+.offerHoverPopup strong {
+  font-size: 0.86rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.offerHoverPopup span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0.92;
+}
+
+.offerRibbon:hover .offerHoverPopup,
+.offerRibbon:focus-within .offerHoverPopup,
+.offerHoverPopup:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.offerHoverPopup:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
 @media (max-width: 520px) {
   .offerText {
     font-size: 0.82rem;
@@ -7975,6 +8083,11 @@ body {
   .offerMotif,
   .offerMotifMedia {
     width: 82px;
+  }
+  .offerHoverPopup {
+    max-width: calc(100cqi - 24px);
+    white-space: normal;
+    text-align: center;
   }
 }
 
@@ -7986,6 +8099,8 @@ body {
   .offerRow,
   .offerCar,
   .offerP,
+  .offerBagSwing,
+  .offerSparkle,
   .offerTag {
     animation: none;
   }
@@ -8001,6 +8116,9 @@ body {
   .offerPassBall {
     transform: translate(66px, 34px);
     animation: none;
+  }
+  .offerHoverPopup {
+    transition: none;
   }
 }
 
