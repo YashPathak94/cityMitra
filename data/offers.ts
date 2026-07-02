@@ -3,7 +3,7 @@
 // carry the exact tagline given by the partner, and slots without a live link
 // yet are clearly marked "Coming soon" rather than showing an invented discount.
 
-export type OfferCategory = "hotels" | "flights" | "cabs" | "food" | "trains";
+export type OfferCategory = "hotels" | "flights" | "cabs" | "food" | "trains" | "cards";
 
 export type Offer = {
   id: string;
@@ -20,7 +20,8 @@ export const offerCategoryLabels: Record<OfferCategory, string> = {
   flights: "Flights",
   cabs: "Cabs",
   food: "Food",
-  trains: "Trains"
+  trains: "Trains",
+  cards: "Cards"
 };
 
 export const offers: Offer[] = [
@@ -113,5 +114,15 @@ export const offers: Offer[] = [
     badge: "Coming soon",
     url: "",
     accent: "#0a4a86"
+  },
+  {
+    id: "hdfc-irctc-card",
+    provider: "HDFC IRCTC Card",
+    category: "cards",
+    tagline:
+      "Earn 5 Reward points per Rs 100 spent on the IRCTC website. Earn 1 Reward point per Rs 100 spent on all other categories.",
+    badge: "Reward card",
+    url: "https://bitli.in/4ZO1jKN",
+    accent: "#8b1e3f"
   }
 ];

@@ -13,22 +13,18 @@ export default function OffersSection() {
     const rail = railRef.current;
     if (!rail) return;
     const card = rail.querySelector<HTMLElement>(".dealCard");
-    const step = (card?.offsetWidth || 260) + 14;
+    const step = (card?.offsetWidth || 208) + 10;
     rail.scrollBy({ left: step * direction, behavior: "smooth" });
   }
 
   return (
-    <section className="dealsBand" id="offers" aria-labelledby="dealsHeading">
+    <section className="dealsBand" id="offers" aria-label="Offers and deals">
       <div className="dealsHeader">
-        <div className="dealsHeaderText">
-          <span className="dealsKicker">
-            <Tag size={13} /> Exclusive offers
-          </span>
-          <h2 id="dealsHeading">Deals worth planning around</h2>
-          <p>Hand-picked discounts on hotels, flights, cabs and food — refreshed as partners update them.</p>
-        </div>
+        <span className="dealsKicker">
+          <Tag size={13} /> Offers
+        </span>
         <Link className="dealsViewAll" href="/offers">
-          View all offers <ArrowRight size={15} />
+          View all <ArrowRight size={14} />
         </Link>
       </div>
 

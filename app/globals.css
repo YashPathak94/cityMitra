@@ -10113,33 +10113,20 @@ ol.travelPlanStrategy li::before {
 }
 
 /* ------------------------------------------------------------------------
-   Offers / Deals — home page rail + /offers page grid
+   Offers / Deals — compact home page rail + /offers page grid
 --------------------------------------------------------------------------- */
 .dealsBand {
   width: min(1320px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 34px 0 12px;
+  padding: 8px 0;
 }
 
 .dealsHeader {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 18px;
-}
-
-.dealsHeaderText h2 {
-  margin: 8px 0 6px;
-  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
-}
-
-.dealsHeaderText p {
-  margin: 0;
-  max-width: 560px;
-  color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.5;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 
 .dealsKicker {
@@ -10148,7 +10135,7 @@ ol.travelPlanStrategy li::before {
   gap: 6px;
   color: var(--orange);
   font-weight: 800;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -10157,22 +10144,16 @@ ol.travelPlanStrategy li::before {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--white);
-  padding: 10px 17px;
+  gap: 5px;
   font-weight: 800;
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   color: var(--ink);
   white-space: nowrap;
-  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth), transform 0.2s var(--smooth);
+  transition: color 0.2s var(--smooth), gap 0.2s var(--smooth);
 }
 
 .dealsViewAll:hover {
-  border-color: rgba(234, 88, 12, 0.5);
-  box-shadow: var(--glow);
-  transform: translateY(-1px);
+  color: var(--orange);
 }
 
 .dealsRailWrap {
@@ -10181,10 +10162,10 @@ ol.travelPlanStrategy li::before {
 
 .dealsRail {
   display: flex;
-  gap: 14px;
+  gap: 10px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
-  padding: 4px 2px 10px;
+  padding: 2px 2px 6px;
   scrollbar-width: none;
 }
 
@@ -10194,7 +10175,7 @@ ol.travelPlanStrategy li::before {
 
 .dealsRailItem {
   flex: 0 0 auto;
-  width: min(272px, 78vw);
+  width: min(208px, 60vw);
   scroll-snap-align: start;
 }
 
@@ -10205,8 +10186,8 @@ ol.travelPlanStrategy li::before {
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--white);
@@ -10222,11 +10203,11 @@ ol.travelPlanStrategy li::before {
 }
 
 .dealsArrowPrev {
-  left: -8px;
+  left: -6px;
 }
 
 .dealsArrowNext {
-  right: -8px;
+  right: -6px;
 }
 
 @media (max-width: 760px) {
@@ -10235,23 +10216,25 @@ ol.travelPlanStrategy li::before {
   }
 }
 
-/* --- Offer card (shared by rail + /offers grid) --- */
+/* --- Compact offer card: single horizontal row, avatar + text + arrow --- */
 .dealCard {
   display: flex;
-  flex-direction: column;
-  height: 100%;
+  align-items: center;
+  gap: 9px;
+  height: 62px;
+  padding: 0 11px;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: var(--radius-md, 16px);
+  border-radius: 13px;
   background: var(--white);
-  box-shadow: var(--shadow-card);
-  transition: transform 0.25s var(--smooth), box-shadow 0.25s var(--smooth), border-color 0.25s var(--smooth);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.22s var(--smooth), box-shadow 0.22s var(--smooth), border-color 0.22s var(--smooth);
 }
 
 a.dealCard:hover {
   border-color: rgba(234, 88, 12, 0.45);
-  box-shadow: var(--shadow);
-  transform: translateY(-5px);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
 }
 
 a.dealCard:focus-visible {
@@ -10261,84 +10244,73 @@ a.dealCard:focus-visible {
 
 .dealCardDisabled {
   cursor: default;
-  opacity: 0.72;
-}
-
-.dealCardTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 9px 12px;
-  color: #fff;
-}
-
-.dealCardBadge {
-  font-weight: 900;
-  font-size: 0.78rem;
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
-}
-
-.dealCardCategory {
-  font-size: 0.66rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  background: rgba(255, 255, 255, 0.22);
-  border-radius: 999px;
-  padding: 3px 9px;
-}
-
-.dealCardBody {
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
-  padding: 14px 14px 6px;
-  flex: 1 1 auto;
+  opacity: 0.68;
 }
 
 .dealCardAvatar {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
   color: #fff;
   font-weight: 900;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .dealCardText {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 1px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.dealCardTopRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
   min-width: 0;
 }
 
 .dealCardProvider {
-  font-size: 0.94rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
   color: var(--ink);
 }
 
-.dealCardTagline {
-  font-size: 0.8rem;
-  line-height: 1.4;
+.dealCardBadge {
+  flex: 0 0 auto;
+  font-weight: 800;
+  font-size: 0.64rem;
   color: var(--muted);
 }
 
-.dealCardCta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 8px 14px 14px;
-  font-weight: 800;
-  font-size: 0.82rem;
+.dealCardTagline {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.dealCardArrow {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(234, 88, 12, 0.1);
   color: var(--orange);
 }
 
-.dealCardCtaMuted {
+.dealCardArrowMuted {
+  background: var(--soft);
   color: var(--muted);
 }
 
@@ -10390,18 +10362,21 @@ a.dealCard:focus-visible {
 
 .dealsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
   padding-bottom: 40px;
 }
 
+.dealsGrid .dealCard {
+  width: 100%;
+}
+
 @media (max-width: 640px) {
-  .dealsHeader {
-    flex-direction: column;
-    align-items: flex-start;
+  .dealsRailItem {
+    width: min(180px, 66vw);
   }
 
-  .dealsViewAll {
-    align-self: flex-start;
+  .dealCard {
+    height: 58px;
   }
 }

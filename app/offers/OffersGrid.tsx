@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Offer, OfferCategory, offerCategoryLabels, offers } from "@/data/offers";
 import OfferCard from "@/app/components/OfferCard";
 
-const categories: Array<OfferCategory | "all"> = ["all", "hotels", "flights", "cabs", "food", "trains"];
+const categories: Array<OfferCategory | "all"> = ["all", "hotels", "flights", "cabs", "food", "trains", "cards"];
 
 export default function OffersGrid() {
   const [active, setActive] = useState<OfferCategory | "all">("all");
