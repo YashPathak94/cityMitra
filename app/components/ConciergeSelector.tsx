@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { imageForTheme } from "@/lib/category-images";
 
@@ -146,14 +146,18 @@ function ConciergeCarousel({ panels }: { panels: ConciergePanel[] }) {
     return () => clearInterval(id);
   }, [isMobile, paused, index, count]);
 
+  // No visible pause control on mobile (it ate vertical space) — instead,
+  // autoplay simply pauses for the duration of a touch so it never fights a swipe.
   function onTouchStart(event: React.TouchEvent) {
     touchX.current = event.touches[0].clientX;
+    setPaused(true);
   }
   function onTouchEnd(event: React.TouchEvent) {
     if (touchX.current === null) return;
     const dx = event.changedTouches[0].clientX - touchX.current;
     if (Math.abs(dx) > 40) go(index + (dx < 0 ? 1 : -1));
     touchX.current = null;
+    setPaused(false);
   }
 
   return (
@@ -203,30 +207,6 @@ function ConciergeCarousel({ panels }: { panels: ConciergePanel[] }) {
         </button>
         <button className="cArrow cArrowNext" type="button" aria-label="Next" onClick={() => go(index + 1)}>
           <ChevronRight size={20} />
-        </button>
-      </div>
-
-      <div className="cControls">
-        <div className="cDots">
-          {panels.map((panel, i) => (
-            <button
-              key={panel.key}
-              type="button"
-              aria-label={`Show ${panel.title}`}
-              aria-current={i === index}
-              className={i === index ? "cDot active" : "cDot"}
-              onClick={() => go(i)}
-            />
-          ))}
-        </div>
-        <button
-          className="cPause"
-          type="button"
-          aria-label={paused ? "Play slideshow" : "Pause slideshow"}
-          aria-pressed={paused}
-          onClick={() => setPaused((value) => !value)}
-        >
-          {paused ? <Play size={14} /> : <Pause size={14} />}
         </button>
       </div>
     </div>
