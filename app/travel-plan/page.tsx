@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PageShell from "@/app/components/PageShell";
 import TravelPlanner from "@/app/components/TravelPlanner";
+import TravelPlanStack from "@/app/components/TravelPlanStack";
 
 export const metadata: Metadata = {
   title: "Travel Plan · Fund your trip with smart investing | CityMitra",
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 export default function TravelPlanPage() {
   return (
     <PageShell>
+      <TravelPlanStack />
       <TravelPlanner />
     </PageShell>
   );
