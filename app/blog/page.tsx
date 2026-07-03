@@ -25,7 +25,7 @@ export default function BlogIndexPage() {
 
       <section className="blogGrid" aria-label="All blog posts">
         {blogPosts.map((post) => (
-          <Link className="blogCard" href={`/f/${post.slug}`} key={post.slug}>
+          <Link className="blogCard" href={`/blog/${post.slug}`} key={post.slug}>
             <div className="blogCardImage" style={{ backgroundImage: `url("${post.coverImage}")` }} />
             <div className="blogCardBody">
               <span className="blogCardDate">
