@@ -7,6 +7,8 @@ import PageShell from "@/app/components/PageShell";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://citymitra.vercel.app";
 
+// GoDaddy's blog permalinks are /f/<slug> (e.g. ctmitra.com/f/how-to-support-local-businesses-in-your-community).
+// Posts live here at the same path so existing/shared/indexed GoDaddy links keep working after migration.
 export function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
 }
@@ -20,11 +22,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: post.title,
     description: post.excerpt,
-    alternates: { canonical: `/blog/${post.slug}` },
+    alternates: { canonical: `/f/${post.slug}` },
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      url: `${siteUrl}/blog/${post.slug}`,
+      url: `${siteUrl}/f/${post.slug}`,
       type: "article",
       images: [post.coverImage]
     }
@@ -50,7 +52,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     datePublished: post.date,
     author: { "@type": "Organization", name: post.author },
     publisher: { "@type": "Organization", name: "CityMitra", url: siteUrl },
-    mainEntityOfPage: `${siteUrl}/blog/${post.slug}`
+    mainEntityOfPage: `${siteUrl}/f/${post.slug}`
   };
 
   return (
