@@ -20,6 +20,7 @@ export default function PageShell({ children }: { children: React.ReactNode }) {
             <Link href="/travel-plan">Travel Plan</Link>
             <Link href="/offers">Offers</Link>
             <Link href="/#nearby">Top Picks</Link>
+            <Link href="/blog">Blog</Link>
             <Link href="/about">About</Link>
             <Link href="/contact">Contact</Link>
           </nav>
