@@ -3,7 +3,7 @@
 // carry the exact tagline given by the partner, and slots without a live link
 // yet are clearly marked "Coming soon" rather than showing an invented discount.
 
-export type OfferCategory = "hotels" | "flights" | "cabs" | "food" | "trains" | "cards";
+export type OfferCategory = "hotels" | "flights" | "cabs" | "food" | "trains" | "cards" | "shopping";
 
 export type Offer = {
   id: string;
@@ -21,7 +21,8 @@ export const offerCategoryLabels: Record<OfferCategory, string> = {
   cabs: "Cabs",
   food: "Food",
   trains: "Trains",
-  cards: "Cards"
+  cards: "Cards",
+  shopping: "Shopping"
 };
 
 const rawOffers: Offer[] = [
@@ -133,6 +134,15 @@ const rawOffers: Offer[] = [
     badge: "Plan your trip",
     url: "https://bitli.in/hIxh7l8",
     accent: "#00af87"
+  },
+  {
+    id: "myntra",
+    provider: "Myntra",
+    category: "shopping",
+    tagline: "Get 50-80% Off Across Top Brands",
+    badge: "50-80% OFF",
+    url: "https://myntr.it/tMi60uY",
+    accent: "#ff3f6c"
   }
 ];
 
