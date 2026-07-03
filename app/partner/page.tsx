@@ -13,7 +13,7 @@ import {
 import PageShell from "@/app/components/PageShell";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://citymitra.vercel.app";
-const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "raj.yash.pathak@gmail.com";
+const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "helpdesk@ctmitra.com";
 
 export const metadata: Metadata = {
   title: "Partner & Advertise",

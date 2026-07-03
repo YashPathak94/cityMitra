@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" }
 };
 
-const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "raj.yash.pathak@gmail.com";
+const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "helpdesk@ctmitra.com";
 
 export default function ContactPage() {
   return (

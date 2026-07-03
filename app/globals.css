@@ -4453,6 +4453,17 @@ body {
   font-weight: 700;
 }
 
+/* .policyPage's generic prose-link color would otherwise override these
+   buttons' own white/ink text with orange, making "Talk to us"/"Email us"
+   nearly invisible against their orange gradient background (/partner). */
+.policyPage a.primaryButton {
+  color: var(--white);
+}
+
+.policyPage a.secondaryButton {
+  color: var(--ink);
+}
+
 .policyPage code {
   border-radius: 6px;
   background: var(--soft);
