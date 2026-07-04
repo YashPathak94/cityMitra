@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, CalendarDays, User } from "lucide-react";
 import { blogPosts, getBlogPost } from "@/data/blog-posts";
 import PageShell from "@/app/components/PageShell";
+import ShareRow from "@/app/components/ShareRow";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://citymitra.vercel.app";
 
@@ -25,8 +26,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: post.title,
       description: post.excerpt,
       url: `${siteUrl}/blog/${post.slug}`,
-      type: "article",
-      images: [post.coverImage]
+      type: "article"
+      // og:image comes from the opengraph-image.tsx file convention beside this page
     }
   };
 }
@@ -73,10 +74,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
         </header>
 
-        <div className="blogTags">
-          {post.tags.map((tag) => (
-            <span key={tag}>{tag}</span>
-          ))}
+        <div className="blogTopRow">
+          <div className="blogTags">
+            {post.tags.map((tag) => (
+              <span key={tag}>{tag}</span>
+            ))}
+          </div>
+          <ShareRow title={post.title} />
         </div>
 
         <section className="blogBody">

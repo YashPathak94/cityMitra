@@ -5,6 +5,7 @@ import { ArrowRight, BadgeCheck, Bus, CalendarDays, Lightbulb, MapPinned, Wallet
 import { cityGuides, getCityGuide } from "@/data/city-guides";
 import { categories, directory } from "@/data/city-directory";
 import PageShell from "@/app/components/PageShell";
+import ShareRow from "@/app/components/ShareRow";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://citymitra.vercel.app";
 
@@ -67,6 +68,8 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
           <h1>{guide.name}</h1>
           <p>{guide.tagline}</p>
         </header>
+
+        <ShareRow title={`${guide.name} city guide on CityMitra — markets, food, transport & local tips`} />
 
         <section className="guideIntro">
           {guide.intro.map((paragraph, index) => (
