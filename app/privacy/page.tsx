@@ -15,7 +15,7 @@ export default function PrivacyPage() {
       <article className="policyPage">
         <h1>Privacy Policy</h1>
         <p>
-          <i>Last updated: June 2026.</i> This policy explains what CityMitra (“we”) collects when you use this
+          <i>Last updated: July 2026.</i> This policy explains what CityMitra (“we”) collects when you use this
           website, why we collect it, and the choices you have.
         </p>
 
@@ -47,18 +47,43 @@ export default function PrivacyPage() {
         <h2>What we do not do</h2>
         <ul>
           <li>We do not sell personal data.</li>
-          <li>We do not run third-party advertising trackers today. If we introduce advertising (such as Google
-          AdSense), this policy and a consent notice will be updated first, as those services use their own
-          cookies.</li>
           <li>We do not require accounts or collect names, phone numbers, or payment details.</li>
+        </ul>
+
+        <h2>Advertising (Google AdSense)</h2>
+        <p>
+          CityMitra shows ads served by Google AdSense. Google, as a third-party vendor, uses cookies (including the
+          DoubleClick/Google Ads cookie) to serve ads based on your visits to this site and other sites on the
+          internet. This may include personalised advertising unless you opt out.
+        </p>
+        <ul>
+          <li>
+            You can opt out of personalised advertising by visiting{" "}
+            <a href="https://adssettings.google.com" target="_blank" rel="noreferrer">
+              Google Ads Settings
+            </a>
+            , or opt out of third-party vendor cookies generally at{" "}
+            <a href="https://www.aboutads.info/choices/" target="_blank" rel="noreferrer">
+              www.aboutads.info
+            </a>
+            .
+          </li>
+          <li>
+            How Google uses information from sites that use its services is explained at{" "}
+            <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noreferrer">
+              policies.google.com/technologies/partner-sites
+            </a>
+            .
+          </li>
+          <li>We do not control the content of ads served by AdSense or the data Google collects to select them.</li>
         </ul>
 
         <h2>Third-party services</h2>
         <p>
           Pages embed Google Maps previews (Google’s privacy policy applies inside the frame), load city photos via
-          Wikipedia/Wikimedia Commons and Unsplash, use OpenStreetMap Nominatim for optional reverse-geocoding, and
-          use OpenAI for chat answers. Links out to Google Maps, WhatsApp, Instagram, X, and LinkedIn are governed by
-          those platforms’ policies.
+          Wikipedia/Wikimedia Commons and Unsplash, use OpenStreetMap Nominatim for optional reverse-geocoding, use
+          OpenAI for chat answers, and serve ads via Google AdSense (see above). Links out to Google Maps, WhatsApp,
+          Instagram, X, and LinkedIn are governed by those platforms’ policies.
         </p>
 
         <h2>Retention & your choices</h2>

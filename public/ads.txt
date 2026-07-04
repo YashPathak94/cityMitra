@@ -1,4 +1,1 @@
-# CityMitra ads.txt
-# After Google AdSense approval, replace this file's contents with the line
-# AdSense gives you, in the form:
-# google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+google.com, pub-8272412641821719, DIRECT, f08c47fec0942fa0
