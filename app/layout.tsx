@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -59,17 +60,30 @@ export const viewport: Viewport = {
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "CityMitra",
-  url: siteUrl,
-  description:
-    "AI-powered city discovery for India: markets, hospitals, hotels, food, repairs, petrol pumps, and sightseeing with smart routes and chat planning.",
-  inLanguage: "en-IN",
-  potentialAction: {
-    "@type": "SearchAction",
-    target: `${siteUrl}/?q={search_term_string}`,
-    "query-input": "required name=search_term_string"
-  }
+  "@graph": [
+    {
+      "@type": "WebSite",
+      name: "CityMitra",
+      url: siteUrl,
+      description:
+        "AI-powered city discovery for India: markets, hospitals, hotels, food, repairs, petrol pumps, and sightseeing with smart routes and chat planning.",
+      inLanguage: "en-IN",
+      publisher: { "@id": `${siteUrl}/#organization` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${siteUrl}/?q={search_term_string}`,
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "CityMitra",
+      url: siteUrl,
+      email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "helpdesk@ctmitra.com",
+      description: "AI city guide and travel planner for Indian cities."
+    }
+  ]
 };
 
 export default function RootLayout({
@@ -85,6 +99,14 @@ export default function RootLayout({
         </a>
         {children}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        {/* Google AdSense (auto ads): one snippet site-wide; placements are
+            managed from the AdSense dashboard, no per-page ad units in code. */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8272412641821719"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <Analytics />
         <SpeedInsights />
       </body>

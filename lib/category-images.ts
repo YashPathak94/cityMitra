@@ -63,7 +63,13 @@ const CATEGORY_THEME: Record<CategoryKey, ImageTheme> = {
   salon: "salon",
   laundry: "repair",
   acrepair: "repair",
-  pestcontrol: "repair"
+  pestcontrol: "repair",
+  doctors: "hospital",
+  sportsacademy: "gym",
+  evcharging: "fuel",
+  restrooms: "city",
+  news: "city",
+  agriculture: "market"
 };
 
 export function imageForTheme(theme: ImageTheme, variant = 0): string {

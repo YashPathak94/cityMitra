@@ -80,6 +80,7 @@ export const categoryToBooking: Record<string, BookingCategory> = {
   dinner: "food",
   food: "food",
   hospitals: "doctor",
+  doctors: "doctor",
   sightseeing: "hotels",
   petrol: "cabs",
   repair: "cabs"

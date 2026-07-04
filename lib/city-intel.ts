@@ -147,7 +147,13 @@ export const categoryResultBlueprints: Record<CategoryKey, string[]> = {
   gym: ["gym and fitness center", "personal training gym", "crossfit box", "ladies gym", "yoga studio", "zumba and dance fitness", "weight training gym", "24 hour gym", "premium fitness club", "affordable gym"],
   laundry: ["laundry and dry cleaning", "dry cleaners", "laundry pickup and delivery", "ironing service", "shoe and bag cleaning", "premium dry cleaning", "express laundry", "carpet and curtain cleaning", "wedding dress cleaning", "daily laundry service"],
   acrepair: ["AC repair service", "AC installation", "AC gas refilling", "split AC service", "window AC repair", "AC amc service", "refrigerator repair", "AC technician near me", "central AC service", "24 hour AC repair"],
-  pestcontrol: ["pest control service", "cockroach control", "termite treatment", "bed bug treatment", "mosquito control", "rodent control", "general pest control", "herbal pest control", "commercial pest control", "termite inspection"]
+  pestcontrol: ["pest control service", "cockroach control", "termite treatment", "bed bug treatment", "mosquito control", "rodent control", "general pest control", "herbal pest control", "commercial pest control", "termite inspection"],
+  doctors: ["general physician", "pediatrician", "dermatologist", "dental clinic", "gynecologist", "orthopedic doctor", "ENT specialist", "eye specialist", "cardiologist", "family doctor clinic"],
+  sportsacademy: ["cricket academy", "football academy", "badminton academy", "swimming academy", "tennis coaching", "martial arts academy", "athletics training center", "basketball academy", "skating academy", "multi sport academy"],
+  evcharging: ["EV charging station", "fast EV charging", "public EV charging point", "mall EV charging", "highway EV charging station", "two wheeler EV charging", "battery swapping station", "DC fast charger", "EV charging near market", "24 hour EV charging"],
+  restrooms: ["public toilet", "public restroom", "Sulabh toilet", "pay and use toilet", "mall restroom", "metro station toilet", "petrol pump restroom", "public convenience", "park restroom", "bus stand toilet"],
+  news: ["newspaper office", "news channel bureau", "press club", "local news agency", "regional newspaper office", "media house", "printing press", "news studio", "district information office", "magazine office"],
+  agriculture: ["seed and fertilizer shop", "agriculture equipment store", "tractor dealer", "krishi kendra", "agri produce mandi", "irrigation equipment supplier", "pesticide shop", "dairy farm supply", "soil testing lab", "farm machinery spare parts"]
 };
 
 export function titleCaseCity(value: string) {
@@ -230,7 +236,13 @@ export const categoryKeywords: Array<{ key: CategoryKey; words: string[] }> = [
   { key: "petrol", words: ["petrol", "fuel", "pump", "pumps"] },
   { key: "hotels", words: ["hotel", "hotels", "stay", "stays"] },
   { key: "dinner", words: ["dinner", "dining", "restaurant", "restaurants"] },
-  { key: "sightseeing", words: ["sightseeing", "places", "tour", "viewpoint", "viewpoints"] }
+  { key: "sightseeing", words: ["sightseeing", "places", "tour", "viewpoint", "viewpoints"] },
+  { key: "doctors", words: ["doctor", "doctors", "physician", "dentist", "dermatologist", "pediatrician"] },
+  { key: "sportsacademy", words: ["academy", "academies", "coaching"] },
+  { key: "evcharging", words: ["ev", "charger", "chargers", "charging"] },
+  { key: "restrooms", words: ["restroom", "restrooms", "toilet", "toilets", "washroom", "washrooms"] },
+  { key: "news", words: ["news", "newspaper", "press", "media"] },
+  { key: "agriculture", words: ["agriculture", "farming", "fertilizer", "tractor", "seeds", "mandi"] }
 ];
 
 export function cleanCityCandidate(value: string) {

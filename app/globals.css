@@ -11143,3 +11143,126 @@ a.dealCard:focus-visible {
   color: var(--muted);
   margin: 0;
 }
+
+/* ------------------------------------------------------------------------
+   Feedback band — compact one-row rating strip above the footer
+--------------------------------------------------------------------------- */
+.feedbackBand {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto 34px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(120deg, var(--white), var(--soft));
+  padding: 14px 18px;
+}
+
+.feedbackBand form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+.feedbackPrompt {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.feedbackStars {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.feedbackStar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--line);
+  cursor: pointer;
+  transition: color 0.15s var(--smooth), transform 0.15s var(--smooth);
+}
+
+.feedbackStar.active {
+  color: var(--gold);
+}
+
+.feedbackStar.active svg {
+  fill: currentColor;
+}
+
+.feedbackStar:hover {
+  transform: scale(1.12);
+}
+
+.feedbackStar:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.feedbackDetail {
+  display: flex;
+  flex: 1 1 260px;
+  gap: 8px;
+  min-width: 0;
+}
+
+.feedbackDetail input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--white);
+  padding: 0 12px;
+  font-size: 0.88rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s var(--smooth), box-shadow 0.2s var(--smooth);
+}
+
+.feedbackDetail input:focus-visible {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.12);
+}
+
+.feedbackSend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  height: 40px;
+  border: 0;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--orange), #f97316);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.84rem;
+  padding: 0 16px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(234, 88, 12, 0.25);
+  transition: transform 0.2s var(--smooth);
+}
+
+.feedbackSend:hover {
+  transform: translateY(-1px);
+}
+
+.feedbackBandDone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--green);
+}
+
+.feedbackBandDone p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+}

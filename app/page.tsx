@@ -23,6 +23,7 @@ import { imageForTheme } from "@/lib/category-images";
 import { trackActivity } from "@/lib/tracking";
 import AiTeaser from "@/app/components/AiTeaser";
 import DirectoryExplorer from "@/app/components/DirectoryExplorer";
+import FeedbackBand from "@/app/components/FeedbackBand";
 import Hero from "@/app/components/Hero";
 import LocationPrompt from "@/app/components/LocationPrompt";
 import WelcomeIntro from "@/app/components/WelcomeIntro";
@@ -331,6 +332,10 @@ export default function Home() {
       </Reveal>
       <Reveal>
         <AboutSection />
+      </Reveal>
+
+      <Reveal>
+        <FeedbackBand city={city} />
       </Reveal>
 
       <SiteFooter city={city} category={category} />

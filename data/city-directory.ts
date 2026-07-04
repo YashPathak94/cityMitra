@@ -12,9 +12,15 @@ import {
   Landmark,
   MapPin,
   Fuel,
+  Newspaper,
+  PlugZap,
   Scissors,
   Sparkles,
   ShoppingBag,
+  Stethoscope,
+  Toilet,
+  Tractor,
+  Trophy,
   Truck,
   Utensils,
   Volleyball,
@@ -46,7 +52,13 @@ export type CategoryKey =
   | "salon"
   | "laundry"
   | "acrepair"
-  | "pestcontrol";
+  | "pestcontrol"
+  | "sportsacademy"
+  | "news"
+  | "evcharging"
+  | "restrooms"
+  | "doctors"
+  | "agriculture";
 
 export type DirectoryItem = {
   name: string;
@@ -85,7 +97,13 @@ export const categories = [
   { key: "petrol", label: "Petrol Pumps", icon: Fuel, tint: "#059669" },
   { key: "hotels", label: "Hotels", icon: Hotel, tint: "#7c3aed" },
   { key: "dinner", label: "Dinner", icon: Utensils, tint: "#ea580c" },
-  { key: "sightseeing", label: "Sightseeing", icon: MapPin, tint: "#0891b2" }
+  { key: "sightseeing", label: "Sightseeing", icon: MapPin, tint: "#0891b2" },
+  { key: "doctors", label: "Doctors", icon: Stethoscope, tint: "#dc2626" },
+  { key: "sportsacademy", label: "Sports Academy", icon: Trophy, tint: "#16a34a" },
+  { key: "evcharging", label: "EV Charging", icon: PlugZap, tint: "#059669" },
+  { key: "restrooms", label: "Public Restrooms", icon: Toilet, tint: "#0284c7" },
+  { key: "news", label: "News & Media", icon: Newspaper, tint: "#475569" },
+  { key: "agriculture", label: "Agriculture", icon: Tractor, tint: "#65a30d" }
 ] as const;
 
 export const cities = ["Delhi", "Mumbai", "Bengaluru", "Jaipur", "Surat", "Hyderabad", "Leh"] as const;
