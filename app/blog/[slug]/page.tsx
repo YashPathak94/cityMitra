@@ -80,16 +80,25 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
 
         <section className="blogBody">
-          {post.body.map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
+          {post.blocks.map((block, index) => {
+            if (block.type === "h2") return <h2 key={index}>{block.text}</h2>;
+            if (block.type === "list")
+              return (
+                <ul key={index}>
+                  {block.items.map((item, itemIndex) => (
+                    <li key={itemIndex}>{item}</li>
+                  ))}
+                </ul>
+              );
+            return <p key={index}>{block.text}</p>;
+          })}
         </section>
 
         <section className="blogPostCta">
-          <h2>Plan your next trip with CityMitra</h2>
-          <p>Build a saving plan, compare transport and hotels, and chat with the AI guide for your destination.</p>
-          <Link className="primaryButton" href="/travel-plan">
-            Open Travel Plan <ArrowRight size={17} />
+          <h2>Put this into practice on CityMitra</h2>
+          <p>Every guide on this blog maps to a live feature — try it on your own city, free, no sign-up.</p>
+          <Link className="primaryButton" href={post.ctaHref}>
+            {post.ctaLabel} <ArrowRight size={17} />
           </Link>
         </section>
       </article>

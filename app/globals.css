@@ -11127,6 +11127,29 @@ a.dealCard:focus-visible {
   line-height: 1.75;
 }
 
+.blogBody h2 {
+  margin: 26px 0 10px;
+  font-size: 1.4rem;
+  line-height: 1.25;
+}
+
+.blogBody ul {
+  margin: 0 0 16px;
+  padding-left: 22px;
+  display: grid;
+  gap: 8px;
+}
+
+.blogBody li {
+  color: var(--ink);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.blogBody li::marker {
+  color: var(--orange);
+}
+
 .blogPostCta {
   border: 1px solid var(--line);
   border-radius: 22px;
