@@ -36,6 +36,28 @@ const nextConfig = {
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]
       }
     ];
+  },
+  async redirects() {
+    // Both Vercel project aliases 301 to the real domain. This is a durable
+    // fix independent of NEXT_PUBLIC_SITE_URL: even if that env var is ever
+    // unset/wrong again, or someone lands on/links the vercel.app URL, Google
+    // and users both get sent to ctmitra.com instead of splitting signal
+    // across two domains. Only exact production aliases match -- branch/
+    // preview deployment URLs (city-mitra-<hash>.vercel.app) are untouched.
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "city-mitra.vercel.app" }],
+        destination: "https://ctmitra.com/:path*",
+        permanent: true
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "citymitra.vercel.app" }],
+        destination: "https://ctmitra.com/:path*",
+        permanent: true
+      }
+    ];
   }
 };
 
