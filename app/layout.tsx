@@ -17,11 +17,15 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ctmitra.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "CityMitra | AI City Guide for Indian Cities",
+    // "(ctmitra.com)" in the home title deliberately bridges the brand name
+    // (CityMitra) to the domain spelling (ctmitra, no "y") so the literal
+    // query "ctmitra" matches on-page text. Safe to drop once the brand
+    // query ranks on its own.
+    default: "CityMitra (ctmitra.com) | AI City Guide for Indian Cities",
     template: "%s | CityMitra"
   },
   description:
-    "CityMitra is an AI-powered city guide for India. Find trusted markets, hospitals, hotels, food, repairs, petrol pumps, and sightseeing with smart routes, maps, and a chat planner.",
+    "CityMitra (ctmitra.com) is an AI-powered city guide for India. Find trusted markets, hospitals, hotels, food, repairs, petrol pumps, and sightseeing with smart routes, maps, and a chat planner.",
   keywords: [
     "CityMitra",
     "ctmitra",

@@ -91,9 +91,10 @@ export function AboutSection() {
             <span className="sectionKicker">About CityMitra</span>
             <h2>Built to make Indian city decisions faster, cleaner, and less chaotic</h2>
             <p>
-              CityMitra is an AI-assisted city companion for shopping streets, wholesale markets, hospitals, hotels,
-              food trails, vehicle support, schools, malls, play arenas, and sightseeing. The goal is simple: help
-              people choose where to go, what to expect, and what backup options sit nearby before they leave.
+              CityMitra (ctmitra.com) is an AI-assisted city companion for shopping streets, wholesale markets,
+              hospitals, hotels, food trails, vehicle support, schools, malls, play arenas, and sightseeing. The goal
+              is simple: help people choose where to go, what to expect, and what backup options sit nearby before
+              they leave.
             </p>
           </div>
         </Reveal>
