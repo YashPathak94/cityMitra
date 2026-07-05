@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { cityGuides } from "@/data/city-guides";
 import { blogPosts } from "@/data/blog-posts";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://citymitra.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ctmitra.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import PageShell from "@/app/components/PageShell";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://citymitra.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ctmitra.com";
 const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "helpdesk@ctmitra.com";
 
 export const metadata: Metadata = {

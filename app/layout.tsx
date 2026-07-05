@@ -12,7 +12,7 @@ const jakarta = Plus_Jakarta_Sans({
   variable: "--font-sans"
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://citymitra.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ctmitra.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -23,14 +23,28 @@ export const metadata: Metadata = {
   description:
     "CityMitra is an AI-powered city guide for India. Find trusted markets, hospitals, hotels, food, repairs, petrol pumps, and sightseeing with smart routes, maps, and a chat planner.",
   keywords: [
+    "CityMitra",
+    "ctmitra",
+    "ctmitra.com",
     "Indian city guide",
     "AI travel planner India",
+    "AI city guide India",
     "wholesale markets India",
     "city recommendations",
+    "things to do near me India",
+    "local business directory India",
+    "travel budget planner India",
     "trip planner",
-    "CityMitra"
+    "EV charging station finder India",
+    "nearby doctors clinics India"
   ],
   alternates: { canonical: "/" },
+  // Set GOOGLE_SITE_VERIFICATION after adding the domain in Google Search
+  // Console (Settings > Ownership verification > HTML tag > copy just the
+  // content="..." value). Omitted entirely until then, no placeholder tag.
+  ...(process.env.GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+    : {}),
   openGraph: {
     type: "website",
     url: siteUrl,
@@ -79,6 +93,10 @@ const jsonLd = {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
       name: "CityMitra",
+      // Domain spells "ctmitra" (no "y") while the product is called
+      // "CityMitra" everywhere in copy — alternateName ties the two together
+      // for search engines so a literal "ctmitra" query can resolve here.
+      alternateName: ["ctmitra", "ctmitra.com"],
       url: siteUrl,
       email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "helpdesk@ctmitra.com",
       description: "AI city guide and travel planner for Indian cities."

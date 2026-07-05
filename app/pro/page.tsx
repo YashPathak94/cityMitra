@@ -4,7 +4,7 @@ import PageShell from "@/app/components/PageShell";
 import ProAccess from "@/app/components/ProAccess";
 import { proFeatures, proPriceInr } from "@/lib/pro";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://citymitra.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ctmitra.com";
 
 export const metadata: Metadata = {
   title: "CityMitra Pro",

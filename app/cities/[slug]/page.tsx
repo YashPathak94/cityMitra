@@ -7,7 +7,7 @@ import { categories, directory } from "@/data/city-directory";
 import PageShell from "@/app/components/PageShell";
 import ShareRow from "@/app/components/ShareRow";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://citymitra.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ctmitra.com";
 
 export function generateStaticParams() {
   return cityGuides.map((guide) => ({ slug: guide.slug }));

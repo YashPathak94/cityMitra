@@ -6,7 +6,7 @@ import { blogPosts, getBlogPost } from "@/data/blog-posts";
 import PageShell from "@/app/components/PageShell";
 import ShareRow from "@/app/components/ShareRow";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://citymitra.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ctmitra.com";
 
 export function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
