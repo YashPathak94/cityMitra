@@ -11353,3 +11353,17 @@ a.dealCard:focus-visible {
   justify-content: space-between;
   gap: 12px;
 }
+
+.blogRssLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.blogRssLink:hover {
+  color: var(--orange);
+}

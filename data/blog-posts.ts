@@ -258,6 +258,221 @@ export const blogPosts: BlogPost[] = [
         "Open your city, tap one category you'd normally Google, and time the difference. That gap — multiplied across every errand, trip, and booking — is the whole pitch."
       )
     ]
+  },
+  {
+    slug: "city-guides-neighbourhood-playbook",
+    title: "Inside CityMitra's City Guides: A Neighbourhood Playbook for Every City",
+    excerpt:
+      "Best time to visit, how to get around, which areas do what, and a budget note that's actually honest — how CityMitra's city guides are built and how to use them before you plan anything else.",
+    date: "2026-07-04",
+    author: "CityMitra Team",
+    coverImage: imageForTheme("city"),
+    tags: ["City Guides", "Feature Deep-Dive", "Product"],
+    ctaLabel: "Browse city guides",
+    ctaHref: "/cities",
+    blocks: [
+      p(
+        "Most 'city guide' content online is either a decade old or written by someone who visited once for a weekend. CityMitra's city guides are built the other way round — structured like a local's mental map, not a tourist brochure."
+      ),
+      h2("What's actually on a city guide page"),
+      list(
+        "Best time to visit — weather and crowd timing specific to that city, not generic 'October to March' advice",
+        "Getting around — the real transport answer: metro, auto, app-cabs, or a car, and when each makes sense",
+        "A budget note that says what things actually cost, not a vague 'affordable' or 'expensive' label",
+        "Key areas and what they're each known for — so you know why you'd go to Connaught Place versus Chandni Chowk",
+        "Curated picks pulled straight from the directory for that city, with local tips attached"
+      ),
+      h2("Why 'key areas' matter more than a list of attractions"),
+      p(
+        "A list of ten monuments doesn't tell you how a city works. Knowing that one area is the wholesale textile zone, another is the food street, and a third is where the business hotels cluster — that's what actually changes how you plan a day. CityMitra's guides are organised around that, city by city, from Delhi and Mumbai down to Leh."
+      ),
+      h2("Built to hand off, not to replace planning"),
+      p(
+        "A city guide page is deliberately the first stop, not the last. Every guide ends with a direct line into City Chat to get a personalised route with timings, and the curated picks link straight into Google Maps. Read the guide once before a trip; use the chat and the directory for everything specific to that day."
+      ),
+      p(
+        "Seven cities are live at launch — Delhi, Mumbai, Bengaluru, Jaipur, Surat, Hyderabad, and Leh — with more being added as the directory grows."
+      )
+    ]
+  },
+  {
+    slug: "how-citymitra-offers-work",
+    title: "How CityMitra's Offers & Deals Rail Works (And Why the Discounts Are Real)",
+    excerpt:
+      "A hotel discount rail on the home page, an /offers page you can filter by category, and an honest 'coming soon' label instead of a fake discount when a deal isn't live yet.",
+    date: "2026-07-05",
+    author: "CityMitra Team",
+    coverImage: imageForTheme("hotel"),
+    tags: ["Offers", "Feature Deep-Dive", "Deals"],
+    ctaLabel: "See today's offers",
+    ctaHref: "/offers",
+    blocks: [
+      p(
+        "Most 'deals' sections on travel sites show you whatever the highest-paying partner wants shown, labelled as if it's picked for you. CityMitra's Offers rail works differently, and it's worth explaining exactly how."
+      ),
+      h2("What you'll actually find there"),
+      list(
+        "Hotels: discounts from Booking.com, Agoda, MakeMyTrip, Expedia and Tripadvisor",
+        "Flights: fare codes from Cleartrip and similar partners",
+        "Shopping: fashion deals like Myntra's seasonal sale",
+        "Cards: reward-point offers, like the HDFC IRCTC card, for people who book trains often"
+      ),
+      h2("Why some cards say 'Coming soon' instead of a discount"),
+      p(
+        "When a category doesn't have a live partner deal yet — cabs and food delivery, at the time of writing — CityMitra shows a plainly labelled 'Coming soon' card instead of inventing a discount percentage to fill the space. An empty-looking slot is more honest than a fabricated one, and it's a small thing that matters: if we'll lie about a 40% discount that doesn't exist, why would you trust anything else on the page?"
+      ),
+      h2("Sponsored means sponsored"),
+      p(
+        "Every partner link carries a 'sponsored' tag, both visibly and in the page's technical markup, because that's what it is. CityMitra earns a commission when you book through these links — that's the business model, stated plainly rather than hidden in fine print. It doesn't cost you anything extra, and it's how a free, sign-up-free site stays running."
+      ),
+      h2("Where to find it"),
+      p(
+        "The compact offers strip sits on the home page, right below the concierge banner. For the full list with category filters — Hotels, Flights, Cabs, Food, Trains, Cards, Shopping — head to the dedicated /offers page."
+      )
+    ]
+  },
+  {
+    slug: "your-feedback-shapes-citymitra",
+    title: "One Tap, Five Stars: How Your Feedback Shapes CityMitra",
+    excerpt:
+      "A one-row star rating on the home page that takes ten seconds — here's where that feedback actually goes, and why we built it deliberately small instead of a full review system.",
+    date: "2026-07-06",
+    author: "CityMitra Team",
+    coverImage: imageForTheme("ai"),
+    tags: ["Feedback", "Product", "Community"],
+    ctaLabel: "Share your feedback",
+    ctaHref: "/",
+    blocks: [
+      p(
+        "Most feedback widgets are either a popup you have to dismiss twice or a five-page survey nobody finishes. CityMitra's feedback strip is neither — it's one row, near the footer, that takes about ten seconds if you use it at all."
+      ),
+      h2("What it looks like"),
+      p(
+        "Tap a star out of five. If you want, add a one-line note — what worked, or what to fix. Hit send. That's the entire interaction. No account, no email required, no follow-up prompts."
+      ),
+      h2("Where it actually goes"),
+      p(
+        "Your rating and note land in the same activity pipeline that powers CityMitra's internal analytics — visible to the team, not sold or shared anywhere. Low ratings with a note are exactly how listing errors and broken categories get caught and fixed; we don't have a large moderation team, so this small, low-friction channel is genuinely how issues surface."
+      ),
+      h2("Why it's this small on purpose"),
+      p(
+        "A full review system with photos, replies, and public profiles is a bigger commitment than most people want to make for a quick city-guide session. Keeping it to one tap plus an optional line means more people actually use it, and the signal we get — even just a star count trend — is more useful than a handful of essay-length reviews from the most motivated 1% of visitors."
+      ),
+      p(
+        "If you've used CityMitra to find a market, book a cab, or plan a trip, the star rating at the bottom of the home page is the fastest way to tell us whether it worked."
+      )
+    ]
+  },
+  {
+    slug: "every-category-citymitra-covers",
+    title: "Every Category CityMitra Covers — From Wholesale Markets to EV Chargers",
+    excerpt:
+      "Thirty-plus categories spanning shopping, health, home services, and everyday utilities — a full list of what CityMitra tracks per city, and why the category list keeps growing.",
+    date: "2026-07-07",
+    author: "CityMitra Team",
+    coverImage: imageForTheme("wholesale"),
+    tags: ["Categories", "Feature Deep-Dive", "Product"],
+    ctaLabel: "Explore all categories",
+    ctaHref: "/",
+    blocks: [
+      p(
+        "A city guide is only as useful as its category list. CityMitra started with the obvious ones — markets, hotels, food — and has kept adding the categories that come up in real errands, not just travel planning."
+      ),
+      h2("Shopping & commerce"),
+      list(
+        "Wholesale markets, sarees, electronics, malls, agriculture supply",
+        "Each with city-specific search phrasing — 'wholesale market' means something different in Surat than in Jaipur"
+      ),
+      h2("Health & essential services"),
+      list(
+        "Hospitals and doctors — general physicians, paediatricians, dentists, specialists — with a Practo handoff",
+        "Public restrooms — Sulabh facilities, mall and metro-station options",
+        "Petrol pumps and EV charging — fast DC chargers, CNG stations, battery-swap points"
+      ),
+      h2("Home & everyday help"),
+      list(
+        "Plumber, electrician, carpenter, AC repair, pest control, laundry, packers & movers, pandit"
+      ),
+      h2("Leisure, learning & life admin"),
+      list(
+        "Gyms, salons, play arenas, sports academies, schools, sightseeing, news & media agencies"
+      ),
+      h2("Why the list keeps growing"),
+      p(
+        "Doctors, sports academies, EV charging, public restrooms, news & media, and agriculture are some of the newest additions — added because they're the searches people actually make on a normal day, not because they photograph well for a travel brochure. Every category works the same way: tap it, and CityMitra hands you off to Google Maps with the right search already typed in for your city."
+      )
+    ]
+  },
+  {
+    slug: "citymitra-free-no-signup-explained",
+    title: "CityMitra Is Free and Sign-Up-Free — Here's Exactly What That Means",
+    excerpt:
+      "No account wall, no email gate, no dark patterns. Here's what you can do without ever creating an account, and how a free product actually stays funded.",
+    date: "2026-07-08",
+    author: "CityMitra Team",
+    coverImage: imageForTheme("cab"),
+    tags: ["Why CityMitra", "Product", "Transparency"],
+    ctaLabel: "Start browsing free",
+    ctaHref: "/",
+    blocks: [
+      p(
+        "A lot of 'free' products aren't, really — you hit a wall after three searches, or a paywall shows up right when you're about to find what you needed. CityMitra doesn't do that, and it's worth being specific about what 'free' actually covers."
+      ),
+      h2("What you can do without an account"),
+      list(
+        "Browse every city and every category, unlimited",
+        "Chat with the AI guide and get full answers",
+        "Build a full Travel Plan and export it as a PDF or CSV",
+        "Read every blog post and city guide",
+        "Submit feedback and subscribe to the newsletter"
+      ),
+      h2("What an account is actually for"),
+      p(
+        "CityMitra Pro exists for people who want extra features layered on top — it's opt-in, not a requirement to use the core product. You'll never be blocked mid-task and asked to sign up just to see a result you were already looking at."
+      ),
+      h2("So how does a free site pay for itself?"),
+      p(
+        "Two ways, both disclosed on the page itself: partner commissions on the Offers rail (clearly tagged 'sponsored'), and Google-served ads. We don't sell your data — the privacy policy is specific about what's collected (mostly anonymous usage events) and what isn't (names, phone numbers, payment details aren't collected at all)."
+      ),
+      p(
+        "The bet is straightforward: a genuinely useful, honest free tool earns enough trust and traffic that the ad and partner revenue works out, without ever needing to gate the product behind a sign-up wall."
+      )
+    ]
+  },
+  {
+    slug: "search-citymitra-like-a-pro",
+    title: "Search CityMitra Like a Pro: ⌘K, City Switching, and Smart Search",
+    excerpt:
+      "The command palette, quick city switching, and search phrases that actually work — small features that save real time once you know they're there.",
+    date: "2026-07-09",
+    author: "CityMitra Team",
+    coverImage: imageForTheme("market"),
+    tags: ["How-To", "Search", "Product"],
+    ctaLabel: "Try the search",
+    ctaHref: "/",
+    blocks: [
+      p(
+        "CityMitra has a few small navigation features that aren't obvious on first visit but save real time once you know they exist. Here's the shortlist."
+      ),
+      h2("⌘K / Ctrl+K opens the command palette"),
+      p(
+        "From anywhere on the site, press Cmd+K (Mac) or Ctrl+K (Windows/Linux) to open a fast search box. Type a city, a category, or a page name — 'Jaipur', 'EV charger', 'Travel Plan' — and jump straight there without clicking through menus."
+      ),
+      h2("Switching cities takes one tap"),
+      p(
+        "The city picker in the header remembers your current city as you browse categories, so switching from Delhi to Mumbai mid-session doesn't reset your place in the page. If you allow location access, CityMitra can also set your city automatically and sort results by actual distance."
+      ),
+      h2("Search phrases that work well"),
+      list(
+        "City + category: 'sarees in Surat', 'wholesale market Jaipur'",
+        "Utility + urgency: 'EV charger near me', '24 hour petrol pump'",
+        "Natural questions in City Chat: 'one day in Jaipur for textiles and food'"
+      ),
+      h2("Everything funnels into a map"),
+      p(
+        "Whichever path you use to find something — search, chat, or browsing categories — the destination is the same: a 'Show on map' action that hands off to Google Maps for the live details. The navigation features exist purely to get you to that handoff faster."
+      )
+    ]
   }
 ];
 

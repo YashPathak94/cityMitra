@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CalendarDays } from "lucide-react";
+import { ArrowRight, CalendarDays, Rss } from "lucide-react";
 import { blogPosts } from "@/data/blog-posts";
 import PageShell from "@/app/components/PageShell";
 
 export const metadata: Metadata = {
   title: "Blog",
   description: "Travel funding tips, city guides, and market know-how from the CityMitra team.",
-  alternates: { canonical: "/blog" }
+  alternates: {
+    canonical: "/blog",
+    types: { "application/rss+xml": "/blog/rss.xml" }
+  }
 };
 
 function formatDate(iso: string) {
@@ -21,6 +24,9 @@ export default function BlogIndexPage() {
         <span className="sectionKicker">Blog</span>
         <h1>Travel funding tips, city guides, and market know-how</h1>
         <p>Practical, no-fluff writing on planning trips, funding them smarter, and getting the most out of Indian cities.</p>
+        <a className="blogRssLink" href="/blog/rss.xml">
+          <Rss size={13} /> RSS feed
+        </a>
       </section>
 
       <section className="blogGrid" aria-label="All blog posts">
