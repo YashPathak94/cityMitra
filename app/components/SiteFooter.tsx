@@ -1,19 +1,12 @@
 "use client";
 
-import { ArrowUp, Instagram, Linkedin, Mail, Send } from "lucide-react";
+import { ArrowUp, Instagram, Linkedin, Mail, Rss, Send } from "lucide-react";
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { CategoryKey } from "@/data/city-directory";
 import { trackActivity } from "@/lib/tracking";
+import { socialProfiles } from "@/lib/social";
 import LogoMark from "@/app/components/Logo";
-
-// Set these in .env.local / Vercel to point at your real profiles.
-const socialProfiles = {
-  x: process.env.NEXT_PUBLIC_SOCIAL_X || "https://x.com",
-  instagram: process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM || "https://instagram.com",
-  linkedin: process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN || "https://linkedin.com",
-  whatsapp: process.env.NEXT_PUBLIC_SOCIAL_WHATSAPP || "https://whatsapp.com"
-};
 
 function WhatsAppIcon({ size = 17 }: { size?: number }) {
   return (
@@ -122,6 +115,9 @@ export default function SiteFooter({ city, category }: SiteFooterProps) {
             </a>
             <a href={socialProfiles.whatsapp} target="_blank" rel="noreferrer" aria-label="WhatsApp">
               <WhatsAppIcon size={17} />
+            </a>
+            <a href="/blog/rss.xml" aria-label="RSS feed">
+              <Rss size={17} />
             </a>
           </div>
         </div>

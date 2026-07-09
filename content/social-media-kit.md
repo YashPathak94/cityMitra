@@ -8,9 +8,9 @@ manually posting each one.
 
 ## Handles (check availability first — these are suggestions)
 
-| Platform  | Suggested handle          |
+| Platform  | Handle                     |
 |-----------|----------------------------|
-| Instagram | @ctmitra or @ctmitra.official |
+| Instagram | [@citymitra_](https://www.instagram.com/citymitra_/) — live, wired into the footer and JSON-LD `sameAs` |
 | Facebook  | facebook.com/ctmitra (Page, not personal profile) |
 | X         | @ctmitra                   |
 | LinkedIn  | linkedin.com/company/ctmitra (Company Page) |

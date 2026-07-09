@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { knownSocialProfiles } from "@/lib/social";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -105,7 +106,8 @@ const jsonLd = {
       logo: `${siteUrl}/brand/citymitra-icon-512.png`,
       slogan: "Your Need. Your Mitra.",
       email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "helpdesk@ctmitra.com",
-      description: "AI city guide and travel planner for Indian cities."
+      description: "AI city guide and travel planner for Indian cities.",
+      sameAs: knownSocialProfiles
     }
   ]
 };
