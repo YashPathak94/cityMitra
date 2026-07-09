@@ -11,7 +11,10 @@ export default function PageShell({ children }: { children: React.ReactNode }) {
             <span className="brandMark brandMarkRich">
               <LogoMark />
             </span>
-            CityMitra
+            <span className="brandText">
+              CityMitra
+              <span className="brandTagline">Your Need. Your Mitra.</span>
+            </span>
           </Link>
           <nav className="subpageLinks" aria-label="Site navigation">
             <Link href="/">Home</Link>

@@ -86,7 +86,10 @@ export default function AuthPanel() {
           <span className="brandMark authBrandMark brandMarkRich">
             <LogoMark size={30} />
           </span>
-          CityMitra
+          <span className="brandText">
+            CityMitra
+            <span className="brandTagline">Your Need. Your Mitra.</span>
+          </span>
         </Link>
 
         <div className="authCard">

@@ -77,7 +77,10 @@ export default function ResetPage() {
           <span className="brandMark brandMarkRich">
             <LogoMark />
           </span>
-          CityMitra
+          <span className="brandText">
+            CityMitra
+            <span className="brandTagline">Your Need. Your Mitra.</span>
+          </span>
         </Link>
         <h1>Reset your password</h1>
         <Suspense fallback={<p>Loading…</p>}>

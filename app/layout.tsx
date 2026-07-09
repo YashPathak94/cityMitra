@@ -103,7 +103,7 @@ const jsonLd = {
       alternateName: ["ctmitra", "ctmitra.com"],
       url: siteUrl,
       logo: `${siteUrl}/brand/citymitra-icon-512.png`,
-      slogan: "Your Need Your Mitra",
+      slogan: "Your Need. Your Mitra.",
       email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "helpdesk@ctmitra.com",
       description: "AI city guide and travel planner for Indian cities."
     }

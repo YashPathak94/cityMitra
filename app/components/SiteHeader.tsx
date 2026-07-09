@@ -88,7 +88,10 @@ export default function SiteHeader({ onSearch, city, onSelectCity }: SiteHeaderP
             <span className="brandMark brandMarkRich">
               <LogoMark />
             </span>
-            CityMitra
+            <span className="brandText">
+              CityMitra
+              <span className="brandTagline">Your Need. Your Mitra.</span>
+            </span>
           </a>
           {city && onSelectCity && <CityPicker city={city} onSelect={onSelectCity} />}
         </div>

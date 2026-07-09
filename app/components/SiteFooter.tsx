@@ -110,7 +110,7 @@ export default function SiteFooter({ city, category }: SiteFooterProps) {
             </span>
             CityMitra
           </Link>
-          <span className="footerTagline">Your Need Your Mitra</span>
+          <span className="footerTagline">Your Need. Your Mitra.</span>
           <p>CityMitra — ctmitra.com. AI city navigation for commerce, travel, services, and everyday decisions.</p>
           <div className="socialLinks" aria-label="Social links">
             <a href={socialProfiles.x} target="_blank" rel="noreferrer" aria-label="X (Twitter)">X</a>
