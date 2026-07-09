@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowRight, Compass, LayoutGrid, MapPinned, Navigation, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import LogoMark from "@/app/components/Logo";
 
 const seenKey = "citymitra-welcome-seen";
 
@@ -64,8 +65,8 @@ export default function WelcomeIntro({ onAskAI, onBrowseCategories, onEnableLoca
             <div className="welcomeGrid">
               <div className="welcomeMain">
                 <span className="welcomeBadge">
-                  <span className="welcomeBadgeMark">
-                    <Navigation size={15} />
+                  <span className="welcomeBadgeMark brandMarkRich">
+                    <LogoMark size={34} />
                   </span>
                   CityMitra
                 </span>
