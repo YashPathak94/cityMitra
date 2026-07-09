@@ -9,7 +9,6 @@ import {
   LogOut,
   Menu,
   MessageSquarePlus,
-  Navigation,
   PanelLeftClose,
   Sparkles,
   Trash2,
@@ -18,6 +17,7 @@ import {
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { buildConcierge } from "@/lib/booking";
 import { categories } from "@/data/city-directory";
+import LogoMark from "@/app/components/Logo";
 import { buildGeneratedResults, detectCategoryFromText, detectKnownCity } from "@/lib/city-intel";
 import {
   Conversation,
@@ -302,7 +302,9 @@ export default function ChatWorkspace() {
       <aside className={sidebarOpen ? "chatSidebar open" : "chatSidebar"}>
         <div className="chatSidebarTop">
           <Link className="chatBrand" href="/">
-            <span className="brandMark"><Navigation size={16} /></span>
+            <span className="brandMark brandMarkRich chatBrandMark">
+              <LogoMark size={18} />
+            </span>
             CityMitra
           </Link>
           <button className="chatSidebarClose" type="button" onClick={() => setSidebarOpen(false)} aria-label="Close sidebar">

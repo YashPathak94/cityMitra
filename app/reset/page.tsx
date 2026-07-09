@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, FormEvent, useState } from "react";
-import { Navigation } from "lucide-react";
+import LogoMark from "@/app/components/Logo";
 
 function ResetForm() {
   const router = useRouter();
@@ -74,8 +74,8 @@ export default function ResetPage() {
     <main className="pageShellMain">
       <article className="policyPage" style={{ maxWidth: 460 }}>
         <Link className="brand" href="/" aria-label="CityMitra home">
-          <span className="brandMark">
-            <Navigation size={18} />
+          <span className="brandMark brandMarkRich">
+            <LogoMark />
           </span>
           CityMitra
         </Link>

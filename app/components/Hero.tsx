@@ -60,7 +60,7 @@ export default function Hero({
           >
             <motion.div className="eyebrow" variants={heroItem}>
               <Sparkles size={16} />
-              AI city navigation for Indian commerce
+              AI city navigation for commerce
             </motion.div>
             <motion.h1 variants={heroItem}>CityMitra</motion.h1>
             <motion.p variants={heroItem}>

@@ -1,10 +1,11 @@
 "use client";
 
-import { ArrowUp, Instagram, Linkedin, Mail, Navigation, Send } from "lucide-react";
+import { ArrowUp, Instagram, Linkedin, Mail, Send } from "lucide-react";
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { CategoryKey } from "@/data/city-directory";
 import { trackActivity } from "@/lib/tracking";
+import LogoMark from "@/app/components/Logo";
 
 // Set these in .env.local / Vercel to point at your real profiles.
 const socialProfiles = {
@@ -104,15 +105,13 @@ export default function SiteFooter({ city, category }: SiteFooterProps) {
       <div className="footerGrid">
         <div className="footerBrand">
           <Link className="brand" href="/" aria-label="CityMitra home">
-            <span className="brandMark">
-              <Navigation size={18} />
+            <span className="brandMark brandMarkRich">
+              <LogoMark />
             </span>
             CityMitra
           </Link>
-          <p>
-            CityMitra — ctmitra.com. AI city navigation for Indian commerce, travel, services, and everyday
-            decisions.
-          </p>
+          <span className="footerTagline">Your Need Your Mitra</span>
+          <p>CityMitra — ctmitra.com. AI city navigation for commerce, travel, services, and everyday decisions.</p>
           <div className="socialLinks" aria-label="Social links">
             <a href={socialProfiles.x} target="_blank" rel="noreferrer" aria-label="X (Twitter)">X</a>
             <a href={socialProfiles.instagram} target="_blank" rel="noreferrer" aria-label="Instagram">

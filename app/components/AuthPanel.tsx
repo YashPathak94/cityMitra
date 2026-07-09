@@ -1,11 +1,12 @@
 "use client";
 
-import { Eye, EyeOff, Navigation } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { trackActivity } from "@/lib/tracking";
 import { Typewriter } from "./Typewriter";
+import LogoMark from "@/app/components/Logo";
 
 const googleEnabled = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true";
 
@@ -82,8 +83,8 @@ export default function AuthPanel() {
     <div className="authScreen">
       <div className="authFormSide">
         <Link className="authBrand" href="/" aria-label="CityMitra home">
-          <span className="brandMark authBrandMark">
-            <Navigation size={16} />
+          <span className="brandMark authBrandMark brandMarkRich">
+            <LogoMark size={30} />
           </span>
           CityMitra
         </Link>

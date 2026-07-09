@@ -2585,9 +2585,14 @@ textarea {
   gap: 12px;
 }
 
-.footerBrand .brandMark {
-  background: linear-gradient(135deg, var(--orange), var(--blue));
-  color: var(--white);
+.footerTagline {
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  background: linear-gradient(120deg, #fdba74, #93c5fd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .footerBrand p,
@@ -5928,6 +5933,11 @@ body {
   gap: 9px;
   font-weight: 800;
   color: var(--ink);
+}
+
+.chatBrandMark {
+  width: 20px;
+  height: 20px;
 }
 
 .chatSidebarClose {

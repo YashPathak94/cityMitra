@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Navigation } from "lucide-react";
 import SiteFooter from "@/app/components/SiteFooter";
+import LogoMark from "@/app/components/Logo";
 
 export default function PageShell({ children }: { children: React.ReactNode }) {
   return (
@@ -8,8 +8,8 @@ export default function PageShell({ children }: { children: React.ReactNode }) {
       <header className="glassNav scrolled">
         <div className="glassNavInner">
           <Link className="brand" href="/" aria-label="CityMitra home">
-            <span className="brandMark">
-              <Navigation size={18} />
+            <span className="brandMark brandMarkRich">
+              <LogoMark />
             </span>
             CityMitra
           </Link>

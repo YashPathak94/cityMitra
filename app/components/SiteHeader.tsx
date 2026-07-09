@@ -6,26 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import CityPicker from "./CityPicker";
 import CommandPalette from "./CommandPalette";
-
-function LogoMark() {
-  return (
-    <svg width={34} height={34} viewBox="0 0 34 34" fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="cmLogo" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#fb923c" />
-          <stop offset="0.55" stopColor="#ea580c" />
-          <stop offset="1" stopColor="#2563eb" />
-        </linearGradient>
-      </defs>
-      <rect width="34" height="34" rx="10" fill="url(#cmLogo)" />
-      <path
-        d="M17 6.6c-3.7 0-6.7 3-6.7 6.7 0 4.8 6.7 11.4 6.7 11.4s6.7-6.6 6.7-11.4c0-3.7-3-6.7-6.7-6.7z"
-        fill="#fff"
-      />
-      <circle cx="17" cy="13.1" r="2.6" fill="url(#cmLogo)" />
-    </svg>
-  );
-}
+import LogoMark from "./Logo";
 
 const navLinks: Array<{ href: string; id?: string; label: string }> = [
   { href: "#top", label: "Home" },
