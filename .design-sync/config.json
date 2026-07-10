@@ -1,0 +1,9 @@
+{
+  "pkg": "@citymitra/ui",
+  "globalName": "CityMitraUI",
+  "projectId": "900bd373-4a0f-4ac6-a1a3-9938a68e27cd",
+  "shape": "package",
+  "buildCmd": "npm run build",
+  "cssEntry": "dist/styles.css",
+  "readmeHeader": ".design-sync/conventions.md"
+}
