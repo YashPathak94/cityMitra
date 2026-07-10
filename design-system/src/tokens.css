@@ -1,0 +1,40 @@
+/* CityMitra design tokens — the single source of brand truth. Every component
+   in @citymitra/ui styles itself from these `--cm-*` variables, so re-theming
+   the whole system (light values, a future dark "night-city" theme) is a
+   matter of overriding this block, not editing components. */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
+
+:root {
+  /* Neutrals / text */
+  --cm-ink: #0f172a;
+  --cm-muted: #64748b;
+  --cm-line: #f4dfd2;
+  --cm-white: #ffffff;
+
+  /* Warm surfaces */
+  --cm-paper: #fff7ed;
+  --cm-soft: #fff3e8;
+
+  /* Brand + accents */
+  --cm-orange: #ea580c;
+  --cm-gold: #f97316;
+  --cm-blue: #2563eb;
+  --cm-teal: #0891b2;
+  --cm-green: #059669;
+  --cm-red: #dc2626;
+
+  /* The signature CityMitra gradient — orange → deep orange → blue. This is
+     the brand's DNA; it lives in the logo and every primary surface. */
+  --cm-gradient: linear-gradient(135deg, #fb923c 0%, #ea580c 55%, #2563eb 100%);
+
+  /* Depth + motion */
+  --cm-shadow: 0 24px 80px rgba(15, 23, 42, 0.14);
+  --cm-glow: 0 18px 60px rgba(234, 88, 12, 0.18);
+  --cm-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Shape + type */
+  --cm-radius: 8px;
+  --cm-radius-lg: 16px;
+  --cm-radius-pill: 999px;
+  --cm-font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}

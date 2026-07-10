@@ -1,0 +1,25 @@
+.cmBadge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--cm-font-sans);
+}
+
+.cmBadge--soft {
+  gap: 7px;
+  border-radius: var(--cm-radius-pill);
+  background: rgba(234, 88, 12, 0.12);
+  color: var(--cm-orange);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+}
+
+.cmBadge--eyebrow {
+  gap: 8px;
+  color: var(--cm-red);
+  font-weight: 800;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}

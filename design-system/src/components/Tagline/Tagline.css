@@ -1,0 +1,10 @@
+.cmTagline {
+  font-family: var(--cm-font-sans);
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  background: linear-gradient(120deg, #fdba74, #93c5fd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
