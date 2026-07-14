@@ -2,7 +2,7 @@
    in @citymitra/ui styles itself from these `--cm-*` variables, so re-theming
    the whole system (light values, a future dark "night-city" theme) is a
    matter of overriding this block, not editing components. */
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
 
 :root {
   /* Neutrals / text */
@@ -14,7 +14,6 @@
   /* Warm surfaces */
   --cm-paper: #fff7ed;
   --cm-soft: #fff3e8;
-  --cm-chip: #ffedd5;
 
   /* Brand + accents */
   --cm-orange: #ea580c;
@@ -30,15 +29,12 @@
 
   /* Depth + motion */
   --cm-shadow: 0 24px 80px rgba(15, 23, 42, 0.14);
-  --cm-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 28px rgba(234, 88, 12, 0.06);
-  --cm-shadow-cta: 0 12px 30px rgba(234, 88, 12, 0.32);
-  --cm-glow: 0 18px 60px rgba(234, 88, 12, 0.2);
+  --cm-glow: 0 18px 60px rgba(234, 88, 12, 0.18);
   --cm-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Shape + type */
   --cm-radius: 8px;
-  --cm-radius-lg: 24px;
+  --cm-radius-lg: 16px;
   --cm-radius-pill: 999px;
   --cm-font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-  --cm-font-display: "Instrument Serif", Georgia, serif;
 }
