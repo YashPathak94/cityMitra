@@ -1,23 +1,37 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { BedDouble, Car, Plane, ShoppingBag, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { categories, CategoryKey } from "@/data/city-directory";
 import { buildBookingOptions, BookingCategory, bookingCategoryLabels, categoryToBooking } from "@/lib/booking";
 import { buildGeneratedResults } from "@/lib/city-intel";
-import { imageForTheme } from "@/lib/category-images";
 import { trackActivity } from "@/lib/tracking";
 import ConciergePip, { LocalPicks } from "@/app/components/ConciergePip";
-import ConciergeSelector, { ConciergePanel } from "@/app/components/ConciergeSelector";
 import OfferRibbon from "@/app/components/OfferRibbon";
 import { ConciergeGroup } from "@/app/components/ConciergeCard";
+import { useCountUp } from "@/app/components/motion/useCountUp";
 
 type AiTeaserProps = {
   city: string;
   category: CategoryKey;
 };
 
+function BentoStat({ target, suffix, label }: { target: number; suffix?: string; label: string }) {
+  const { ref, value } = useCountUp(target);
+  return (
+    <div className="cmBentoStat">
+      <strong ref={ref as React.Ref<HTMLElement>}>
+        {value}
+        {suffix}
+      </strong>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+// The concierge, as a bento: one large City Chat card (the signature entry
+// point) surrounded by booking shortcuts that open the provider pip, plus a
+// gradient stat band. All booking/pip/tracking behavior is unchanged.
 export default function AiTeaser({ city, category }: AiTeaserProps) {
   const router = useRouter();
   const [pip, setPip] = useState<{ groups: ConciergeGroup[]; local: LocalPicks | null } | null>(null);
@@ -39,6 +53,11 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
     trackActivity({ type: "concierge_quick_action", city, category, label: bookingCategory });
   }
 
+  function openChat() {
+    trackActivity({ type: "open_chat", city, category, label: "bento" });
+    router.push("/chat");
+  }
+
   // Open the concierge only when the user actively switches category — never on
   // first load or when returning from /chat (those don't change the category),
   // and not when the city changes on its own (location restore/geolocation).
@@ -55,63 +74,94 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
 
-  const conciergePanels: ConciergePanel[] = [
-    {
-      key: "ai", 
-      title: "Ask City Guide",
-      description: `Plan your ${city} trip in seconds`,
-      image: "/concierge-city-chat1.webp",
-      fallbackImage: imageForTheme("ai"),
-      icon: <Sparkles size={20} />,
-      actionLabel: "Open City chat",
-      onAction: () => {
-        trackActivity({ type: "open_chat", city, category, label: "selector" });
-        router.push("/chat");
-      }
-    },
-    {
-      key: "cab",
-      title: "Book a Cab",
-      description: `Quick rides across ${city}`,
-      image: "/concierge-book-cab.webp",
-      icon: <Car size={20} />,
-      actionLabel: "Book a cab",
-      onAction: () => openBooking("cabs")
-    },
-    {
-      key: "flight",
-      title: "Book Flights",
-      description: `Fares to & from ${city}`,
-      image: "/concierege-book-flights.webp",
-      icon: <Plane size={20} />,
-      actionLabel: "Find flights",
-      onAction: () => openBooking("flights")
-    },
-    {
-      key: "hotel",
-      title: "Book Hotels",
-      description: `Top stays in ${city}`,
-      image: "/concierege-book-hotels.webp",
-      icon: <BedDouble size={20} />,
-      actionLabel: "Find hotels",
-      onAction: () => openBooking("hotels")
-    },
-    {
-      key: "wholesale",
-      title: "Explore Wholesale",
-      description: `Markets & bulk deals in ${city}`,
-      image: "/concierge-explore-market.webp",
-      icon: <ShoppingBag size={20} />,
-      actionLabel: "Explore markets",
-      onAction: () => document.getElementById("directory")?.scrollIntoView({ behavior: "smooth", block: "start" })
-    }
-  ];
-
   return (
     <section className="aiBand" id="ai">
       <OfferRibbon city={city} />
-      <div className="aiPanel aiPanelStacked">
-        <ConciergeSelector panels={conciergePanels} />
+
+      <div className="cmBentoHead">
+        <div>
+          <p className="eyebrow">Concierge</p>
+          <h2>
+            One tap. <em>Handled.</em>
+          </h2>
+        </div>
+        <p className="cmBentoHeadSub">Chat, cabs, flights, stays, wholesale runs — the whole trip from one screen.</p>
+      </div>
+
+      <div className="cmBentoGrid">
+        <button type="button" className="cmBentoCard cmBentoChat" onClick={openChat}>
+          <div>
+            <span className="cmBentoKicker">Ask City Guide</span>
+            <strong className="cmBentoChatTitle">Plan your {city} trip in seconds</strong>
+          </div>
+          <div className="cmBentoChatPreview" aria-hidden="true">
+            <span className="cmBentoBubble cmBentoBubbleAi">
+              Chai first, then the old market. Route&apos;s ready — 4 stops, metro all the way.
+            </span>
+            <span className="cmBentoBubble cmBentoBubbleUser">Weekend in {city} under ₹2k?</span>
+          </div>
+          <span className="cmBentoCardAction">
+            Open City Chat <span aria-hidden="true">→</span>
+          </span>
+        </button>
+
+        <button type="button" className="cmBentoCard" onClick={() => openBooking("cabs")}>
+          <span className="cmBentoGlyph cmBentoGlyphDot" aria-hidden="true" />
+          <div>
+            <strong>Book a cab</strong>
+            <p>Quick rides, compared</p>
+          </div>
+        </button>
+
+        <button type="button" className="cmBentoCard" onClick={() => openBooking("flights")}>
+          <span className="cmBentoGlyph cmBentoGlyphDiamond" aria-hidden="true" />
+          <div>
+            <strong>Book flights</strong>
+            <p>Fares to &amp; from {city}</p>
+          </div>
+        </button>
+
+        <button type="button" className="cmBentoCard cmBentoWide" onClick={() => openBooking("hotels")}>
+          <div>
+            <span className="cmBentoBarRow" aria-hidden="true">
+              <span className="isOn" />
+              <span />
+              <span />
+            </span>
+            <strong>Book hotels</strong>
+            <p>Top stays, tiered to your budget</p>
+          </div>
+          <span className="cmBentoCardMeta">up to −60%</span>
+        </button>
+
+        <button
+          type="button"
+          className="cmBentoCard cmBentoWide"
+          onClick={() => {
+            trackActivity({ type: "concierge_quick_action", city, category, label: "wholesale" });
+            document.getElementById("directory")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+        >
+          <div>
+            <span className="cmBentoDotGrid" aria-hidden="true">
+              <span className="isOn" />
+              <span className="isMut" />
+              <span />
+              <span className="isOn" />
+            </span>
+            <strong>Explore wholesale</strong>
+            <p>Markets &amp; bulk deals, mapped</p>
+          </div>
+          <span className="cmBentoCardMeta">trader mode</span>
+        </button>
+
+        <div className="cmBentoCard cmBentoStatBand">
+          <BentoStat target={500} suffix="+" label="cities live" />
+          <span className="cmBentoStatDivider" aria-hidden="true" />
+          <BentoStat target={30} label="categories" />
+          <span className="cmBentoStatDivider" aria-hidden="true" />
+          <BentoStat target={4} label="taps to a map" />
+        </div>
       </div>
 
       <ConciergePip

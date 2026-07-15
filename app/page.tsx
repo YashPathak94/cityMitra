@@ -7,8 +7,6 @@ import {
   buildCategoryMatrix,
   buildGeneratedResults,
   cityAliases,
-  cityImageUrl,
-  cityVisuals,
   cleanCityCandidate,
   detectCategoryFromText,
   detectCityFromMessage,
@@ -22,10 +20,11 @@ import { mapDirectionsUrl, mapSearchUrl } from "@/lib/maps";
 import { imageForTheme } from "@/lib/category-images";
 import { trackActivity } from "@/lib/tracking";
 import AiTeaser from "@/app/components/AiTeaser";
+import CinematicHero from "@/app/components/CinematicHero";
 import DirectoryExplorer from "@/app/components/DirectoryExplorer";
 import FeedbackBand from "@/app/components/FeedbackBand";
-import Hero from "@/app/components/Hero";
 import LocationPrompt from "@/app/components/LocationPrompt";
+import TravelFundTeaser from "@/app/components/TravelFundTeaser";
 import WelcomeIntro from "@/app/components/WelcomeIntro";
 import NearbyPanel from "@/app/components/NearbyPanel";
 import OffersSection from "@/app/components/OffersSection";
@@ -71,11 +70,6 @@ export default function Home() {
   const seededNearbyItems: NearbyCard[] = selectedItems.slice(0, 5);
   const selectedCategory = categories.find((item) => item.key === category);
   const categoryLabel = selectedCategory?.label || "City";
-  const cityVisual = cityVisuals[city] || {
-    image: cityImageUrl(city),
-    label: `${city} city`,
-    position: "center"
-  };
   const photoBlocks = [
     { title: "Hotels", text: "Stays near the route", image: imageForTheme("hotel"), query: `best hotels in ${city}` },
     { title: "Places", text: "Must-cover spots", image: imageForTheme("city"), query: `best places to visit in ${city}` },
@@ -219,22 +213,6 @@ export default function Home() {
     trackActivity({ type: "location_prompt_dismissed", city, category });
   }
 
-  function handleSceneAction(action: "sync" | "map" | "route") {
-    if (action === "sync") {
-      document.getElementById("directory")?.scrollIntoView({ behavior: "smooth" });
-      trackActivity({ type: "scene_action", city, category, label: "city_sync" });
-      return;
-    }
-
-    if (action === "map") {
-      openTrackedMap(`${categoryLabel} near ${city}`, "scene_map_picks");
-      return;
-    }
-
-    document.getElementById("ai")?.scrollIntoView({ behavior: "smooth" });
-    trackActivity({ type: "scene_action", city, category, label: "route_mode" });
-  }
-
   function applySearch(trimmedSearch: string) {
     const detectedCategory = detectCategoryFromText(trimmedSearch);
     const cityFromText =
@@ -277,7 +255,13 @@ export default function Home() {
 
       <SiteHeader onSearch={applySearch} city={city} onSelectCity={selectCity} />
 
-      <AiTeaser city={city} category={category} />
+      <CinematicHero
+        city={city}
+        onExploreDirectory={() => {
+          trackActivity({ type: "scene_action", city, category, label: "hero_explore_markets" });
+          document.getElementById("directory")?.scrollIntoView({ behavior: "smooth" });
+        }}
+      />
 
       <Reveal>
         <OffersSection />
@@ -316,15 +300,11 @@ export default function Home() {
       </section>
 
       <Reveal>
-        <Hero
-          city={city}
-          categoryLabel={categoryLabel}
-          cityVisual={cityVisual}
-          nearbyCount={nearbyCards.length}
-          userLocation={userLocation}
-          onSceneAction={handleSceneAction}
-          onOpenMap={openTrackedMap}
-        />
+        <TravelFundTeaser city={city} />
+      </Reveal>
+
+      <Reveal>
+        <AiTeaser city={city} category={category} />
       </Reveal>
 
       <Reveal>
