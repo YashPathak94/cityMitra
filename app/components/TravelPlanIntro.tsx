@@ -4,11 +4,10 @@ import { useEffect, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 const STEPS = [
-  { no: "01", title: "Set the trip", text: "Destination, dates, crew — the number we work backwards from." },
-  { no: "02", title: "AI builds the plan", text: "Month-by-month across SIPs, funds & stocks, sized to your risk." },
-  { no: "03", title: "Compare every ride", text: "Real fare ranges per mode — pick on price and time, not vibes." },
-  { no: "04", title: "Stays that fit", text: "Budget, comfort, premium — priced for your exact nights." },
-  { no: "05", title: "The payoff", text: "Returns + rewards offset the cost. The rest is a planned top-up." }
+  { no: "01", tag: "Dream", title: "Choose the vibe", text: "Beach reset, mountain chaos, food crawl, concert trip or luxury soft life." },
+  { no: "02", tag: "Customise", title: "Make it yours", text: "Pick crew size, comfort level, transport and cards for smarter rewards." },
+  { no: "03", tag: "See the math", title: "Live plan, zero jargon", text: "Monthly target, fare radar and projected rewards update instantly." },
+  { no: "04", tag: "Go", title: "Shareable trip card", text: "Save the plan, send it to the group chat and refine it with City Chat." }
 ];
 
 // Compact travel-plan hero: small headline on the left, the five-step
@@ -50,6 +49,7 @@ export default function TravelPlanIntro() {
           >
             <span className="planIntroStepNo">{step.no}</span>
             <span className="planIntroStepBody">
+              <em className="planIntroStepTag">{step.tag}</em>
               <strong>{step.title}</strong>
               <small>{step.text}</small>
             </span>

@@ -11453,7 +11453,7 @@ a.dealCard:focus-visible {
   text-align: center;
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
-  padding: clamp(48px, 8vh, 72px) 0 150px;
+  padding: 10px 0 150px;
 }
 
 .cmHeroKicker {
@@ -12046,6 +12046,16 @@ a.dealCard:focus-visible {
 .planIntroStep:nth-child(3) .planIntroStepNo { -webkit-text-stroke-color: var(--blue); }
 .planIntroStep:nth-child(5) .planIntroStepNo { -webkit-text-stroke-color: var(--gold); }
 
+.planIntroStepTag {
+  display: block;
+  font-style: normal;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+
 .planIntroStepBody strong {
   display: block;
   font-size: 0.9rem;
@@ -12502,5 +12512,343 @@ a.dealCard:focus-visible {
 
   .tpRiskRow {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   Travel planner wizard — 4-step flow, charts toggle, share
+   ============================================================ */
+
+.tpWizHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tpWizHead small {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+
+.tpWizHead h2 {
+  margin: 5px 0 0;
+  font-size: clamp(1.35rem, 2.2vw, 1.6rem);
+  line-height: 1.1;
+}
+
+.tpWizTools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tpProgress {
+  width: 130px;
+  height: 8px;
+  border-radius: 999px;
+  background: #f1e5dc;
+  overflow: hidden;
+}
+
+.tpProgress span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--gradient);
+  transition: width 350ms var(--smooth);
+}
+
+.tpMiniBtn {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  padding: 8px 12px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+  transition: transform 200ms var(--smooth), border-color 200ms var(--smooth);
+}
+
+.tpMiniBtn:hover {
+  transform: translateY(-1px);
+  border-color: var(--orange);
+}
+
+.tpStep {
+  animation: tpStepIn 350ms var(--smooth) both;
+}
+
+@keyframes tpStepIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tpStep { animation: none; }
+}
+
+.tpGap {
+  margin-top: 18px;
+}
+
+.tpVibeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.tpVibeGrid3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.tpVibe {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--soft);
+  padding: 14px 16px;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 200ms var(--smooth), box-shadow 200ms var(--smooth), border-color 200ms var(--smooth), background 200ms var(--smooth);
+}
+
+.tpVibe:hover {
+  transform: translateY(-2px);
+}
+
+.tpVibe.active {
+  border-color: var(--blue);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 10px 24px rgba(234, 88, 12, 0.1);
+}
+
+.tpVibeEmoji {
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.tpVibe b {
+  display: block;
+  margin-top: 9px;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.tpVibe > span:last-child {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.tpRangeRow {
+  margin-top: 16px;
+}
+
+.tpRangeRow:first-child {
+  margin-top: 20px;
+}
+
+.tpRangeTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tpRangeValue {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--orange);
+  font-variant-numeric: tabular-nums;
+}
+
+.tpRangeRow input[type="range"] {
+  width: 100%;
+  margin-top: 10px;
+  accent-color: var(--orange);
+}
+
+.tpWizActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.tpBack {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  padding: 12px 18px;
+  font-weight: 800;
+  color: var(--ink);
+  transition: transform 200ms var(--smooth), border-color 200ms var(--smooth);
+}
+
+.tpBack:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tpBack:not(:disabled):hover {
+  transform: translateY(-1px);
+  border-color: var(--orange);
+}
+
+.tpNext {
+  margin-left: auto;
+  min-width: 170px;
+}
+
+/* --- results additions --- */
+
+.tpRouteRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.tpLive {
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eafbf4;
+  color: var(--green);
+  white-space: nowrap;
+}
+
+.tpVibeTitle {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.tpToggle {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #f7ece4;
+}
+
+.tpToggle button {
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  padding: 7px 11px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.tpToggle button.active {
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.tpSummaryCard {
+  padding: 20px 24px;
+  background: linear-gradient(145deg, #17151d, #262232);
+  border-color: transparent;
+  color: var(--white);
+}
+
+.tpSummaryCard h4 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.tpSummaryCard p {
+  margin: 6px 0 14px;
+  font-size: 0.83rem;
+  line-height: 1.5;
+  color: #c6c1d0;
+}
+
+.tpShareBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 50px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--gradient);
+  color: var(--white);
+  font-size: 0.92rem;
+  font-weight: 800;
+  box-shadow: 0 12px 30px rgba(234, 88, 12, 0.32);
+  transition: transform 250ms var(--smooth);
+}
+
+.tpShareBtn:hover {
+  transform: translateY(-2px);
+}
+
+.tpAiStack {
+  margin-top: 26px;
+}
+
+.tpToast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 90;
+  max-width: min(340px, calc(100vw - 36px));
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: #111827;
+  color: var(--white);
+  font-size: 0.86rem;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  transform: translateY(120px);
+  opacity: 0;
+  transition: transform 300ms var(--smooth), opacity 300ms var(--smooth);
+  pointer-events: none;
+}
+
+.tpToast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+@media (max-width: 900px) {
+  .tpVibeGrid,
+  .tpVibeGrid3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .tpVibeGrid,
+  .tpVibeGrid3 {
+    grid-template-columns: 1fr;
+  }
+
+  .tpWizTools {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .tpNext {
+    min-width: 0;
+    flex: 1;
   }
 }
