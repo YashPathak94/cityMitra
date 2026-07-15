@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <script src="./ds-base.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+  <style>
+    body{margin:0;background:#FFF7ED;font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif}
+    a{color:#0F172A;text-decoration:none}
+    a:hover{color:#EA580C}
+    @keyframes cmMarq{to{transform:translateX(-50%)}}
+    @keyframes cmFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(calc(-10px * var(--mo,1)))}}
+    @keyframes cmDash{to{stroke-dashoffset:-224}}
+    @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+  </style>
+</helmet>
+<div ref="{{ rootRef }}">
+  <div data-screen-label="Home (mobile)" style="min-height:100vh;max-width:430px;margin:0 auto;background:var(--bg,#FFF7ED);color:var(--ink,#0F172A);font-family:'Plus Jakarta Sans',system-ui,sans-serif;overflow-x:clip;padding-bottom:96px">
+
+    <!-- top bar -->
+    <div style="position:sticky;top:10px;z-index:60;margin:12px 14px 0">
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:999px;background:var(--nav,rgba(255,247,237,.85));border:1px solid var(--cardBd,#F4DFD2);backdrop-filter:blur(16px) saturate(1.2);box-shadow:0 10px 30px rgba(15,23,42,.08)">
+        <x-import component-from-global-scope="CityMitraUI.Logo" size="32" hint-size="32px,32px"></x-import>
+        <b style="font-size:14.5px;font-weight:600;letter-spacing:-.01em">CityMitra</b>
+        <button onClick="{{ toggle }}" style="margin-left:auto;display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--cardBd,#F4DFD2);background:var(--chip,#FFEDD5);color:var(--ink,#0F172A);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer">{{ toggleLabel }}</button>
+        <a href="./CityChat.dc.html" style="display:inline-flex;align-items:center;min-height:38px;padding:0 16px;border-radius:999px;background:linear-gradient(135deg,#FB923C,#EA580C 55%,#2563EB);color:#FFFFFF;font-size:12.5px;font-weight:600" style-hover="color:#FFFFFF">Ask AI</a>
+      </div>
+    </div>
+
+    <!-- hero -->
+    <header style="position:relative;padding:34px 20px 0;text-align:left">
+      <div style="position:absolute;top:-120px;right:-120px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,var(--heroB,rgba(37,99,235,.16)),transparent 65%);pointer-events:none"></div>
+      <div style="position:relative">
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border-radius:999px;background:var(--chip,#FFEDD5);color:var(--orange,#EA580C);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase">AI city guide · India</div>
+        <h1 style="margin:14px 0 0;font-size:clamp(52px,15vw,64px);line-height:.93;letter-spacing:-.02em;font-weight:400;font-family:'Instrument Serif',Georgia,serif">Your city,<br><span style="background:var(--mut,#64748B);-webkit-background-clip:text;background-clip:text;color:transparent">sorted.</span></h1>
+        <p style="margin:14px 0 0;font-size:15px;line-height:1.55;color:var(--mut,#64748B);font-weight:500">Map-ready picks with backup plans, from one Mitra that knows India.</p>
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <a href="./CityChat.dc.html" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;border-radius:999px;background:linear-gradient(135deg,#FB923C,#EA580C 55%,#2563EB);color:#FFFFFF;font-size:14.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.32)" style-hover="color:#FFFFFF">Ask AI Guide</a>
+          <a href="./TravelPlan.dc.html" style="flex:1;display:inline-flex;align-items:center;justify-content:center;min-height:52px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2);color:var(--ink,#0F172A);font-size:14.5px;font-weight:600;box-shadow:var(--cardSh,0 2px 10px rgba(15,23,42,.05))" style-hover="color:var(--orange,#EA580C)">Fund a trip</a>
+        </div>
+      </div>
+
+      <!-- mini 3D scene -->
+      <div style="position:relative;height:330px;margin-top:8px">
+        <div style="position:absolute;inset:0;display:grid;place-items:center;perspective:900px">
+          <div style="position:relative;width:440px;height:440px;transform-style:preserve-3d;transform:rotateX(52deg) rotateZ(-38deg) scale(.58)">
+            <div style="position:absolute;inset:-22px;border-radius:30px;background-color:var(--planeBg,#FFF3E8);background-image:repeating-linear-gradient(0deg,var(--planeLine,rgba(0,0,0,.12)) 0 1px,transparent 1px 44px),repeating-linear-gradient(90deg,var(--planeLine,rgba(0,0,0,.12)) 0 1px,transparent 1px 44px);border:1px solid var(--cardBd,#F4DFD2);box-shadow:var(--cardSh,0 2px 10px rgba(15,23,42,.05))"></div>
+            <svg viewBox="0 0 440 440" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible" aria-hidden="true">
+              <polyline points="30,410 30,290 160,290 160,160 310,160 310,50 410,50" fill="none" stroke="var(--orange,#EA580C)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"></polyline>
+              <polyline points="30,410 30,290 160,290 160,160 310,160 310,50 410,50" fill="none" stroke="var(--acc,#0891B2)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="16 12" style="animation:cmDash 2.6s linear infinite;animation-play-state:var(--marq,running);filter:drop-shadow(0 0 6px var(--acc,#0891B2))"></polyline>
+              <circle cx="30" cy="410" r="9" fill="var(--orange,#EA580C)"></circle>
+              <circle cx="410" cy="50" r="9" fill="var(--blue,#2563EB)"></circle>
+            </svg>
+            <div style="position:absolute;left:16px;top:36px;width:88px;height:88px;border-radius:10px;background:var(--blk,linear-gradient(180deg,#FFFFFF,#FFEDD5));transform:translateZ(64px);box-shadow:var(--blkSh,-14px 18px 26px rgba(15,23,42,.20));border:1px solid var(--cardBd,#F4DFD2)"></div>
+            <div style="position:absolute;left:122px;top:16px;width:66px;height:66px;border-radius:10px;background:linear-gradient(160deg,#F97316,#EA580C);transform:translateZ(104px);box-shadow:var(--blkSh,-14px 18px 26px rgba(15,23,42,.20));border:1px solid var(--cardBd,#F4DFD2)"></div>
+            <div style="position:absolute;left:330px;top:14px;width:78px;height:78px;border-radius:10px;background:linear-gradient(160deg,#FB923C,#2563EB);transform:translateZ(132px);box-shadow:var(--blkSh,-14px 18px 26px rgba(15,23,42,.20));border:1px solid var(--cardBd,#F4DFD2)"></div>
+            <div style="position:absolute;left:104px;top:142px;width:96px;height:66px;border-radius:10px;background:var(--blk,linear-gradient(180deg,#FFFFFF,#FFEDD5));transform:translateZ(84px);box-shadow:var(--blkSh,-14px 18px 26px rgba(15,23,42,.20));border:1px solid var(--cardBd,#F4DFD2)"></div>
+            <div style="position:absolute;left:228px;top:112px;width:78px;height:96px;border-radius:10px;background:linear-gradient(160deg,#F97316,#EA580C);transform:translateZ(150px);box-shadow:var(--blkSh,-14px 18px 26px rgba(15,23,42,.20));border:1px solid var(--cardBd,#F4DFD2)"></div>
+            <div style="position:absolute;left:326px;top:122px;width:86px;height:66px;border-radius:10px;background:var(--blk,linear-gradient(180deg,#FFFFFF,#FFEDD5));transform:translateZ(56px);box-shadow:var(--blkSh,-14px 18px 26px rgba(15,23,42,.20));border:1px solid var(--cardBd,#F4DFD2)"></div>
+            <div style="position:absolute;left:16px;top:286px;width:104px;height:76px;border-radius:10px;background:var(--blk,linear-gradient(180deg,#FFFFFF,#FFEDD5));transform:translateZ(112px);box-shadow:var(--blkSh,-14px 18px 26px rgba(15,23,42,.20));border:1px solid var(--cardBd,#F4DFD2)"></div>
+            <div style="position:absolute;left:142px;top:250px;width:66px;height:66px;border-radius:10px;background:linear-gradient(160deg,#FB923C,#2563EB);transform:translateZ(48px);box-shadow:var(--blkSh,-14px 18px 26px rgba(15,23,42,.20));border:1px solid var(--cardBd,#F4DFD2)"></div>
+            <div style="position:absolute;left:236px;top:240px;width:96px;height:86px;border-radius:10px;background:var(--blk,linear-gradient(180deg,#FFFFFF,#FFEDD5));transform:translateZ(78px);box-shadow:var(--blkSh,-14px 18px 26px rgba(15,23,42,.20));border:1px solid var(--cardBd,#F4DFD2)"></div>
+            <div style="position:absolute;left:150px;top:344px;width:86px;height:80px;border-radius:12px;background:rgba(5,150,105,.22);transform:translateZ(2px);border:1px solid var(--cardBd,#F4DFD2)"></div>
+          </div>
+        </div>
+        <div style="position:absolute;top:6%;right:2%;z-index:5;animation:cmFloat 6s ease-in-out infinite;animation-play-state:var(--marq,running)">
+          <div style="padding:10px 14px;border-radius:15px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2);box-shadow:var(--cardSh,0 2px 10px rgba(15,23,42,.05));font-size:12px;font-weight:600">Hotel deal <span style="color:var(--orange,#EA580C)">−40%</span></div>
+        </div>
+        <div style="position:absolute;bottom:10%;left:2%;z-index:5;animation:cmFloat 7s ease-in-out 1.4s infinite;animation-play-state:var(--marq,running)">
+          <div style="padding:10px 14px;border-radius:15px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2);box-shadow:var(--cardSh,0 2px 10px rgba(15,23,42,.05));font-size:12px;font-weight:600">AI route <span style="color:var(--acc,#0891B2)">ready</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;padding:0 6px;font-variant-numeric:tabular-nums">
+        <div><div style="font-size:26px;font-weight:600;letter-spacing:-.03em">30</div><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut,#64748B)">categories</div></div>
+        <div><div style="font-size:26px;font-weight:600;letter-spacing:-.03em">500+</div><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut,#64748B)">cities</div></div>
+        <div><div style="font-size:26px;font-weight:600;letter-spacing:-.03em">20</div><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut,#64748B)">picks / route</div></div>
+      </div>
+    </header>
+
+    <!-- marquee -->
+    <section style="margin-top:28px;border-top:1px solid var(--line,#F4DFD2);border-bottom:1px solid var(--line,#F4DFD2);padding:14px 0;overflow:hidden">
+      <div style="display:inline-flex;white-space:nowrap;animation:cmMarq 30s linear infinite;animation-play-state:var(--marq,running);will-change:transform">
+        <span style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#F97316,#EA580C);color:#FFFFFF;font-size:11px;font-weight:600">M</span><b style="font-size:11.5px;font-weight:600">MakeMyTrip</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">Hotel deals</span></span>
+        <span style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#EA580C,#2563EB);color:#FFFFFF;font-size:11px;font-weight:600">B</span><b style="font-size:11.5px;font-weight:600">Booking.com</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">15% off</span></span>
+        <span style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#EA580C,#2563EB);color:#FFFFFF;font-size:11px;font-weight:600">A</span><b style="font-size:11.5px;font-weight:600">Agoda</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">60% off</span></span>
+        <span style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#FB923C,#2563EB);color:#FFFFFF;font-size:11px;font-weight:600">C</span><b style="font-size:11.5px;font-weight:600">Cleartrip</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">25% off flights</span></span>
+        <span style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#EA580C,#2563EB);color:#FFFFFF;font-size:11px;font-weight:600">E</span><b style="font-size:11.5px;font-weight:600">Expedia</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">60% off</span></span>
+        <span style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#F97316,#EA580C);color:#FFFFFF;font-size:11px;font-weight:600">M</span><b style="font-size:11.5px;font-weight:600">Myntra</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">50–80% off</span></span>
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#F97316,#EA580C);color:#FFFFFF;font-size:11px;font-weight:600">M</span><b style="font-size:11.5px;font-weight:600">MakeMyTrip</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">Hotel deals</span></span>
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#EA580C,#2563EB);color:#FFFFFF;font-size:11px;font-weight:600">B</span><b style="font-size:11.5px;font-weight:600">Booking.com</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">15% off</span></span>
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#EA580C,#2563EB);color:#FFFFFF;font-size:11px;font-weight:600">A</span><b style="font-size:11.5px;font-weight:600">Agoda</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">60% off</span></span>
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#FB923C,#2563EB);color:#FFFFFF;font-size:11px;font-weight:600">C</span><b style="font-size:11.5px;font-weight:600">Cleartrip</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">25% off flights</span></span>
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#EA580C,#2563EB);color:#FFFFFF;font-size:11px;font-weight:600">E</span><b style="font-size:11.5px;font-weight:600">Expedia</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">60% off</span></span>
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2)"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#F97316,#EA580C);color:#FFFFFF;font-size:11px;font-weight:600">M</span><b style="font-size:11.5px;font-weight:600">Myntra</b><span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">50–80% off</span></span>
+      </div>
+    </section>
+
+    <!-- concierge stack -->
+    <section style="padding:30px 20px 0">
+      <h2 style="margin:0;font-size:30px;line-height:1;letter-spacing:-.03em;font-weight:600">One tap. Handled.</h2>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:18px">
+        <a href="./CityChat.dc.html" style="display:flex;align-items:center;gap:14px;min-height:74px;padding:14px 18px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2);border-radius:22px;box-shadow:var(--cardSh,0 2px 10px rgba(15,23,42,.05));color:var(--ink,#0F172A)" style-hover="color:var(--ink,#0F172A)">
+          <span style="flex:none;width:40px;height:40px;border-radius:12px;background:linear-gradient(160deg,#F97316,#EA580C);box-shadow:0 8px 18px rgba(15,23,42,.18)"></span>
+          <span style="flex:1"><b style="display:block;font-size:15px;font-weight:600">Ask City Guide</b><span style="font-size:12px;font-weight:600;color:var(--mut,#64748B)">Plan your trip in seconds</span></span>
+          <span style="font-size:16px;font-weight:600;color:var(--orange,#EA580C)">→</span>
+        </a>
+        <a href="./CityGuide.dc.html" style="display:flex;align-items:center;gap:14px;min-height:74px;padding:14px 18px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2);border-radius:22px;box-shadow:var(--cardSh,0 2px 10px rgba(15,23,42,.05));color:var(--ink,#0F172A)" style-hover="color:var(--ink,#0F172A)">
+          <span style="flex:none;width:40px;height:40px;border-radius:12px;background:linear-gradient(160deg,#FB923C,#2563EB);box-shadow:0 8px 18px rgba(15,23,42,.18)"></span>
+          <span style="flex:1"><b style="display:block;font-size:15px;font-weight:600">Book a cab</b><span style="font-size:12px;font-weight:600;color:var(--mut,#64748B)">Quick rides, compared</span></span>
+          <span style="font-size:16px;font-weight:600;color:var(--orange,#EA580C)">→</span>
+        </a>
+        <a href="./Offers.dc.html" style="display:flex;align-items:center;gap:14px;min-height:74px;padding:14px 18px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2);border-radius:22px;box-shadow:var(--cardSh,0 2px 10px rgba(15,23,42,.05));color:var(--ink,#0F172A)" style-hover="color:var(--ink,#0F172A)">
+          <span style="flex:none;width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--acc,#0891B2),#2563EB);box-shadow:0 8px 18px rgba(15,23,42,.18)"></span>
+          <span style="flex:1"><b style="display:block;font-size:15px;font-weight:600">Book hotels</b><span style="font-size:12px;font-weight:600;color:var(--mut,#64748B)">Stays tiered to budget</span></span>
+          <span style="font-size:16px;font-weight:600;color:var(--orange,#EA580C)">→</span>
+        </a>
+        <a href="./CityGuide.dc.html" style="display:flex;align-items:center;gap:14px;min-height:74px;padding:14px 18px;background:var(--card,#FFFFFF);border:1px solid var(--cardBd,#F4DFD2);border-radius:22px;box-shadow:var(--cardSh,0 2px 10px rgba(15,23,42,.05));color:var(--ink,#0F172A)" style-hover="color:var(--ink,#0F172A)">
+          <span style="flex:none;width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#EA580C,#2563EB);box-shadow:0 8px 18px rgba(15,23,42,.18)"></span>
+          <span style="flex:1"><b style="display:block;font-size:15px;font-weight:600">Explore wholesale</b><span style="font-size:12px;font-weight:600;color:var(--mut,#64748B)">Markets &amp; bulk deals</span></span>
+          <span style="font-size:16px;font-weight:600;color:var(--orange,#EA580C)">→</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- travel teaser -->
+    <section style="margin:30px 20px 0">
+      <div style="position:relative;overflow:hidden;border-radius:26px;background:linear-gradient(120deg,#F97316,#EA580C 42%,#2563EB);color:#FFFFFF;padding:26px 22px">
+        <div style="position:absolute;top:-90px;right:-70px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,.30),transparent 65%);pointer-events:none"></div>
+        <div style="position:relative">
+          <div style="font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#FFFFFF">AI travel-funding engine</div>
+          <div style="margin-top:8px;font-size:34px;font-weight:600;letter-spacing:-.03em;background:#FFFFFF;-webkit-background-clip:text;background-clip:text;color:transparent">Your trip, funded.</div>
+          <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:rgba(255,255,255,.88);font-weight:500">₹6,873 of a ₹1L trip covered by returns + rewards in 6 months.</p>
+          <a href="./TravelPlan.dc.html" style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;min-height:46px;padding:0 20px;border-radius:999px;background:linear-gradient(135deg,#FB923C,#EA580C 55%,#2563EB);color:#FFFFFF;font-size:13px;font-weight:600" style-hover="color:#FFFFFF">Fund my trip →</a>
+        </div>
+      </div>
+    </section>
+
+    <div style="margin-top:34px;padding:22px 20px 0;border-top:1px solid var(--line,#F4DFD2);text-align:center">
+      <span style="font-size:11.5px;font-weight:600;color:var(--mut,#64748B)">© 2026 CityMitra · <a href="./GenzSite.dc.html" style="font-weight:600">Desktop site</a></span>
+    </div>
+
+    <!-- bottom tab bar -->
+    <nav style="position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:70;width:min(402px,calc(100vw - 28px));display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:8px;border-radius:999px;background:var(--nav,rgba(255,247,237,.85));border:1px solid var(--cardBd,#F4DFD2);backdrop-filter:blur(16px) saturate(1.2);box-shadow:0 16px 40px rgba(15,23,42,.18)">
+      <a href="./HomeMobile.dc.html" style="display:grid;place-items:center;min-height:44px;border-radius:999px;background:linear-gradient(135deg,#FB923C,#EA580C 55%,#2563EB);color:#FFFFFF;font-size:12px;font-weight:600" style-hover="color:#FFFFFF">Home</a>
+      <a href="./CityGuide.dc.html" style="display:grid;place-items:center;min-height:44px;border-radius:999px;color:var(--mut,#64748B);font-size:12px;font-weight:600" style-hover="color:var(--orange,#EA580C)">Guide</a>
+      <a href="./CityChat.dc.html" style="display:grid;place-items:center;min-height:44px;border-radius:999px;color:var(--mut,#64748B);font-size:12px;font-weight:600" style-hover="color:var(--orange,#EA580C)">Chat</a>
+      <a href="./TravelPlan.dc.html" style="display:grid;place-items:center;min-height:44px;border-radius:999px;color:var(--mut,#64748B);font-size:12px;font-weight:600" style-hover="color:var(--orange,#EA580C)">Plan</a>
+    </nav>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {&quot;width&quot;: 390, &quot;height&quot;: 844},
+  &quot;theme&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;light&quot;, &quot;night&quot;], &quot;default&quot;: &quot;light&quot;, &quot;tsType&quot;: &quot;'light' | 'night'&quot;, &quot;section&quot;: &quot;Theme&quot;},
+  &quot;cardStyle&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;clay&quot;, &quot;glass&quot;], &quot;default&quot;: &quot;clay&quot;, &quot;tsType&quot;: &quot;'clay' | 'glass'&quot;, &quot;section&quot;: &quot;Surfaces&quot;},
+  &quot;motion&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;min&quot;: 0, &quot;max&quot;: 10, &quot;step&quot;: 1, &quot;default&quot;: 7, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Motion&quot;}
+}">
+class Component extends DCLogic {
+  state = { theme: localStorage.getItem('cm-theme') || null };
+
+  componentDidMount() {
+    window.addEventListener('cm-theme', this._onTheme = (e) => this.setState({ theme: e.detail }));
+    import(new URL('./theme.js', location.href).href).then((T) => {
+      this.T = T;
+      this.setState({ theme: this.state.theme });
+      requestAnimationFrame(() => this._applyTheme());
+    });
+  }
+  componentDidUpdate() { this._applyTheme(); }
+  componentWillUnmount() { window.removeEventListener('cm-theme', this._onTheme); }
+  _theme() { return this.state.theme || this.props.theme || 'light'; }
+  rootRef = React.createRef();
+  _applyTheme() {
+    if (!this.T || !this.rootRef.current) return;
+    this.T.applyVars(this.rootRef.current, this.T.cmVars({
+      theme: this._theme(), accent: this.props.accent, cardStyle: this.props.cardStyle,
+      motion: this.props.motion, typeScale: this.props.typeScale,
+    }));
+    this.T.syncBody(this._theme());
+  }
+
+  renderVals() {
+    const night = this._theme() === 'night';
+
+    return {
+      rootRef: this.rootRef,
+      toggleLabel: night ? 'Day' : 'Night',
+      toggle: () => {
+        const t = night ? 'light' : 'night';
+        localStorage.setItem('cm-theme', t);
+        window.dispatchEvent(new CustomEvent('cm-theme', { detail: t }));
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>
