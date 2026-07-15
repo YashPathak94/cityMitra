@@ -21,6 +21,7 @@ import {
   Wallet,
   X
 } from "lucide-react";
+import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { indiaCities } from "@/lib/india-cities";
 import { buildCalculatorPlan, type RiskLevel, type TransportMode, type TravelPlan } from "@/lib/travel-plan";
@@ -66,6 +67,23 @@ const transportMeta: Record<TransportMode, { label: string; icon: typeof Plane }
   bike: { label: "Bike", icon: Bike }
 };
 const allModes = Object.keys(transportMeta) as TransportMode[];
+
+// Illustrative per-person fare ranges for the pre-submit radar; the AI
+// research pass replaces these with live, route-specific candidates.
+const fareRanges: Record<TransportMode, [number, number]> = {
+  flight: [4500, 7200],
+  train: [1200, 2400],
+  bus: [900, 1600],
+  car: [3800, 6000],
+  bike: [1500, 2600]
+};
+const fareRadarMax = 7200;
+
+const riskOptions: Array<{ id: RiskLevel; label: string; sub: string }> = [
+  { id: "low", label: "Low", sub: "safety · ~6% p.a." },
+  { id: "medium", label: "Balanced", sub: "~10% p.a." },
+  { id: "high", label: "Growth", sub: "~13% p.a." }
+];
 
 const kindMeta = {
   mutual_fund: { label: "Mutual funds", icon: LineChart },
@@ -161,27 +179,31 @@ export default function TravelPlanner() {
   );
 
   const calc = plan ?? liveCalc;
-  const fundTotal = calc.investmentGains + calc.netCardRewards + calc.outOfPocket || 1;
   const transportMax = plan && plan.transport.length ? Math.max(...plan.transport.map((t) => t.priceFrom || 1), 1) : 1;
+  const routeLabel = `${origin.trim() || "Your city"} → ${destination.trim() || "Goa"}`;
+  const offsetPct = Math.min(100, Math.max(1, calc.freeTravelPct));
+
+  // Month-by-month corpus climb for the mini chart (capped at 12 bars).
+  const barMonths = Math.min(12, Math.max(1, calc.monthsToGo));
+  const monthlyRate = calc.assumedAnnualReturnPct / 100 / 12;
+  const corpusBars = Array.from({ length: barMonths }, (_, index) => {
+    const k = Math.round(((index + 1) / barMonths) * calc.monthsToGo);
+    const value = calc.recommendedMonthly * k * (1 + monthlyRate * (k / 2));
+    return {
+      month: k,
+      height: Math.min(100, Math.max(6, Math.round((value / Math.max(1, targetBudget)) * 100))),
+      tip: `M${k} · ${inr(value)}`
+    };
+  });
+
+  const radarModes = modes.length ? modes : (["flight"] as TransportMode[]);
 
   return (
     <div className="travelPlan">
-      <header className="travelPlanHero">
-        <span className="travelPlanBadge">
-          <Sparkles size={15} /> Industry-first · AI travel-funding engine
-        </span>
-        <h1>
-          Travel smarter. Let planned saving <span>ease the cost.</span>
-        </h1>
-        <p>
-          Pick your destination, date, transport and cards. CityMitra&apos;s AI compares fares, hotels and card offers,
-          then builds a savings plan to help offset your trip cost — through planned saving, estimated rewards and
-          verified discounts.
-        </p>
-      </header>
-
       <div className="travelPlanGrid" id="planResult">
-        <form className="travelPlanForm" onSubmit={submit}>
+        {/* ===================== FORM ===================== */}
+        <form className="travelPlanForm tpCard" onSubmit={submit}>
+          <b className="tpFormTitle">Build your funding plan</b>
           <datalist id="indiaCitiesList">
             {indiaCities.map((cityName) => (
               <option key={cityName} value={cityName} />
@@ -199,30 +221,40 @@ export default function TravelPlanner() {
             </label>
           </div>
 
-          <label>
-            Travel date
-            <input type="date" value={travelDateISO} min={new Date().toISOString().slice(0, 10)} onChange={(event) => setTravelDateISO(event.target.value)} />
-          </label>
-
           <div className="travelPlanRow">
             <label>
-              Travellers
-              <input type="number" min={1} max={20} value={travelers} onChange={(event) => setTravelers(Math.max(1, Number(event.target.value) || 1))} />
+              Travel date
+              <input type="date" value={travelDateISO} min={new Date().toISOString().slice(0, 10)} onChange={(event) => setTravelDateISO(event.target.value)} />
             </label>
             <label>
-              Nights
-              <input type="number" min={1} max={60} value={nights} onChange={(event) => setNights(Math.max(1, Number(event.target.value) || 1))} />
+              Trip budget
+              <input type="number" min={1000} step={1000} value={targetBudget} onChange={(event) => setTargetBudget(Number(event.target.value))} />
             </label>
           </div>
 
-          <label>
-            Trip budget
-            <input type="number" min={1000} step={1000} value={targetBudget} onChange={(event) => setTargetBudget(Number(event.target.value))} />
-          </label>
+          <div className="travelPlanRow">
+            <div className="tpStepperField">
+              <span className="travelPlanFieldLabel">Travellers</span>
+              <div className="tpStepper">
+                <button type="button" onClick={() => setTravelers((v) => Math.max(1, v - 1))} aria-label="Fewer travellers">−</button>
+                <b>{travelers}</b>
+                <button type="button" onClick={() => setTravelers((v) => Math.min(20, v + 1))} aria-label="More travellers">+</button>
+              </div>
+            </div>
+            <div className="tpStepperField">
+              <span className="travelPlanFieldLabel">Nights</span>
+              <div className="tpStepper">
+                <button type="button" onClick={() => setNights((v) => Math.max(1, v - 1))} aria-label="Fewer nights">−</button>
+                <b>{nights}</b>
+                <button type="button" onClick={() => setNights((v) => Math.min(60, v + 1))} aria-label="More nights">+</button>
+              </div>
+            </div>
+          </div>
+
           <div className="travelPlanPresets">
             {budgetPresets.map((preset) => (
               <button type="button" key={preset} className={targetBudget === preset ? "active" : ""} onClick={() => setTargetBudget(preset)}>
-                {inr(preset)}
+                {preset >= 100000 ? `₹${preset / 100000}L` : `₹${preset / 1000}k`}
               </button>
             ))}
           </div>
@@ -285,14 +317,22 @@ export default function TravelPlanner() {
             <input type="number" min={0} step={500} placeholder="We'll calculate it for you" value={monthlyCapacity} onChange={(event) => setMonthlyCapacity(event.target.value)} />
           </label>
 
-          <label>
-            Risk appetite
-            <select value={riskLevel} onChange={(event) => setRiskLevel(event.target.value as RiskLevel)}>
-              <option value="low">Low · safety first (~6% p.a.)</option>
-              <option value="medium">Balanced (~10% p.a.)</option>
-              <option value="high">Growth (~13% p.a.)</option>
-            </select>
-          </label>
+          <div className="travelPlanField">
+            <span className="travelPlanFieldLabel">Risk appetite</span>
+            <div className="tpRiskRow">
+              {riskOptions.map((option) => (
+                <button
+                  type="button"
+                  key={option.id}
+                  className={riskLevel === option.id ? "tpRisk active" : "tpRisk"}
+                  onClick={() => setRiskLevel(option.id)}
+                >
+                  {option.label}
+                  <small>{option.sub}</small>
+                </button>
+              ))}
+            </div>
+          </div>
 
           <button className="travelPlanSubmit" type="submit" disabled={loading}>
             {loading ? "Building your plan…" : "Build my savings plan"}
@@ -301,35 +341,62 @@ export default function TravelPlanner() {
           {error && <p className="travelPlanError">{error}</p>}
         </form>
 
+        {/* ===================== RESULTS ===================== */}
         <div className="travelPlanResult">
-          {/* ===== Deterministic calculator — live, math only, no AI ===== */}
-          <section className="planStackCard calcCard">
-            <div className="travelPlanHeadline">
-              <div className="travelPlanFreePct">
-                <strong>{calc.freeTravelPct}%</strong>
-                <span>of trip cost you could offset</span>
+          {/* Deterministic calculator — live, math only, no AI */}
+          <section className="tpCard tpCalcCard">
+            <div className="tpRingRow">
+              <div
+                className="tpRing"
+                style={{ background: `conic-gradient(var(--teal) ${offsetPct}%, var(--chip) 0)` }}
+                role="img"
+                aria-label={`${offsetPct} percent of trip cost offset`}
+              >
+                <div className="tpRingInner">
+                  <strong>{offsetPct}%</strong>
+                  <span>offset</span>
+                </div>
               </div>
-              <span className="travelPlanSource calc">
-                <Calculator size={12} /> Deterministic math
-              </span>
+              <div>
+                <b className="tpRouteLabel">{routeLabel}</b>
+                <p>
+                  of the trip cost covered by projected returns + card rewards over {calc.monthsToGo} months.
+                  Deterministic math, updated live.
+                </p>
+                <span className="travelPlanSource calc">
+                  <Calculator size={12} /> Deterministic math
+                </span>
+              </div>
             </div>
 
-            <div className="fundingBar" aria-label="Funding breakdown">
-              <span className="fundReturns" style={{ width: `${(calc.investmentGains / fundTotal) * 100}%` }} />
-              <span className="fundCards" style={{ width: `${(calc.netCardRewards / fundTotal) * 100}%` }} />
-              <span className="fundSelf" style={{ width: `${(calc.outOfPocket / fundTotal) * 100}%` }} />
-            </div>
-            <div className="fundingLegend">
-              <span><i className="dotReturns" /> Returns {inr(calc.investmentGains)}</span>
-              <span><i className="dotCards" /> Rewards after fees {inr(calc.netCardRewards)}</span>
-              <span><i className="dotSelf" /> Your top-up {inr(calc.outOfPocket)}</span>
+            <div className="tpTiles">
+              <div>
+                <span><Wallet size={13} /> Save / month</span>
+                <strong className="isOrange">{inr(calc.recommendedMonthly)}</strong>
+              </div>
+              <div>
+                <span><PiggyBank size={13} /> Projected corpus</span>
+                <strong>{inr(calc.projectedValue)}</strong>
+              </div>
+              <div>
+                <span><TrendingUp size={13} /> Growth + rewards</span>
+                <strong className="isTeal">{inr(calc.investmentGains + calc.netCardRewards)}</strong>
+              </div>
+              <div>
+                <span><Plane size={13} /> Your top-up</span>
+                <strong>{inr(calc.outOfPocket)}</strong>
+              </div>
             </div>
 
-            <div className="travelPlanStats">
-              <div><Wallet size={16} /><b>{inr(calc.recommendedMonthly)}</b><span>save / month</span></div>
-              <div><PiggyBank size={16} /><b>{inr(calc.projectedValue)}</b><span>projected corpus</span></div>
-              <div><TrendingUp size={16} /><b>{inr(calc.investmentGains + calc.netCardRewards)}</b><span>growth + net rewards</span></div>
-              <div><Plane size={16} /><b>{inr(calc.outOfPocket)}</b><span>out of pocket</span></div>
+            <div className="tpBars" aria-hidden="true">
+              {corpusBars.map((bar) => (
+                <span key={bar.month} title={bar.tip} style={{ height: `${bar.height}%` }} />
+              ))}
+            </div>
+            <div className="tpBarsAxis">
+              <span>M1</span>
+              <span>corpus by month</span>
+              <span>M{calc.monthsToGo}</span>
             </div>
 
             <div className="calcMeta">
@@ -345,7 +412,35 @@ export default function TravelPlanner() {
             </p>
           </section>
 
-          {/* ===== AI research candidates — only after submit ===== */}
+          {/* Fare radar + stay tiers — illustrative until the AI pass runs */}
+          <section className="tpCard tpFareCard">
+            <div className="tpFareHead">
+              <b>Fare radar — {routeLabel}</b>
+              <span>per person · illustrative</span>
+            </div>
+            <div className="tpFareRows">
+              {radarModes.map((mode) => {
+                const [low, high] = fareRanges[mode];
+                const Icon = transportMeta[mode].icon;
+                return (
+                  <div className="tpFareRow" key={mode}>
+                    <span className="tpFareMode"><Icon size={14} /> {transportMeta[mode].label}</span>
+                    <div className="tpFareTrack">
+                      <span style={{ width: `${Math.round((high / fareRadarMax) * 100)}%` }} />
+                    </div>
+                    <span className="tpFareRange">{inr(low)}–{inr(high)}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="tpStayChips">
+              <span className="isOrange">Stay · budget {inr(1800 * nights)}</span>
+              <span className="isBlue">comfort {inr(4500 * nights)}</span>
+              <span className="isTeal">premium {inr(9000 * nights)}</span>
+            </div>
+          </section>
+
+          {/* AI research candidates — only after submit */}
           {!plan && !loading && (
             <div className="researchPrompt">
               <span className="researchPromptIcon"><Sparkles size={22} /></span>
@@ -473,6 +568,10 @@ export default function TravelPlanner() {
               </section>
             </div>
           )}
+
+          <Link href="/chat" className="tpChatCta">
+            Refine it with City Chat <span aria-hidden="true">→</span>
+          </Link>
         </div>
       </div>
     </div>

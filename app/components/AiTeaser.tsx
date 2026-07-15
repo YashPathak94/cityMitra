@@ -7,7 +7,6 @@ import { buildBookingOptions, BookingCategory, bookingCategoryLabels, categoryTo
 import { buildGeneratedResults } from "@/lib/city-intel";
 import { trackActivity } from "@/lib/tracking";
 import ConciergePip, { LocalPicks } from "@/app/components/ConciergePip";
-import OfferRibbon from "@/app/components/OfferRibbon";
 import { ConciergeGroup } from "@/app/components/ConciergeCard";
 import { useCountUp } from "@/app/components/motion/useCountUp";
 
@@ -76,8 +75,6 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
 
   return (
     <section className="aiBand" id="ai">
-      <OfferRibbon city={city} />
-
       <div className="cmBentoHead">
         <div>
           <p className="eyebrow">Concierge</p>

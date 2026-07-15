@@ -1,52 +1,62 @@
 "use client";
 
-import Reveal from "@/app/components/Reveal";
+import { useEffect, useState } from "react";
+import { useReducedMotion } from "motion/react";
 
-const STEPS: Array<{ no: string; tone: "orange" | "teal" | "blue"; title: string; text: string }> = [
-  { no: "01", tone: "orange", title: "Set the trip", text: "Destination, dates, crew — the number we work backwards from." },
-  { no: "02", tone: "teal", title: "AI builds the plan", text: "Month-by-month across SIPs, funds & stocks, sized to your risk." },
-  { no: "03", tone: "blue", title: "Compare every ride", text: "Real fare ranges per mode — pick on price and time, not vibes." },
-  { no: "04", tone: "orange", title: "Stays that fit", text: "Budget, comfort, premium — priced for your exact nights." }
+const STEPS = [
+  { no: "01", title: "Set the trip", text: "Destination, dates, crew — the number we work backwards from." },
+  { no: "02", title: "AI builds the plan", text: "Month-by-month across SIPs, funds & stocks, sized to your risk." },
+  { no: "03", title: "Compare every ride", text: "Real fare ranges per mode — pick on price and time, not vibes." },
+  { no: "04", title: "Stays that fit", text: "Budget, comfort, premium — priced for your exact nights." },
+  { no: "05", title: "The payoff", text: "Returns + rewards offset the cost. The rest is a planned top-up." }
 ];
 
-// Travel-plan intro: the funding-engine pitch plus the five-step "how it
-// works" row from the design handoff. Replaces the full-screen scroll stack
-// with something faster to read and lighter to load.
+// Compact travel-plan hero: small headline on the left, the five-step
+// walkthrough stacked tight on the right. The steps auto-advance like a
+// looping explainer (paused under prefers-reduced-motion) so first-time
+// visitors "watch" how funding a trip works without a video download.
 export default function TravelPlanIntro() {
+  const reduceMotion = useReducedMotion();
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    const timer = setInterval(() => setActive((current) => (current + 1) % STEPS.length), 2600);
+    return () => clearInterval(timer);
+  }, [reduceMotion]);
+
   return (
-    <>
-      <header className="planIntro">
+    <header className="planIntro">
+      <div className="planIntroCopy">
         <span className="planIntroBadge">
           <span className="planIntroPulse" aria-hidden="true" />
           Industry-first · AI travel-funding engine
         </span>
         <h1>
-          Don&apos;t just book it.
-          <br />
-          <em>Fund it.</em>
+          Don&apos;t just book it. <em>Fund it.</em>
         </h1>
         <p>
           Set the trip. The AI sizes a monthly plan across SIPs, funds and card rewards — so returns cover part of the
           bill, not your pocket.
         </p>
-      </header>
+      </div>
 
-      <Reveal>
-        <div className="planSteps">
-          {STEPS.map((step) => (
-            <article key={step.no} className="planStep">
-              <span className={`planStepNo planStepNo--${step.tone}`}>{step.no}</span>
+      <ol className="planIntroSteps" aria-label="How the funding engine works">
+        {STEPS.map((step, index) => (
+          <li
+            key={step.no}
+            className={index === active ? "planIntroStep isActive" : "planIntroStep"}
+            onMouseEnter={() => setActive(index)}
+          >
+            <span className="planIntroStepNo">{step.no}</span>
+            <span className="planIntroStepBody">
               <strong>{step.title}</strong>
-              <p>{step.text}</p>
-            </article>
-          ))}
-          <article className="planStep planStepPayoff">
-            <span className="planStepNo planStepNo--white">05</span>
-            <strong>The payoff</strong>
-            <p>Returns + rewards offset the cost. The rest is a planned top-up.</p>
-          </article>
-        </div>
-      </Reveal>
-    </>
+              <small>{step.text}</small>
+            </span>
+            {index === active && !reduceMotion && <span className="planIntroStepTimer" aria-hidden="true" />}
+          </li>
+        ))}
+      </ol>
+    </header>
   );
 }

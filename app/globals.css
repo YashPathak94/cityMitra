@@ -11934,24 +11934,27 @@ a.dealCard:focus-visible {
 }
 
 /* ============================================================
-   Travel-plan intro + how-it-works steps
+   Travel-plan intro — compact two-column with looping step tour
    ============================================================ */
 
 .planIntro {
   position: relative;
-  padding: 40px 0 8px;
-  text-align: center;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(24px, 4vw, 48px);
+  align-items: center;
+  padding: 26px 0 10px;
 }
 
 .planIntroBadge {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 16px;
+  padding: 8px 14px;
   border-radius: 999px;
   background: var(--chip);
   color: var(--orange);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -11975,69 +11978,464 @@ a.dealCard:focus-visible {
 }
 
 .planIntro h1 {
-  margin: 20px auto 0;
-  max-width: 900px;
-  font-size: clamp(3.2rem, 7vw, 6rem);
+  margin: 14px 0 0;
+  font-size: clamp(2.1rem, 3.6vw, 3.2rem);
+  line-height: 1.02;
   text-wrap: balance;
 }
 
+.planIntro h1 em {
+  font-style: normal;
+  background: linear-gradient(115deg, #fb923c, #ea580c 55%, #2563eb);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--orange);
+}
+
 .planIntro p {
-  margin: 20px auto 0;
-  max-width: 520px;
-  font-size: 1.05rem;
+  margin: 12px 0 0;
+  max-width: 460px;
+  font-size: 0.98rem;
   line-height: 1.6;
   color: var(--muted);
 }
 
-.planSteps {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
-  margin: 40px 0 8px;
+/* The five steps, stacked tight; the active one lights up and a timer bar
+   sweeps underneath — a looping explainer without a video download. */
+.planIntroSteps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.planStep {
-  padding: 22px;
+.planIntroStep {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--white);
+  transition: transform 250ms var(--smooth), box-shadow 250ms var(--smooth), border-color 250ms var(--smooth);
+}
+
+.planIntroStep.isActive {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--white), var(--white)) padding-box,
+    var(--gradient) border-box;
+  box-shadow: var(--glow);
+  transform: translateX(6px);
+}
+
+.planIntroStepNo {
+  flex: none;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 1.3px var(--orange);
+}
+
+.planIntroStep:nth-child(2) .planIntroStepNo { -webkit-text-stroke-color: var(--teal); }
+.planIntroStep:nth-child(3) .planIntroStepNo { -webkit-text-stroke-color: var(--blue); }
+.planIntroStep:nth-child(5) .planIntroStepNo { -webkit-text-stroke-color: var(--gold); }
+
+.planIntroStepBody strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.planIntroStepBody small {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.planIntroStepTimer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  transform-origin: left;
+  background: var(--gradient);
+  animation: planStepSweep 2.6s linear both;
+}
+
+@keyframes planStepSweep {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* ============================================================
+   Travel planner — prototype-look form + live results
+   ============================================================ */
+
+.tpCard {
   border: 1px solid var(--line);
   border-radius: 24px;
   background: var(--white);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 28px rgba(234, 88, 12, 0.06);
 }
 
-.planStep strong {
-  display: block;
-  margin-top: 10px;
-  font-size: 0.95rem;
-  font-weight: 800;
+.travelPlanForm.tpCard {
+  border-radius: 24px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 28px rgba(234, 88, 12, 0.06);
+  padding: 26px;
 }
 
-.planStep p {
-  margin: 6px 0 0;
-  font-size: 0.79rem;
-  line-height: 1.5;
+.tpFormTitle {
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.tpStepperField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tpStepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+}
+
+.tpStepper button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 200ms var(--smooth), box-shadow 200ms var(--smooth);
+}
+
+.tpStepper button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(234, 88, 12, 0.16);
+}
+
+.tpStepper b {
+  flex: 1;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.tpRiskRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tpRisk {
+  min-height: 54px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 800;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: transform 200ms var(--smooth), box-shadow 200ms var(--smooth);
+}
+
+.tpRisk small {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.tpRisk:hover {
+  transform: translateY(-2px);
+}
+
+.tpRisk.active {
+  border-color: transparent;
+  background: var(--gradient);
+  color: var(--white);
+  box-shadow: 0 12px 30px rgba(234, 88, 12, 0.32);
+}
+
+.tpRisk.active small {
+  opacity: 0.85;
+}
+
+/* Prototype accents on the existing controls */
+.travelPlanSubmit {
+  background: var(--gradient);
+  border-radius: 999px;
+}
+
+.travelPlanChips .chip.active,
+.travelPlanPresets button.active {
+  background: var(--gradient);
+  color: var(--white);
+  border-color: transparent;
+}
+
+/* --- results column --- */
+
+.tpCalcCard {
+  padding: 26px;
+}
+
+.tpRingRow {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.tpRing {
+  position: relative;
+  flex: none;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.tpRingInner {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--white);
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.tpRingInner strong {
+  display: block;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tpRingInner span {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--muted);
 }
 
-.planStepNo {
-  font-size: 1.85rem;
+.tpRouteLabel {
+  display: block;
+  font-size: 1.05rem;
   font-weight: 800;
-  color: transparent;
+  letter-spacing: -0.01em;
 }
 
-.planStepNo--orange { -webkit-text-stroke: 1.5px var(--orange); }
-.planStepNo--teal { -webkit-text-stroke: 1.5px var(--teal); }
-.planStepNo--blue { -webkit-text-stroke: 1.5px var(--blue); }
-.planStepNo--white { -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.9); }
+.tpRingRow p {
+  margin: 6px 0 8px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
 
-.planStepPayoff {
+.tpTiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tpTiles > div {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--soft);
+}
+
+.tpTiles span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tpTiles strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.tpTiles strong.isOrange,
+.tpStayChips .isOrange {
+  color: var(--orange);
+}
+
+.tpTiles strong.isTeal,
+.tpStayChips .isTeal {
+  color: var(--teal);
+}
+
+.tpStayChips .isBlue {
+  color: var(--blue);
+}
+
+.tpBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 86px;
+  margin-top: 20px;
+}
+
+.tpBars span {
+  flex: 1;
+  border-radius: 6px 6px 3px 3px;
+  background: linear-gradient(180deg, var(--teal), var(--blue));
+  transition: height 500ms var(--smooth);
+}
+
+.tpBars span:last-child {
   background: var(--gradient);
-  border-color: transparent;
-  color: var(--white);
-  box-shadow: 0 18px 44px rgba(234, 88, 12, 0.3);
 }
 
-.planStepPayoff p {
-  color: rgba(255, 255, 255, 0.85);
+.tpBarsAxis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.tpFareCard {
+  padding: 22px 26px;
+}
+
+.tpFareHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tpFareHead b {
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.tpFareHead span {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.tpFareRows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.tpFareRow {
+  display: grid;
+  grid-template-columns: 82px 1fr 116px;
+  align-items: center;
+  gap: 12px;
+}
+
+.tpFareMode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.tpFareTrack {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--soft);
+  overflow: hidden;
+}
+
+.tpFareTrack span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--gradient);
+  transition: width 500ms var(--smooth);
+}
+
+.tpFareRange {
+  text-align: right;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tpStayChips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.tpStayChips span {
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--chip);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.tpChatCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 54px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: var(--gradient);
+  color: var(--white);
+  font-size: 0.95rem;
+  font-weight: 800;
+  box-shadow: 0 12px 30px rgba(234, 88, 12, 0.32);
+  transition: transform 250ms var(--smooth);
+}
+
+.tpChatCta:hover {
+  transform: translateY(-3px);
 }
 
 /* ============================================================
@@ -12063,12 +12461,8 @@ a.dealCard:focus-visible {
     gap: 30px;
   }
 
-  .planSteps {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .planStepPayoff {
-    grid-column: span 2;
+  .planIntro {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -12101,11 +12495,12 @@ a.dealCard:focus-visible {
     gap: 14px;
   }
 
-  .planSteps {
-    grid-template-columns: 1fr;
+  .tpRingRow {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .planStepPayoff {
-    grid-column: span 1;
+  .tpRiskRow {
+    grid-template-columns: 1fr;
   }
 }

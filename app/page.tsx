@@ -27,6 +27,7 @@ import LocationPrompt from "@/app/components/LocationPrompt";
 import TravelFundTeaser from "@/app/components/TravelFundTeaser";
 import WelcomeIntro from "@/app/components/WelcomeIntro";
 import NearbyPanel from "@/app/components/NearbyPanel";
+import OfferRibbon from "@/app/components/OfferRibbon";
 import OffersSection from "@/app/components/OffersSection";
 import Reveal from "@/app/components/Reveal";
 import SiteFooter from "@/app/components/SiteFooter";
@@ -254,6 +255,8 @@ export default function Home() {
       />
 
       <SiteHeader onSearch={applySearch} city={city} onSelectCity={selectCity} />
+
+      <OfferRibbon city={city} />
 
       <CinematicHero
         city={city}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import OfferRibbon from "@/app/components/OfferRibbon";
 import PageShell from "@/app/components/PageShell";
 import TravelPlanIntro from "@/app/components/TravelPlanIntro";
 import TravelPlanner from "@/app/components/TravelPlanner";
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export default function TravelPlanPage() {
   return (
     <PageShell>
+      <OfferRibbon city="Delhi" />
       <TravelPlanIntro />
       <TravelPlanner />
     </PageShell>
