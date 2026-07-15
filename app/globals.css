@@ -15,6 +15,7 @@
   --orange: #ea580c;
   --soft: #fff3e8;
   --chip: #ffedd5;
+  --gradient: linear-gradient(135deg, #fb923c, #ea580c 55%, #2563eb);
   --shadow: 0 24px 80px rgba(15, 23, 42, 0.14);
   --glow: 0 18px 60px rgba(234, 88, 12, 0.2);
   --smooth: cubic-bezier(0.22, 1, 0.36, 1);
@@ -106,7 +107,7 @@ button {
   height: 52px;
   place-items: center;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: var(--white);
   box-shadow: 0 12px 30px rgba(234, 88, 12, 0.32);
 }
@@ -308,7 +309,7 @@ button {
 
 .eyebrow,
 .sectionKicker {
-  color: var(--red);
+  color: var(--muted);
   font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -408,7 +409,7 @@ h3 {
 }
 
 .primaryButton {
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: var(--white);
   box-shadow: 0 12px 30px rgba(234, 88, 12, 0.32);
 }
@@ -1220,7 +1221,7 @@ textarea:focus-visible {
 .filterGroup button.active,
 .category.active {
   border-color: transparent;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: var(--white);
   text-shadow: none;
   box-shadow: 0 12px 30px rgba(234, 88, 12, 0.32);
@@ -1949,9 +1950,9 @@ textarea:focus-visible {
   min-height: 38px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.78);
+  background: var(--chip);
   padding: 0 10px;
-  color: var(--blue);
+  color: var(--ink);
   font-size: 0.88rem;
   font-weight: 800;
 }
@@ -2048,7 +2049,7 @@ textarea:focus-visible {
 
 .assistantBubble {
   align-self: flex-start;
-  background: #fff;
+  background: var(--soft);
   border: 1px solid var(--line);
   color: var(--ink);
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
@@ -3528,9 +3529,12 @@ body {
   transition: color 0.2s var(--smooth);
 }
 
-.glassNavLinks a:hover,
+.glassNavLinks a:hover {
+  color: var(--orange);
+}
+
 .glassNavLinks a.active {
-  color: var(--ink);
+  color: var(--white);
 }
 
 .glassNavLinks a span {
@@ -3543,8 +3547,8 @@ body {
   inset: 0;
   z-index: 0;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--soft), #ffe9d8);
-  border: 1px solid var(--line);
+  background: var(--gradient);
+  border: 1px solid transparent;
 }
 
 .glassNavActions {
@@ -3601,7 +3605,7 @@ body {
   gap: 6px;
   height: 36px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   font-size: 0.82rem;
   font-weight: 800;
@@ -5025,7 +5029,7 @@ body {
   justify-content: space-between;
   padding: 13px 16px;
   border-bottom: 1px solid var(--line);
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
 }
 
@@ -5226,7 +5230,7 @@ body {
   width: 34px;
   height: 34px;
   border-radius: 11px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   box-shadow: var(--glow);
 }
@@ -5608,7 +5612,7 @@ body {
   width: 22px;
   height: 22px;
   border-radius: 7px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   font-size: 0.78rem;
 }
@@ -5863,7 +5867,7 @@ body {
 
 .userBubble {
   border-radius: var(--radius-md) var(--radius-md) 5px var(--radius-md);
-  background: linear-gradient(135deg, #ea580c, #f97316);
+  background: var(--gradient);
 }
 
 .chatBubble span {
@@ -5883,7 +5887,7 @@ body {
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
 }
 
 /* --- AI chat: cleaner header status pill --- */
@@ -6153,7 +6157,7 @@ body {
 }
 
 .chatRow.assistant .chatAvatar {
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
 }
 
@@ -6186,7 +6190,7 @@ body {
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   box-shadow: var(--glow);
 }
@@ -6272,7 +6276,7 @@ body {
   height: 40px;
   border: 0;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   transition: opacity 0.2s var(--smooth), transform 0.2s var(--smooth);
 }
@@ -6391,7 +6395,7 @@ body {
 
 .aiTeaserBubble.user {
   align-self: flex-end;
-  background: linear-gradient(135deg, #ea580c, #f97316);
+  background: var(--gradient);
   color: #fff;
   border-bottom-right-radius: 5px;
 }
@@ -6432,7 +6436,7 @@ body {
   justify-content: center;
   gap: 8px;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   font-weight: 800;
   padding: 14px 18px;
@@ -6473,7 +6477,7 @@ body {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   font-weight: 800;
   font-size: 0.95rem;
@@ -6518,7 +6522,7 @@ body {
   justify-content: center;
   gap: 7px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   font-size: 0.84rem;
   font-weight: 800;
@@ -6762,7 +6766,7 @@ body {
 }
 
 .controlBand .category.active {
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
 }
 
 .controlBand .category.active .categoryIcon {
@@ -6880,7 +6884,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   font-weight: 800;
   font-size: 1rem;
@@ -8108,7 +8112,7 @@ body {
   gap: 3px;
   white-space: nowrap;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   padding: 9px 18px;
   box-shadow: 0 16px 34px rgba(234, 88, 12, 0.4);
@@ -8281,7 +8285,7 @@ body {
 }
 
 .nearbyLocBtn.on {
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   border-color: transparent;
   color: #fff;
 }
@@ -8742,7 +8746,7 @@ body {
 }
 
 .dockLoc.on {
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
 }
 
 .dockMap {
@@ -8764,7 +8768,7 @@ body {
   border: 0;
   cursor: pointer;
   color: #fff;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   box-shadow: 0 14px 30px rgba(234, 88, 12, 0.35);
 }
 
@@ -8985,7 +8989,7 @@ body {
   height: 50px;
   border: 0;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   font-weight: 800;
   font-size: 0.98rem;
@@ -9101,7 +9105,7 @@ body {
 
 .travelPlanSource.ai {
   border-color: transparent;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
 }
 
@@ -10130,7 +10134,7 @@ ol.travelPlanStrategy li::before {
   width: 46px;
   height: 46px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
 }
 
@@ -10924,7 +10928,7 @@ a.dealCard:focus-visible {
   padding: 0 26px;
   border: 0;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   font-weight: 800;
   font-size: 0.96rem;
@@ -11030,7 +11034,7 @@ a.dealCard:focus-visible {
   padding: 0 22px;
   border: 0;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   font-weight: 800;
   font-size: 0.92rem;
@@ -11321,7 +11325,7 @@ a.dealCard:focus-visible {
   height: 40px;
   border: 0;
   border-radius: 11px;
-  background: linear-gradient(135deg, var(--orange), #f97316);
+  background: var(--gradient);
   color: #fff;
   font-weight: 800;
   font-size: 0.84rem;
