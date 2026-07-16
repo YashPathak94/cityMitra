@@ -62,9 +62,10 @@ const cardChoices = [
   "HSBC Cashback"
 ];
 
+const budgetPresets = [25000, 50000, 100000, 200000, 500000];
 const surprisePlaces = ["Goa", "Jaipur", "Leh", "Pondicherry", "Shillong", "Udaipur", "Varanasi", "Rishikesh"];
 
-// Fallback tappable offers until the AI pass returns real ones.
+// Fallback tappable offers until the AI pass returns researched ones.
 const defaultOffers = [
   { option: "Issuer travel portal", offer: "5X-style accelerated rewards on flights", saving: "~₹900", saveAmount: 900, validTill: "Standing offer" },
   { option: "Platform + bank card", offer: "10-12% instant discount, capped", saving: "~₹700", saveAmount: 700, validTill: "Check at checkout" },
@@ -80,25 +81,50 @@ function defaultDate() {
 type SortKey = "best" | "cheap" | "save";
 
 export default function TravelPlanner() {
+  // ---- inputs ----
   const [origin, setOrigin] = useState("Delhi");
   const [destination, setDestination] = useState("Goa");
   const [travelDateISO, setTravelDateISO] = useState(defaultDate());
   const [nights, setNights] = useState(4);
   const [travelers, setTravelers] = useState(2);
+  const [tripBudget, setTripBudget] = useState(75000);
   const [vibe, setVibe] = useState("Balanced");
   const [modes, setModes] = useState<TransportMode[]>(["flight", "train"]);
   const [cards, setCards] = useState<string[]>(["HDFC Regalia"]);
+  const [sip, setSip] = useState(5000);
+  const [liquid, setLiquid] = useState(3500);
+
+  // ---- output state ----
   const [tab, setTab] = useState<StackMode>("flight");
   const [sort, setSort] = useState<SortKey>("best");
   const [picks, setPicks] = useState<Partial<Record<StackMode, number>>>({ flight: 0, hotel: 0 });
   const [appliedOffers, setAppliedOffers] = useState<Set<number>>(new Set([0, 1]));
-  const [sip, setSip] = useState(5000);
-  const [liquid, setLiquid] = useState(3500);
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState("");
 
   const months = useMemo(() => monthsToTravel(travelDateISO), [travelDateISO]);
+  const endDateISO = useMemo(() => {
+    const d = new Date(travelDateISO);
+    d.setDate(d.getDate() + nights);
+    return d.toISOString().slice(0, 10);
+  }, [travelDateISO, nights]);
+
+  function setEndDate(iso: string) {
+    const diff = Math.round((new Date(iso).getTime() - new Date(travelDateISO).getTime()) / 86400000);
+    if (Number.isFinite(diff) && diff >= 1) setNights(Math.min(60, diff));
+  }
+
+  const monthly = sip + liquid;
+
+  // One "monthly saving budget" input drives both buckets (60/40 split);
+  // the sliders below stay available for fine-tuning.
+  function setSavingBudget(value: number) {
+    const total = Math.max(0, Math.min(30000, value));
+    const nextSip = Math.min(15000, Math.round((total * 0.6) / 500) * 500);
+    setSip(nextSip);
+    setLiquid(Math.min(15000, Math.max(0, total - nextSip)));
+  }
 
   function showToast(message: string) {
     setToast(message);
@@ -143,11 +169,11 @@ export default function TravelPlanner() {
   const stackTotal = stack.reduce((sum, item) => sum + item.option.price, 0);
   const directSave = stack.reduce((sum, item) => sum + item.option.save, 0);
   const offerSave = offers.reduce((sum, offer, index) => (appliedOffers.has(index) ? sum + (offer.saveAmount || 0) : sum), 0);
-  const monthly = sip + liquid;
   const growth = Math.max(0, Math.round(sipFutureValue(sip, 10, months) + sipFutureValue(liquid, 6, months) - monthly * months));
   const totalSaved = directSave + offerSave + growth;
   const payable = Math.max(0, stackTotal - offerSave - growth);
   const offsetPct = stackTotal + directSave > 0 ? Math.min(85, Math.max(1, Math.round((totalSaved / (stackTotal + directSave)) * 100))) : 0;
+  const budgetDelta = tripBudget - payable;
 
   function toggleMode(mode: TransportMode) {
     setModes((current) => (current.includes(mode) ? current.filter((m) => m !== mode) : [...current, mode]));
@@ -170,6 +196,7 @@ export default function TravelPlanner() {
   function surprise() {
     const place = surprisePlaces[Math.floor(Math.random() * surprisePlaces.length)];
     setDestination(place);
+    setPlan(null);
     showToast(`Destination unlocked: ${place} 🎲`);
   }
 
@@ -186,7 +213,7 @@ export default function TravelPlanner() {
           travelers,
           nights,
           travelDateISO,
-          targetBudget: Math.max(10000, stackTotal || 75000),
+          targetBudget: Math.max(10000, tripBudget),
           monthlyCapacity: monthly || undefined,
           riskLevel: sip >= liquid ? "medium" : "low",
           modes: modes.length ? modes : transportModes,
@@ -197,7 +224,12 @@ export default function TravelPlanner() {
       const data = (await response.json().catch(() => ({}))) as { plan?: TravelPlan; error?: string };
       if (data.plan) {
         setPlan(data.plan);
-        setAppliedOffers(new Set(data.plan.fareIntel?.offers?.length ? [0, 1] : [0, 1]));
+        // Fresh option lists — reset selections so nothing points at a
+        // stale index from the previous list (the misaligned-card bug).
+        setPicks({ flight: 0, hotel: 0 });
+        setSort("best");
+        setTab((current) => (data.plan?.compare?.some((o) => o.mode === current) ? current : "flight"));
+        setAppliedOffers(new Set([0, 1]));
         showToast(data.plan.source === "ai" ? "Live options loaded ✨" : "Smart estimates loaded — verify with the links");
       } else {
         showToast(data.error || "Couldn't refresh options — showing estimates");
@@ -223,14 +255,16 @@ export default function TravelPlanner() {
 
   async function share() {
     const dateLabel = new Date(travelDateISO).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+    const endLabel = new Date(endDateISO).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
     const lines = [
-      `🌏 ${destination} smart stack — ${origin} → ${destination} · ${dateLabel}`,
-      summaryLine,
+      `🌏 ${destination} smart stack — ${origin} → ${destination}`,
+      `${dateLabel} → ${endLabel} · ${summaryLine}`,
       ``,
       `🧳 THE STACK`,
       ...stack.map((s) => `• ${modeMeta[s.mode].label}: ${s.option.name} — ${inr(s.option.price)} (saved ${inr(s.option.save)})`),
       ``,
-      `💰 Trip total ${inr(stackTotal)} · you save ${inr(totalSaved)} (~${offsetPct}%) · final top-up ${inr(payable)}`,
+      `💰 Trip total ${inr(stackTotal)} vs budget ${inr(tripBudget)} (${budgetDelta >= 0 ? `${inr(budgetDelta)} headroom` : `over by ${inr(-budgetDelta)}`})`,
+      `You save ${inr(totalSaved)} (~${offsetPct}%) · final top-up ${inr(payable)}`,
       `📈 Funding it: ${inr(monthly)}/month for ${months} months (illustrative growth ${inr(growth)})`,
       ...(offerSave ? [`💳 Offers stacked: ${inr(offerSave)}`] : []),
       ``,
@@ -260,27 +294,25 @@ export default function TravelPlanner() {
       travelers,
       nights,
       travelDateISO,
-      targetBudget: Math.max(10000, stackTotal || 75000),
+      targetBudget: Math.max(10000, tripBudget),
       monthlyCapacity: monthly || undefined,
       riskLevel: "medium",
       modes,
       cards
     });
-    const end = new Date(travelDateISO);
-    end.setDate(end.getDate() + nights);
     openTravelPlanPdf({
       planName: `${destination} smart stack`,
       origin,
       destination,
       startDateISO: travelDateISO,
-      endDateISO: end.toISOString().slice(0, 10),
+      endDateISO,
       travelers,
       nights,
       vibe,
       stay: "comfort",
       moments: [],
       riskLevel: sip >= liquid ? "medium" : "low",
-      targetBudget: stackTotal || 75000,
+      targetBudget: tripBudget,
       offsetPct,
       milestones: [1, Math.max(1, Math.round(months / 2)), months]
         .filter((m, i, arr) => arr.indexOf(m) === i)
@@ -300,8 +332,8 @@ export default function TravelPlanner() {
           Your whole trip. <em>Compared, stacked and partly funded.</em>
         </h1>
         <p>
-          Flights, stays and rides in one output. Stack card offers, compare every option and use a smart monthly plan
-          so the trip hurts less.
+          Set the trip, the budget and what you can save monthly — get every option compared with offers stacked and a
+          funding plan that softens the bill.
         </p>
         <div className="spStrip">
           <datalist id="indiaCitiesList">
@@ -318,21 +350,17 @@ export default function TravelPlanner() {
             <input id="spTo" list="indiaCitiesList" value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Dream spot" />
           </div>
           <div className="spField">
-            <label htmlFor="spDate">Departure</label>
-            <input id="spDate" type="date" min={new Date().toISOString().slice(0, 10)} value={travelDateISO} onChange={(e) => e.target.value && setTravelDateISO(e.target.value)} />
+            <label htmlFor="spStart">Trip starts</label>
+            <input id="spStart" type="date" min={new Date().toISOString().slice(0, 10)} value={travelDateISO} onChange={(e) => e.target.value && setTravelDateISO(e.target.value)} />
           </div>
           <div className="spField">
-            <label htmlFor="spNights">Nights</label>
-            <select id="spNights" value={nights} onChange={(e) => setNights(Number(e.target.value))}>
-              {[1, 2, 3, 4, 5, 6, 7, 10, 14].map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
+            <label htmlFor="spEnd">Trip ends</label>
+            <input id="spEnd" type="date" min={travelDateISO} value={endDateISO} onChange={(e) => e.target.value && setEndDate(e.target.value)} />
           </div>
           <div className="spField">
             <label htmlFor="spTrav">Travellers</label>
             <select id="spTrav" value={travelers} onChange={(e) => setTravelers(Number(e.target.value))}>
-              {[1, 2, 3, 4, 5, 6].map((n) => (
+              {[1, 2, 3, 4, 5, 6, 8, 10].map((n) => (
                 <option key={n} value={n}>{n}</option>
               ))}
             </select>
@@ -343,16 +371,53 @@ export default function TravelPlanner() {
         </div>
       </section>
 
-      {/* ============ VIBE + FUNDING SCORE ============ */}
+      {/* ============ INPUTS + FUNDING SCORE ============ */}
       <div className="spTopGrid">
         <section className="spCard">
           <div className="spCardHead">
             <div>
-              <h2>Pick your trip vibe</h2>
-              <p>This changes recommendations, not just colours.</p>
+              <h2>Set your plan</h2>
+              <p>Budget, savings, vibe, transport and cards — the output adapts to every choice.</p>
             </div>
             <button type="button" className="spMini" onClick={surprise}>🎲 Surprise me</button>
           </div>
+
+          <div className="spInputRow">
+            <div className="spInputField">
+              <label htmlFor="spBudget">Trip budget (₹)</label>
+              <input
+                id="spBudget"
+                type="number"
+                min={5000}
+                step={5000}
+                value={tripBudget}
+                onChange={(e) => setTripBudget(Math.max(0, Number(e.target.value)))}
+              />
+              <div className="spPresetRow">
+                {budgetPresets.map((preset) => (
+                  <button key={preset} type="button" className={tripBudget === preset ? "spPreset active" : "spPreset"} onClick={() => setTripBudget(preset)}>
+                    {preset >= 100000 ? `₹${preset / 100000}L` : `₹${preset / 1000}k`}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="spInputField">
+              <label htmlFor="spSaving">Saving budget (₹/month)</label>
+              <input
+                id="spSaving"
+                type="number"
+                min={0}
+                step={500}
+                value={monthly}
+                onChange={(e) => setSavingBudget(Number(e.target.value))}
+              />
+              <small className="spInputHint">
+                Split {inr(sip)} SIP + {inr(liquid)} liquid · fine-tune in Fund-it →
+              </small>
+            </div>
+          </div>
+
+          <span className="spGroupLabel">Trip vibe</span>
           <div className="spChipRow">
             {vibeOptions.map((option) => (
               <button
@@ -365,7 +430,9 @@ export default function TravelPlanner() {
               </button>
             ))}
           </div>
-          <div className="spChipRow spModeRow">
+
+          <span className="spGroupLabel">Transport you&apos;d consider</span>
+          <div className="spChipRow">
             {transportModes.map((mode) => {
               const Icon = modeMeta[mode].icon;
               return (
@@ -374,6 +441,15 @@ export default function TravelPlanner() {
                 </button>
               );
             })}
+          </div>
+
+          <span className="spGroupLabel">Your cards <em>(for tailored offers, up to 4)</em></span>
+          <div className="spChipRow">
+            {cardChoices.map((card) => (
+              <button key={card} type="button" className={cards.includes(card) ? "spChip active" : "spChip"} onClick={() => toggleCard(card)}>
+                {card}
+              </button>
+            ))}
           </div>
         </section>
 
@@ -398,6 +474,11 @@ export default function TravelPlanner() {
             <div><small>You save</small><b className="isGreen">{inr(totalSaved)}</b></div>
             <div><small>Save monthly</small><b className="isOrange">{inr(monthly)}</b></div>
             <div><small>Final top-up</small><b>{inr(payable)}</b></div>
+          </div>
+          <div className={budgetDelta >= 0 ? "spBudgetFit isOk" : "spBudgetFit isOver"}>
+            {budgetDelta >= 0
+              ? `✅ Within your ${inr(tripBudget)} budget — ${inr(budgetDelta)} headroom`
+              : `⚠️ ${inr(-budgetDelta)} over your ${inr(tripBudget)} budget — try a cheaper option or stretch the timeline`}
           </div>
           <div className="spProgress"><span style={{ width: `${offsetPct}%` }} /></div>
         </section>
@@ -431,45 +512,48 @@ export default function TravelPlanner() {
                 );
               })}
             </div>
-            {tabOptions.map((option) => {
-              const originalIndex = compare.filter((o) => o.mode === currentTab).indexOf(option);
-              const isSelected = picks[currentTab] === originalIndex;
-              return (
-                <article key={option.name + option.price} className={isSelected ? "spOption selected" : "spOption"}>
-                  <div className="spOptionTop">
-                    <div>
-                      <strong>{option.name}</strong>
-                      <span className="spOptionMode">{modeMeta[option.mode].label.toUpperCase()} OPTION</span>
-                    </div>
-                    <span className="spBadge">{option.tag}</span>
-                  </div>
-                  <div className="spOptionGrid">
-                    <div><small>Schedule / stay</small><b>{option.line1 || "—"}</b></div>
-                    <div><small>Details</small><b>{option.line2 || "—"}</b></div>
-                    <div><small>Included</small><b>{option.line3 || "—"}</b></div>
-                    <div><small>You save</small><b className="isGreen">{inr(option.save)}</b></div>
-                  </div>
-                  <div className="spOptionFoot">
-                    <div>
-                      <small>Final payable after offer</small>
-                      <div className="spPriceLine">
-                        <span className="spPrice">{inr(option.price)}</span>
-                        <span className="spOld">{inr(option.oldPrice)}</span>
+            <div className={loading ? "spOptionList isLoading" : "spOptionList"} aria-busy={loading}>
+              {tabOptions.map((option) => {
+                const originalIndex = compare.filter((o) => o.mode === currentTab).indexOf(option);
+                const isSelected = picks[currentTab] === originalIndex;
+                return (
+                  <article key={option.name + option.price} className={isSelected ? "spOption selected" : "spOption"}>
+                    <div className="spOptionTop">
+                      <div>
+                        <strong>{option.name}</strong>
+                        <span className="spOptionMode">{modeMeta[option.mode].label.toUpperCase()} OPTION</span>
                       </div>
+                      <span className="spBadge">{option.tag}</span>
                     </div>
-                    {isSelected ? (
-                      <button type="button" className="spSelect isOn" onClick={() => removePick(currentTab)}>
-                        Selected ✓ (tap to remove)
-                      </button>
-                    ) : (
-                      <button type="button" className="spSelect" onClick={() => choose(originalIndex)}>
-                        Choose this
-                      </button>
-                    )}
-                  </div>
-                </article>
-              );
-            })}
+                    <div className="spOptionGrid">
+                      <div><small>Schedule / stay</small><b>{option.line1 || "—"}</b></div>
+                      <div><small>Details</small><b>{option.line2 || "—"}</b></div>
+                      <div><small>Included</small><b>{option.line3 || "—"}</b></div>
+                      <div><small>You save</small><b className="isGreen">{inr(option.save)}</b></div>
+                    </div>
+                    <div className="spOptionFoot">
+                      <div>
+                        <small>Final payable after offer</small>
+                        <div className="spPriceLine">
+                          <span className="spPrice">{inr(option.price)}</span>
+                          {option.oldPrice > option.price && <span className="spOld">{inr(option.oldPrice)}</span>}
+                        </div>
+                      </div>
+                      {isSelected ? (
+                        <button type="button" className="spSelect isOn" onClick={() => removePick(currentTab)}>
+                          Selected ✓
+                        </button>
+                      ) : (
+                        <button type="button" className="spSelect" onClick={() => choose(originalIndex)}>
+                          Choose this
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+              {loading && <div className="spLoadingNote">Researching live options for {origin || "your city"} → {destination}…</div>}
+            </div>
             <p className="calcGuardrail">
               {plan?.source === "ai"
                 ? "AI-researched estimates — final prices are session-based, verify at checkout."
@@ -560,23 +644,13 @@ export default function TravelPlanner() {
                 </button>
               ))}
             </div>
-            <div className="spCardsRow">
-              <span className="spKicker">Your cards (for tailored offers)</span>
-              <div className="spChipRow">
-                {cardChoices.map((card) => (
-                  <button key={card} type="button" className={cards.includes(card) ? "spChip active" : "spChip"} onClick={() => toggleCard(card)}>
-                    {card}
-                  </button>
-                ))}
-              </div>
-            </div>
           </section>
 
           <section className="spCard">
             <div className="spCardHead">
               <div>
                 <h3>Fund-it options</h3>
-                <p>Optional — returns chip in before you pay.</p>
+                <p>Your {inr(monthly)}/month, fine-tuned.</p>
               </div>
             </div>
             <div className="spSlider">
@@ -650,7 +724,7 @@ export default function TravelPlanner() {
           <small>Best funded payable</small>
           <b>{inr(payable)}</b>
         </div>
-        <button type="button" onClick={() => { void build(); showToast("Locking your smart stack…"); }} disabled={loading}>
+        <button type="button" onClick={() => void build()} disabled={loading}>
           {loading ? "Researching…" : plan ? "Refresh live prices →" : "Lock my smart stack →"}
         </button>
       </div>
