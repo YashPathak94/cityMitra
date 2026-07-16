@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { indiaCities } from "@/lib/india-cities";
-import { buildCalculatorPlan, type RiskLevel, type TransportMode, type TravelPlan } from "@/lib/travel-plan";
+import { buildCalculatorPlan, monthsToTravel, type RiskLevel, type TransportMode, type TravelPlan } from "@/lib/travel-plan";
 import { trackActivity } from "@/lib/tracking";
 
 const inr = (value: number) => `₹${Math.max(0, Math.round(value)).toLocaleString("en-IN")}`;
@@ -65,6 +65,7 @@ const vibes = [
   { emoji: "🏔️", label: "Adventure", sub: "Treks, rides and chaos" },
   { emoji: "🍜", label: "Food crawl", sub: "Save room for everything" },
   { emoji: "🎧", label: "Concert trip", sub: "Core memory unlocked" },
+  { emoji: "🛕", label: "Spiritual", sub: "Temples, ghats & peace" },
   { emoji: "✨", label: "Luxury soft life", sub: "Premium, but planned" },
   { emoji: "🎲", label: "Surprise me", sub: "Let the algorithm cook" }
 ];
@@ -84,7 +85,26 @@ const riskOptions: Array<{ id: RiskLevel; emoji: string; label: string; sub: str
   { id: "high", emoji: "🚀", label: "Growth", sub: "More swings, ~13% p.a." }
 ];
 
-const surprisePlaces = ["Jaipur", "Leh", "Pondicherry", "Shillong", "Udaipur"];
+const surprisePlaces = ["Jaipur", "Leh", "Pondicherry", "Shillong", "Udaipur", "Varanasi", "Rishikesh", "Amritsar"];
+
+// Real, always-valid compare links per mode — free-text Google Travel /
+// Search queries, so users can verify every estimate in one tap.
+function compareUrl(mode: TransportMode, origin: string, destination: string, dateISO: string) {
+  const from = origin || "Delhi";
+  const to = destination || "Goa";
+  const queries: Record<TransportMode, string> = {
+    flight: `https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights from ${from} to ${to} on ${dateISO}`)}`,
+    train: `https://www.google.com/search?q=${encodeURIComponent(`trains from ${from} to ${to} IRCTC fare`)}`,
+    bus: `https://www.google.com/search?q=${encodeURIComponent(`${from} to ${to} bus RedBus fare`)}`,
+    car: `https://www.google.com/search?q=${encodeURIComponent(`self drive car rental ${to} Zoomcar price per day`)}`,
+    bike: `https://www.google.com/search?q=${encodeURIComponent(`bike rental ${to} Royal Brothers price per day`)}`
+  };
+  return queries[mode];
+}
+
+function hotelsUrl(tier: string, destination: string) {
+  return `https://www.google.com/travel/hotels?q=${encodeURIComponent(`${tier} hotels in ${destination || "Goa"}`)}`;
+}
 
 const stepTitles = ["Where are we going?", "Who's coming?", "What feels comfortable?", "Personalise the plan"];
 
@@ -111,7 +131,7 @@ export default function TravelPlanner() {
   const [stay, setStay] = useState("Comfort");
   const [moments, setMoments] = useState<string[]>(["Sunset spot", "Local food"]);
   const [targetBudget, setTargetBudget] = useState(100000);
-  const [months, setMonths] = useState(6);
+  const [travelDateISO, setTravelDateISO] = useState(() => dateFromMonths(6));
   const [monthlyCapacity, setMonthlyCapacity] = useState("");
   const [riskLevel, setRiskLevel] = useState<RiskLevel>("medium");
   const [cards, setCards] = useState<string[]>(["HDFC Regalia"]);
@@ -124,7 +144,8 @@ export default function TravelPlanner() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
 
-  const travelDateISO = useMemo(() => dateFromMonths(months), [months]);
+  // The date is the source of truth; the months slider reads/writes it.
+  const months = useMemo(() => monthsToTravel(travelDateISO), [travelDateISO]);
 
   function showToast(message: string) {
     setToast(message);
@@ -151,7 +172,7 @@ export default function TravelPlanner() {
     setTravelers(4);
     setNights(3);
     setTargetBudget(85000);
-    setMonths(4);
+    setTravelDateISO(dateFromMonths(4));
     setPlanName("Mumbai concert weekend 🎧");
     setStep(1);
     showToast("Gen-Z concert weekend loaded 🎧");
@@ -190,7 +211,10 @@ export default function TravelPlanner() {
           monthlyCapacity: monthlyCapacity ? Number(monthlyCapacity) : undefined,
           riskLevel,
           modes: modes.length ? modes : allModes,
-          cards
+          cards,
+          vibe,
+          stay,
+          moments
         })
       });
       const data = (await response.json().catch(() => ({}))) as { plan?: TravelPlan; error?: string };
@@ -256,11 +280,65 @@ export default function TravelPlanner() {
 
   const radarModes = modes.length ? modes : (["flight"] as TransportMode[]);
 
+  // Full-fledged shareable plan — the whole itinerary + money plan as text,
+  // ready for the group chat (native share sheet on mobile, clipboard on web).
   async function sharePlan() {
-    const text = `${planName || "My next trip ✨"} — ${routeLabel} · ${summaryLine} · save ${inr(calc.recommendedMonthly)}/mo, ${offsetPct}% offset — planned on CityMitra ctmitra.com/travel-plan`;
+    const dateLabel = new Date(travelDateISO).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+    const activePlan = plan;
+    const transportLines = (activePlan?.transport.length ? activePlan.transport : radarModes.map((mode) => {
+      const [low, high] = fareRanges[mode];
+      return { mode, priceFrom: low, priceTo: high, duration: "", operator: "", note: "", best: false, platform: "" };
+    })).map((option) => {
+      const isRental = option.mode === "car" || option.mode === "bike";
+      const price = `${inr(option.priceFrom)}${option.priceTo ? `–${inr(option.priceTo)}` : "+"}${isRental ? "/day" : ""}`;
+      return `• ${transportMeta[option.mode].label}: ${price}${option.operator ? ` · ${option.operator}` : ""}${option.best ? " ⭐ best value" : ""}`;
+    });
+    const hotelLines = (activePlan?.hotels.length ? activePlan.hotels : []).map(
+      (tier) => `• ${tier.tier}: ${inr(tier.nightlyFrom)}/night${tier.example ? ` (${tier.example})` : ""} · ${tier.platform}`
+    );
+    const rentalLines = (activePlan?.rentals ?? []).map(
+      (rental) => `• ${rental.type === "car" ? "Self-drive car" : "Bike"}: ${inr(rental.perDayFrom)}${rental.perDayTo ? `–${inr(rental.perDayTo)}` : ""}/day · ${rental.vendor}`
+    );
+    const cardLines = (activePlan?.cardAdvice ?? []).map(
+      (advice) => `• ${advice.card} → ${advice.useFor}${advice.offer ? ` (${advice.offer})` : ""}`
+    );
+    const dealLines = (activePlan?.deals ?? []).slice(0, 4).map((deal) => `• ${deal}`);
+    const midMonth = Math.max(1, Math.round(calc.monthsToGo / 2));
+    const milestone = (k: number) => inr(calc.recommendedMonthly * k * (1 + monthlyRate * (k / 2)));
+
+    const text = [
+      `🌏 ${planName || "My next trip ✨"}`,
+      `${routeLabel} · ${dateLabel}`,
+      `${travelers} travellers · ${nights} nights · ${vibe} · ${stay.toLowerCase()} stay${moments.length ? ` · must-haves: ${moments.join(", ")}` : ""}`,
+      ``,
+      `💰 THE MONEY PLAN`,
+      `Budget ${inr(targetBudget)} · save ${inr(calc.recommendedMonthly)}/month for ${calc.monthsToGo} months (${riskLevel} risk, ${calc.assumedAnnualReturnPct}% p.a. illustrative)`,
+      `Corpus M1 ${milestone(1)} → M${midMonth} ${milestone(midMonth)} → M${calc.monthsToGo} ${inr(calc.projectedValue)}`,
+      `Growth + card rewards ≈ ${inr(calc.investmentGains + calc.netCardRewards)} (~${offsetPct}% of the trip) · your top-up ${inr(calc.outOfPocket)}`,
+      ``,
+      `🚀 GETTING THERE (est.)`,
+      ...transportLines,
+      ...(rentalLines.length ? ["", "🛞 RENTALS ON ARRIVAL", ...rentalLines] : []),
+      ...(hotelLines.length ? ["", "🏨 STAY (per night, est.)", ...hotelLines] : ["", "🏨 STAY (est.)", `• Budget ${inr(1800 * nights)} · comfort ${inr(4500 * nights)} · premium ${inr(9000 * nights)} for ${nights} nights`]),
+      ...(cardLines.length ? ["", "💳 CARD PLAYS", ...cardLines] : []),
+      ...(dealLines.length ? ["", "🔥 TOP TIPS", ...dealLines] : []),
+      ``,
+      `Planned on CityMitra → ctmitra.com/travel-plan (estimates — verify before booking; not investment advice)`
+    ].join("\n");
+
+    const shareData = { title: planName || "CityMitra travel plan", text };
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(shareData);
+        showToast("Plan shared. Main character energy ✨");
+        return;
+      } catch {
+        // fall through to clipboard (user may have dismissed the sheet)
+      }
+    }
     try {
       await navigator.clipboard.writeText(text);
-      showToast("Plan copied. Send it to the group chat 🔗");
+      showToast("Full plan copied. Send it to the group chat 🔗");
     } catch {
       showToast("Couldn't copy — screenshot works too 📸");
     }
@@ -305,6 +383,15 @@ export default function TravelPlanner() {
                   <input list="indiaCitiesList" placeholder="Dream destination" value={destination} onChange={(event) => setDestination(event.target.value)} />
                 </label>
               </div>
+              <label className="tpGap">
+                Travel date <small>(when does the trip start?)</small>
+                <input
+                  type="date"
+                  value={travelDateISO}
+                  min={new Date().toISOString().slice(0, 10)}
+                  onChange={(event) => event.target.value && setTravelDateISO(event.target.value)}
+                />
+              </label>
               <span className="travelPlanFieldLabel tpGap">Pick your trip vibe</span>
               <div className="tpVibeGrid">
                 {vibes.map((option) => (
@@ -397,15 +484,15 @@ export default function TravelPlanner() {
               <div className="tpRangeRow">
                 <div className="tpRangeTop">
                   <span className="travelPlanFieldLabel">Months to departure</span>
-                  <span className="tpRangeValue">{months} months</span>
+                  <span className="tpRangeValue">{months} months · {new Date(travelDateISO).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
                 </div>
                 <input
                   type="range"
                   min={3}
                   max={18}
                   step={1}
-                  value={months}
-                  onChange={(event) => setMonths(Number(event.target.value))}
+                  value={Math.min(18, Math.max(3, months))}
+                  onChange={(event) => setTravelDateISO(dateFromMonths(Number(event.target.value)))}
                   aria-label="Months to departure"
                 />
               </div>
@@ -660,7 +747,7 @@ export default function TravelPlanner() {
           <div className="researchHeader">
             <h2 className="researchHeading">AI research candidates</h2>
             <span className={plan.source === "ai" ? "travelPlanSource ai" : "travelPlanSource warn"}>
-              <Sparkles size={12} /> {plan.source === "ai" ? "AI-generated · verify before acting" : "Sample data · AI unavailable, verify before acting"}
+              <Sparkles size={12} /> {plan.source === "ai" ? "AI-researched estimates · verify before booking" : "Smart estimates · live AI research is offline right now — tap the compare links to verify"}
             </span>
           </div>
 
@@ -672,19 +759,53 @@ export default function TravelPlanner() {
               <div className="transportList">
                 {plan.transport.map((option) => {
                   const Icon = transportMeta[option.mode].icon;
+                  const isRental = option.mode === "car" || option.mode === "bike";
                   return (
                     <div className={option.best ? "transportRow best" : "transportRow"} key={option.mode}>
                       <span className="transportMode"><Icon size={16} /> {transportMeta[option.mode].label}</span>
                       <div className="transportMeta">
-                        <span className="transportPrice">{inr(option.priceFrom)}+</span>
+                        <span className="transportPrice">
+                          {inr(option.priceFrom)}
+                          {option.priceTo ? `–${inr(option.priceTo)}` : "+"}
+                          {isRental && <small>/day</small>}
+                        </span>
                         <span className="transportTime"><Clock size={12} /> {option.duration}</span>
                         {option.best && <span className="transportBadge">Best value</span>}
                       </div>
                       <div className="transportBar"><span style={{ width: `${Math.max(8, (option.priceFrom / transportMax) * 100)}%` }} /></div>
-                      <p>{option.note}</p>
+                      <p>{[option.operator, option.note].filter(Boolean).join(" — ")}</p>
+                      <div className="tpRowFoot">
+                        {option.platform && <span>{option.platform}</span>}
+                        <a href={compareUrl(option.mode, origin, plan.destination, travelDateISO)} target="_blank" rel="noreferrer">
+                          Compare live ↗
+                        </a>
+                      </div>
                     </div>
                   );
                 })}
+              </div>
+            </section>
+          )}
+
+          {plan.rentals.length > 0 && (
+            <section className="planStackCard" style={{ top: 105 }}>
+              <h3 className="planSectionTitle"><Car size={17} /> Rentals on arrival</h3>
+              <div className="hotelGrid">
+                {plan.rentals.map((rental) => (
+                  <div className="hotelTier" key={rental.type}>
+                    <span className="hotelTierName">{rental.type === "car" ? "🚗 Self-drive car" : "🛵 Bike / scooter"}</span>
+                    <strong>
+                      {inr(rental.perDayFrom)}
+                      {rental.perDayTo ? `–${inr(rental.perDayTo)}` : ""}
+                      <small>/day</small>
+                    </strong>
+                    <span className="hotelPlatform">{rental.vendor}</span>
+                    <p>{rental.note}</p>
+                    <a className="tpCompareLink" href={compareUrl(rental.type, origin, plan.destination, travelDateISO)} target="_blank" rel="noreferrer">
+                      Check live rates ↗
+                    </a>
+                  </div>
+                ))}
               </div>
             </section>
           )}
@@ -698,7 +819,11 @@ export default function TravelPlanner() {
                     <span className="hotelTierName">{tier.tier}</span>
                     <strong>{inr(tier.nightlyFrom)}<small>/night</small></strong>
                     <span className="hotelPlatform">{tier.platform}</span>
+                    {tier.example && <em className="hotelExample">{tier.example}</em>}
                     <p>{tier.note}</p>
+                    <a className="tpCompareLink" href={hotelsUrl(tier.tier, plan.destination)} target="_blank" rel="noreferrer">
+                      See live prices ↗
+                    </a>
                   </div>
                 ))}
               </div>
@@ -713,6 +838,7 @@ export default function TravelPlanner() {
                   <div className="cardAdvice" key={advice.card}>
                     <strong>{advice.card}</strong>
                     <span className="cardAdviceTag">{advice.useFor}</span>
+                    {advice.offer && <span className="cardAdviceOffer"><Tag size={11} /> {advice.offer}</span>}
                     <p>{advice.benefit}</p>
                   </div>
                 ))}

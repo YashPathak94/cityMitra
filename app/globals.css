@@ -12852,3 +12852,58 @@ a.dealCard:focus-visible {
     flex: 1;
   }
 }
+
+/* --- travel plan: verify links, named examples, card offers --- */
+
+.tpRowFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.tpRowFoot a,
+.tpCompareLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--blue);
+  white-space: nowrap;
+}
+
+.tpRowFoot a:hover,
+.tpCompareLink:hover {
+  color: var(--orange);
+}
+
+.tpCompareLink {
+  margin-top: 8px;
+}
+
+.hotelExample {
+  display: block;
+  margin-top: 4px;
+  font-style: normal;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--teal);
+}
+
+.cardAdviceOffer {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--chip);
+  font-size: 0.71rem;
+  font-weight: 800;
+  color: var(--orange);
+}

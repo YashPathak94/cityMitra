@@ -13,6 +13,9 @@ export type TravelPlanInput = {
   riskLevel: RiskLevel;
   modes?: TransportMode[];
   cards?: string[];
+  vibe?: string;
+  stay?: string;
+  moments?: string[];
 };
 
 export type PlanInstrument = {
@@ -25,8 +28,13 @@ export type PlanInstrument = {
 export type TransportOption = {
   mode: TransportMode;
   priceFrom: number;
+  priceTo?: number;
   duration: string;
   note: string;
+  /** Where to book/compare — e.g. "MakeMyTrip · Goibibo · Skyscanner". */
+  platform?: string;
+  /** Typical operators on the route — e.g. "IndiGo · Akasa Air". */
+  operator?: string;
   best?: boolean;
 };
 
@@ -35,12 +43,24 @@ export type HotelTier = {
   nightlyFrom: number;
   platform: string;
   note: string;
+  /** Named example properties — e.g. "Ginger Panjim · Zostel Goa". */
+  example?: string;
+};
+
+export type RentalOption = {
+  type: "car" | "bike";
+  vendor: string;
+  perDayFrom: number;
+  perDayTo?: number;
+  note: string;
 };
 
 export type CardAdvice = {
   card: string;
   useFor: string;
   benefit: string;
+  /** The issuer portal that carries the offer — e.g. "HDFC SmartBuy · 5X". */
+  offer?: string;
 };
 
 export type TravelPlan = {
@@ -62,6 +82,7 @@ export type TravelPlan = {
   instruments: PlanInstrument[];
   transport: TransportOption[];
   hotels: HotelTier[];
+  rentals: RentalOption[];
   cardAdvice: CardAdvice[];
   deals: string[];
   disclaimer: string;
@@ -118,12 +139,50 @@ const fallbackInstruments = (risk: RiskLevel): PlanInstrument[] => {
   return [equity[0], equity[1], ...debt, ...cards];
 };
 
-const TRANSPORT_BASE: Record<TransportMode, { priceFrom: number; duration: string; note: string }> = {
-  flight: { priceFrom: 3500, duration: "1–3 hrs", note: "Fastest; book 3–6 weeks early for the lowest fares." },
-  train: { priceFrom: 600, duration: "6–18 hrs", note: "Best value; book on IRCTC as soon as the window opens." },
-  bus: { priceFrom: 500, duration: "8–20 hrs", note: "Cheapest AC option; sleeper coaches for overnight legs." },
-  car: { priceFrom: 2500, duration: "Flexible", note: "Door-to-door freedom; factor fuel + tolls + rest stops." },
-  bike: { priceFrom: 1200, duration: "Longest", note: "Cheapest on fuel and a real adventure; plan for fatigue." }
+const TRANSPORT_BASE: Record<
+  TransportMode,
+  { priceFrom: number; priceTo: number; duration: string; note: string; platform: string; operator: string }
+> = {
+  flight: {
+    priceFrom: 3500,
+    priceTo: 7200,
+    duration: "1–3 hrs",
+    note: "Fastest; book 3–6 weeks early for the lowest fares.",
+    platform: "MakeMyTrip · Goibibo · Skyscanner",
+    operator: "IndiGo · Air India Express · Akasa Air"
+  },
+  train: {
+    priceFrom: 600,
+    priceTo: 2400,
+    duration: "6–18 hrs",
+    note: "Best value; book the moment the IRCTC window opens.",
+    platform: "IRCTC · ixigo · ConfirmTkt",
+    operator: "Superfast / AC Express"
+  },
+  bus: {
+    priceFrom: 500,
+    priceTo: 1600,
+    duration: "8–20 hrs",
+    note: "Cheapest AC option; sleeper coaches for overnight legs.",
+    platform: "RedBus · AbhiBus",
+    operator: "VRL · Orange · state RTC Volvos"
+  },
+  car: {
+    priceFrom: 2500,
+    priceTo: 4500,
+    duration: "Flexible",
+    note: "Self-drive rental per day — factor fuel + tolls + rest stops.",
+    platform: "Zoomcar · Savaari · Revv",
+    operator: "Self-drive hatchback / SUV"
+  },
+  bike: {
+    priceFrom: 600,
+    priceTo: 1400,
+    duration: "Longest",
+    note: "Rental per day; cheapest on fuel and a real adventure.",
+    platform: "Royal Brothers · Onn Bikes",
+    operator: "Classic 350 / Activa class"
+  }
 };
 
 function buildTransport(modes?: TransportMode[]): TransportOption[] {
@@ -139,10 +198,52 @@ function buildTransport(modes?: TransportMode[]): TransportOption[] {
 
 function buildHotels(): HotelTier[] {
   return [
-    { tier: "Smart budget", nightlyFrom: 1200, platform: "OYO · Goibibo", note: "Clean, central stays for short trips." },
-    { tier: "Comfort 3–4★", nightlyFrom: 3000, platform: "MakeMyTrip · Booking", note: "Best balance of price, location and reviews." },
-    { tier: "Premium 5★", nightlyFrom: 7000, platform: "Booking · Agoda", note: "Splurge nights — pay with a hotel-rewards card." }
+    {
+      tier: "Smart budget",
+      nightlyFrom: 1200,
+      platform: "Goibibo · OYO",
+      note: "Clean, central stays for short trips.",
+      example: "e.g. Zostel · FabHotel · Ginger"
+    },
+    {
+      tier: "Comfort 3–4★",
+      nightlyFrom: 3000,
+      platform: "MakeMyTrip · Booking.com",
+      note: "Best balance of price, location and reviews.",
+      example: "e.g. Lemon Tree · ibis · Royal Orchid"
+    },
+    {
+      tier: "Premium 5★",
+      nightlyFrom: 7000,
+      platform: "Booking.com · Agoda",
+      note: "Splurge nights — pay with a hotel-rewards card.",
+      example: "e.g. Taj · Marriott · Radisson Blu"
+    }
   ];
+}
+
+function buildRentals(modes?: TransportMode[]): RentalOption[] {
+  const chosen = modes && modes.length ? modes : [];
+  const out: RentalOption[] = [];
+  if (chosen.includes("car")) {
+    out.push({
+      type: "car",
+      vendor: "Zoomcar · Savaari · Revv",
+      perDayFrom: 2500,
+      perDayTo: 4500,
+      note: "Self-drive hatchback to SUV, unlimited-km plans available; keep DL + ID handy."
+    });
+  }
+  if (chosen.includes("bike")) {
+    out.push({
+      type: "bike",
+      vendor: "Royal Brothers · Onn Bikes",
+      perDayFrom: 600,
+      perDayTo: 1400,
+      note: "Scooters from ~₹600/day, Classic 350 class ~₹1,200/day; helmet included, carry DL."
+    });
+  }
+  return out;
 }
 
 function buildCardAdvice(cards?: string[]): CardAdvice[] {
@@ -224,6 +325,7 @@ export function buildCalculatorPlan(input: TravelPlanInput): TravelPlan {
     instruments: fallbackInstruments(input.riskLevel),
     transport: buildTransport(input.modes),
     hotels: buildHotels(),
+    rentals: buildRentals(input.modes),
     cardAdvice: buildCardAdvice(input.cards),
     deals: DEFAULT_DEALS,
     disclaimer: DISCLAIMER,
