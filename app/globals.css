@@ -13227,3 +13227,905 @@ a.dealCard:focus-visible {
   color: var(--muted);
   font-weight: 700;
 }
+
+/* ============================================================
+   Smart trip funding — straight-to-business planner
+   ============================================================ */
+
+.smartPlan {
+  width: min(1240px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 10px 0 120px;
+}
+
+.spHero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 32px;
+  padding: clamp(22px, 4vw, 34px);
+  color: var(--white);
+  background: linear-gradient(135deg, #101426, #1c2650 56%, #2563eb);
+  box-shadow: var(--shadow);
+}
+
+.spHero::before {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  right: -120px;
+  top: -220px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.35), transparent 65%);
+  pointer-events: none;
+}
+
+.spEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.spHero h1 {
+  margin: 16px 0 10px;
+  max-width: 860px;
+  font-size: clamp(2.1rem, 4.6vw, 3.6rem);
+  line-height: 1;
+  color: var(--white);
+}
+
+.spHero h1 em {
+  font-style: normal;
+  background: linear-gradient(115deg, #fb923c, #fda4af 45%, #93c5fd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.spHero > p {
+  margin: 0;
+  max-width: 720px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.spStrip {
+  position: relative;
+  z-index: 1;
+  margin-top: 22px;
+  background: var(--white);
+  color: var(--ink);
+  border-radius: 20px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 0.6fr 0.7fr auto;
+  gap: 8px;
+}
+
+.spField {
+  padding: 8px 12px;
+  border-right: 1px solid var(--line);
+  min-width: 0;
+}
+
+.spField:nth-last-of-type(2) {
+  border-right: 0;
+}
+
+.spField label {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.spField input,
+.spField select {
+  border: 0;
+  background: transparent;
+  outline: 0;
+  width: 100%;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.spBuild {
+  border: 0;
+  border-radius: 15px;
+  padding: 0 20px;
+  min-height: 54px;
+  color: var(--white);
+  font-weight: 800;
+  background: var(--gradient);
+  box-shadow: 0 12px 30px rgba(234, 88, 12, 0.32);
+  transition: transform 200ms var(--smooth);
+  white-space: nowrap;
+}
+
+.spBuild:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+.spBuild:disabled {
+  opacity: 0.7;
+}
+
+.spTopGrid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.spCard {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  padding: 22px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 28px rgba(234, 88, 12, 0.06);
+}
+
+.spCardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.spCardHead h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.spCardHead h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.spCardHead p {
+  margin: 4px 0 0;
+  font-size: 0.83rem;
+  color: var(--muted);
+}
+
+.spMini {
+  border: 1px solid var(--line);
+  background: var(--white);
+  border-radius: 999px;
+  padding: 9px 13px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: transform 200ms var(--smooth), border-color 200ms var(--smooth);
+}
+
+.spMini:hover {
+  transform: translateY(-1px);
+  border-color: var(--orange);
+}
+
+.spChipRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.spModeRow {
+  margin-top: 14px;
+}
+
+.spChip,
+.spVibe {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 0.83rem;
+  font-weight: 800;
+  color: var(--ink);
+  transition: transform 200ms var(--smooth), background 200ms var(--smooth), color 200ms var(--smooth), border-color 200ms var(--smooth);
+}
+
+.spChip:hover,
+.spVibe:hover {
+  transform: translateY(-1px);
+}
+
+.spChip.active {
+  color: var(--white);
+  border-color: transparent;
+  background: var(--gradient);
+}
+
+.spVibe.active {
+  background: #171721;
+  color: var(--white);
+  border-color: #171721;
+}
+
+.spScore {
+  background: linear-gradient(135deg, #f0fdf6, #fff3e8);
+}
+
+.spScoreTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.spKicker {
+  display: block;
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.spKicker.light {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.spScore h2 {
+  margin: 5px 0 3px;
+  font-size: 1.3rem;
+}
+
+.spScore h2 em {
+  font-style: normal;
+  color: var(--green);
+}
+
+.spScore p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.spRing {
+  flex: none;
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.spRingInner {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: var(--white);
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.spRingInner strong {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.spRingInner span {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.spKpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.spKpis > div {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+
+.spKpis small {
+  display: block;
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 0.68rem;
+}
+
+.spKpis b {
+  display: block;
+  font-size: 1.2rem;
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.isGreen { color: var(--green); }
+
+.spProgress {
+  height: 10px;
+  background: #f0e7dc;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.spProgress span {
+  display: block;
+  height: 100%;
+  background: var(--gradient);
+  transition: width 400ms var(--smooth);
+}
+
+.spResults {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  margin-top: 16px;
+  align-items: start;
+}
+
+.spResults main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.spAside {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.spSorts {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.spTabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+.spTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  border: 1px solid var(--line);
+  background: var(--white);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.spTab.active {
+  background: var(--ink);
+  color: var(--white);
+  border-color: var(--ink);
+}
+
+.spTabDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.spOption {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  background: var(--white);
+  transition: transform 200ms var(--smooth), box-shadow 200ms var(--smooth), border-color 200ms var(--smooth);
+}
+
+.spOption:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow);
+}
+
+.spOption.selected {
+  border: 2px solid var(--blue);
+  box-shadow: 0 12px 34px rgba(37, 99, 235, 0.16);
+}
+
+.spOptionTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.spOptionTop strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.spOptionMode {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.spBadge {
+  flex: none;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  background: #eafbf3;
+  color: #108854;
+  white-space: nowrap;
+}
+
+.spOptionGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.spOptionGrid small {
+  display: block;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.68rem;
+}
+
+.spOptionGrid b {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.85rem;
+}
+
+.spOptionFoot {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.spOptionFoot small {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.spPriceLine {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.spPrice {
+  font-size: 1.55rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.spOld {
+  text-decoration: line-through;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.spSelect {
+  border: 0;
+  background: var(--ink);
+  color: var(--white);
+  border-radius: 13px;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  transition: transform 200ms var(--smooth);
+}
+
+.spSelect:hover {
+  transform: translateY(-1px);
+}
+
+.spSelect.isOn {
+  background: var(--gradient);
+}
+
+.spDark {
+  background: linear-gradient(135deg, #171721, #1e2a52);
+  color: var(--white);
+  border-color: transparent;
+}
+
+.spDark p {
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.8rem;
+  margin: 4px 0 0;
+}
+
+.spSaveBig {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #75f0b5;
+  font-variant-numeric: tabular-nums;
+}
+
+.spStackBar {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 14px 0 12px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.spStackBar span:nth-child(1) { background: #ff8a3d; }
+.spStackBar span:nth-child(2) { background: #7657ff; }
+.spStackBar span:nth-child(3) { background: #16a46a; }
+
+.spLegend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 0.76rem;
+}
+
+.spLegend div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.spOffers {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.spOffer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: var(--soft);
+  opacity: 0.55;
+  transition: opacity 200ms var(--smooth), border-color 200ms var(--smooth), transform 200ms var(--smooth);
+}
+
+.spOffer.isOn {
+  opacity: 1;
+  border-color: var(--green);
+  background: #f2fdf7;
+}
+
+.spOffer:hover {
+  transform: translateY(-1px);
+}
+
+.spOffer strong {
+  display: block;
+  font-size: 0.84rem;
+}
+
+.spOffer small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.spOfferTill {
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.spOffer > b {
+  flex: none;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+}
+
+.spCardsRow {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+
+.spCardsRow .spChipRow {
+  margin-top: 8px;
+}
+
+.spCardsRow .spChip {
+  padding: 8px 12px;
+  font-size: 0.74rem;
+}
+
+.spSlider {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 13px 14px;
+  background: var(--soft);
+  margin-bottom: 10px;
+}
+
+.spSliderTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.spSliderTop strong {
+  font-size: 0.88rem;
+}
+
+.spSliderTop small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.spRisk {
+  font-size: 0.64rem;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: #fff4dc;
+  color: #9b6a00;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.spRisk.low {
+  background: #eafbf3;
+  color: #108854;
+}
+
+.spSlider input[type="range"] {
+  width: 100%;
+  margin-top: 8px;
+  accent-color: var(--orange);
+}
+
+.spSliderScale {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.spSliderScale b {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.disclaimerSmall {
+  margin: 6px 0 0;
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.spActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.spActionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  border-radius: 999px;
+  min-height: 46px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--ink);
+  transition: transform 200ms var(--smooth), border-color 200ms var(--smooth);
+}
+
+.spActionBtn:hover {
+  transform: translateY(-1px);
+  border-color: var(--orange);
+}
+
+.spExtras {
+  margin-top: 16px;
+}
+
+.spExtrasGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.spExtrasGrid h4 {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+}
+
+.spCardPlay {
+  margin: 0 0 10px;
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.spCardPlay .cardAdviceOffer {
+  display: inline-flex;
+  margin-left: 6px;
+}
+
+.spDeals {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.spDock {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  width: min(720px, calc(100% - 24px));
+  background: rgba(15, 20, 38, 0.94);
+  backdrop-filter: blur(16px);
+  color: var(--white);
+  border-radius: 20px;
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: var(--shadow);
+  z-index: 40;
+}
+
+.spDock small {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.7rem;
+}
+
+.spDock b {
+  display: block;
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.spDock button {
+  border: 0;
+  border-radius: 13px;
+  background: var(--gradient);
+  color: var(--white);
+  padding: 13px 18px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  transition: transform 200ms var(--smooth);
+}
+
+.spDock button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 960px) {
+  .spStrip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .spField {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .spBuild {
+    grid-column: 1 / -1;
+  }
+
+  .spTopGrid,
+  .spResults {
+    grid-template-columns: 1fr;
+  }
+
+  .spExtrasGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Grid/flex children must be allowed to shrink, or scrollable chip rows
+   stretch their column and force page-level horizontal overflow. */
+.spTopGrid > *,
+.spResults > *,
+.spAside > *,
+.spCard {
+  min-width: 0;
+}
+
+.spChipRow,
+.spTabs {
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .smartPlan {
+    padding-bottom: 130px;
+  }
+
+  .spHero {
+    border-radius: 24px;
+  }
+
+  .spStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .spOptionGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .spOptionFoot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .spSelect {
+    width: 100%;
+  }
+
+  .spChipRow {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .spCardsRow .spChipRow,
+  .spSorts,
+  .spModeRow {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}

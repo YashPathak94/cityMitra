@@ -1,38 +1,57 @@
 "use client";
 
 import {
-  ArrowRight,
   Bike,
   Bus,
-  Calculator,
   Car,
-  Check,
-  Clock,
-  CreditCard,
   FileDown,
+  Heart,
   Hotel,
-  LineChart,
-  PiggyBank,
   Plane,
-  Plus,
-  RotateCcw,
   Share2,
   Sparkles,
   Tag,
-  TrainFront,
-  TrendingUp,
-  Wallet,
-  X
+  TrainFront
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { indiaCities } from "@/lib/india-cities";
-import { buildCalculatorPlan, monthsToTravel, type RiskLevel, type TransportMode, type TravelPlan } from "@/lib/travel-plan";
+import {
+  buildCalculatorPlan,
+  buildCompareOptions,
+  monthsToTravel,
+  sipFutureValue,
+  type CompareOption,
+  type TransportMode,
+  type TravelPlan
+} from "@/lib/travel-plan";
 import { openTravelPlanPdf } from "@/lib/travel-plan-pdf";
 import { trackActivity } from "@/lib/tracking";
 
 const inr = (value: number) => `₹${Math.max(0, Math.round(value)).toLocaleString("en-IN")}`;
 
-const popularCards = [
+type StackMode = TransportMode | "hotel";
+
+const modeMeta: Record<StackMode, { label: string; icon: typeof Plane }> = {
+  flight: { label: "Flights", icon: Plane },
+  train: { label: "Trains", icon: TrainFront },
+  bus: { label: "Bus", icon: Bus },
+  car: { label: "Cars", icon: Car },
+  bike: { label: "Bikes", icon: Bike },
+  hotel: { label: "Hotels", icon: Hotel }
+};
+const transportModes: TransportMode[] = ["flight", "train", "bus", "car", "bike"];
+
+const vibeOptions = [
+  { emoji: "⚡", label: "Balanced" },
+  { emoji: "🌊", label: "Beach reset" },
+  { emoji: "🏔️", label: "Adventure" },
+  { emoji: "🍜", label: "Food crawl" },
+  { emoji: "🎧", label: "Concert trip" },
+  { emoji: "🛕", label: "Spiritual" },
+  { emoji: "✨", label: "Luxury soft life" }
+];
+
+const cardChoices = [
   "HDFC Regalia",
   "Axis Magnus",
   "SBI Cashback",
@@ -43,197 +62,120 @@ const popularCards = [
   "HSBC Cashback"
 ];
 
-const transportMeta: Record<TransportMode, { label: string; icon: typeof Plane }> = {
-  flight: { label: "Flight", icon: Plane },
-  train: { label: "Train", icon: TrainFront },
-  bus: { label: "Bus", icon: Bus },
-  car: { label: "Car", icon: Car },
-  bike: { label: "Bike", icon: Bike }
-};
-const allModes = Object.keys(transportMeta) as TransportMode[];
+const surprisePlaces = ["Goa", "Jaipur", "Leh", "Pondicherry", "Shillong", "Udaipur", "Varanasi", "Rishikesh"];
 
-// Illustrative per-person fare ranges for the radar; the AI research pass
-// replaces these with live, route-specific candidates after "Generate".
-const fareRanges: Record<TransportMode, [number, number]> = {
-  flight: [4500, 7200],
-  train: [1200, 2400],
-  bus: [900, 1600],
-  car: [3800, 6000],
-  bike: [1500, 2600]
-};
-const fareRadarMax = 7200;
-
-const vibes = [
-  { emoji: "🌊", label: "Beach reset", sub: "Slow mornings + sunsets" },
-  { emoji: "🏔️", label: "Adventure", sub: "Treks, rides and chaos" },
-  { emoji: "🍜", label: "Food crawl", sub: "Save room for everything" },
-  { emoji: "🎧", label: "Concert trip", sub: "Core memory unlocked" },
-  { emoji: "🛕", label: "Spiritual", sub: "Temples, ghats & peace" },
-  { emoji: "✨", label: "Luxury soft life", sub: "Premium, but planned" },
-  { emoji: "🎲", label: "Surprise me", sub: "Let the algorithm cook" }
+// Fallback tappable offers until the AI pass returns real ones.
+const defaultOffers = [
+  { option: "Issuer travel portal", offer: "5X-style accelerated rewards on flights", saving: "~₹900", saveAmount: 900, validTill: "Standing offer" },
+  { option: "Platform + bank card", offer: "10-12% instant discount, capped", saving: "~₹700", saveAmount: 700, validTill: "Check at checkout" },
+  { option: "App-only deal", offer: "Extra discount on first app booking", saving: "~₹500", saveAmount: 500, validTill: "Check at checkout" }
 ];
 
-const stayStyles = ["Budget", "Comfort", "Premium", "Hostel-core"];
-const momentOptions = ["Sunset spot", "Nightlife", "Local food", "Content-worthy cafés", "Hidden gems"];
-
-const personas = [
-  { emoji: "📋", label: "The planner", sub: "Spreadsheets are love" },
-  { emoji: "🫡", label: "Just tell me when", sub: "Low effort, high vibes" },
-  { emoji: "💸", label: "Deal hunter", sub: "Never pays full price" }
-];
-
-const riskOptions: Array<{ id: RiskLevel; emoji: string; label: string; sub: string }> = [
-  { id: "low", emoji: "🛟", label: "Chill", sub: "Safer, ~6% p.a." },
-  { id: "medium", emoji: "⚖️", label: "Balanced", sub: "Mix it up, ~10% p.a." },
-  { id: "high", emoji: "🚀", label: "Growth", sub: "More swings, ~13% p.a." }
-];
-
-const surprisePlaces = ["Jaipur", "Leh", "Pondicherry", "Shillong", "Udaipur", "Varanasi", "Rishikesh", "Amritsar"];
-
-// Real, always-valid compare links per mode — free-text Google Travel /
-// Search queries, so users can verify every estimate in one tap.
-function compareUrl(mode: TransportMode, origin: string, destination: string, dateISO: string) {
-  const from = origin || "Delhi";
-  const to = destination || "Goa";
-  const queries: Record<TransportMode, string> = {
-    flight: `https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights from ${from} to ${to} on ${dateISO}`)}`,
-    train: `https://www.google.com/search?q=${encodeURIComponent(`trains from ${from} to ${to} IRCTC fare`)}`,
-    bus: `https://www.google.com/search?q=${encodeURIComponent(`${from} to ${to} bus RedBus fare`)}`,
-    car: `https://www.google.com/search?q=${encodeURIComponent(`self drive car rental ${to} Zoomcar price per day`)}`,
-    bike: `https://www.google.com/search?q=${encodeURIComponent(`bike rental ${to} Royal Brothers price per day`)}`
-  };
-  return queries[mode];
-}
-
-function hotelsUrl(tier: string, destination: string) {
-  return `https://www.google.com/travel/hotels?q=${encodeURIComponent(`${tier} hotels in ${destination || "Goa"}`)}`;
-}
-
-const stepTitles = ["Where are we going?", "Who's coming?", "What feels comfortable?", "Personalise the plan"];
-
-const kindMeta = {
-  mutual_fund: { label: "Mutual funds", icon: LineChart },
-  stock: { label: "Trending stocks", icon: TrendingUp },
-  card: { label: "Card offers", icon: CreditCard }
-} as const;
-
-function dateFromMonths(months: number) {
+function defaultDate() {
   const d = new Date();
-  d.setMonth(d.getMonth() + months);
+  d.setMonth(d.getMonth() + 6);
   return d.toISOString().slice(0, 10);
 }
 
+type SortKey = "best" | "cheap" | "save";
+
 export default function TravelPlanner() {
-  const [step, setStep] = useState(1);
   const [origin, setOrigin] = useState("Delhi");
   const [destination, setDestination] = useState("Goa");
-  const [vibe, setVibe] = useState("Beach reset");
-  const [travelers, setTravelers] = useState(2);
+  const [travelDateISO, setTravelDateISO] = useState(defaultDate());
   const [nights, setNights] = useState(4);
+  const [travelers, setTravelers] = useState(2);
+  const [vibe, setVibe] = useState("Balanced");
   const [modes, setModes] = useState<TransportMode[]>(["flight", "train"]);
-  const [stay, setStay] = useState("Comfort");
-  const [moments, setMoments] = useState<string[]>(["Sunset spot", "Local food"]);
-  const [targetBudget, setTargetBudget] = useState(100000);
-  const [travelDateISO, setTravelDateISO] = useState(() => dateFromMonths(6));
-  const [monthlyCapacity, setMonthlyCapacity] = useState("");
-  const [riskLevel, setRiskLevel] = useState<RiskLevel>("medium");
   const [cards, setCards] = useState<string[]>(["HDFC Regalia"]);
-  const [customCard, setCustomCard] = useState("");
-  const [persona, setPersona] = useState("The planner");
-  const [planName, setPlanName] = useState("Goa glow-up trip ✨");
-  const [chart, setChart] = useState<"corpus" | "fare">("corpus");
+  const [tab, setTab] = useState<StackMode>("flight");
+  const [sort, setSort] = useState<SortKey>("best");
+  const [picks, setPicks] = useState<Partial<Record<StackMode, number>>>({ flight: 0, hotel: 0 });
+  const [appliedOffers, setAppliedOffers] = useState<Set<number>>(new Set([0, 1]));
+  const [sip, setSip] = useState(5000);
+  const [liquid, setLiquid] = useState(3500);
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [toast, setToast] = useState("");
 
-  // The start date is the source of truth; the months slider reads/writes it
-  // and the end date derives from nights (editing it writes nights back).
   const months = useMemo(() => monthsToTravel(travelDateISO), [travelDateISO]);
-  const endDateISO = useMemo(() => {
-    const d = new Date(travelDateISO);
-    d.setDate(d.getDate() + nights);
-    return d.toISOString().slice(0, 10);
-  }, [travelDateISO, nights]);
-
-  function setEndDate(iso: string) {
-    const diff = Math.round((new Date(iso).getTime() - new Date(travelDateISO).getTime()) / 86400000);
-    if (Number.isFinite(diff) && diff >= 1) setNights(Math.min(60, diff));
-  }
-
-  function resetAll() {
-    setStep(1);
-    setOrigin("Delhi");
-    setDestination("Goa");
-    setVibe("Beach reset");
-    setTravelers(2);
-    setNights(4);
-    setModes(["flight", "train"]);
-    setStay("Comfort");
-    setMoments(["Sunset spot", "Local food"]);
-    setTargetBudget(100000);
-    setTravelDateISO(dateFromMonths(6));
-    setMonthlyCapacity("");
-    setRiskLevel("medium");
-    setCards(["HDFC Regalia"]);
-    setCustomCard("");
-    setPersona("The planner");
-    setPlanName("Goa glow-up trip ✨");
-    setPlan(null);
-    setError("");
-    showToast("Fresh slate. Plan a new one ↺");
-  }
 
   function showToast(message: string) {
     setToast(message);
-    setTimeout(() => setToast(""), 2600);
+    setTimeout(() => setToast(""), 2200);
   }
 
-  function pickVibe(label: string) {
-    if (label === "Surprise me") {
-      const place = surprisePlaces[Math.floor(Math.random() * surprisePlaces.length)];
-      const nextVibe = vibes[Math.floor(Math.random() * 5)].label;
-      setDestination(place);
-      setVibe(nextVibe);
-      setPlanName(`${place} ${nextVibe.toLowerCase()} ✨`);
-      showToast(`Rolled the dice: ${nextVibe} in ${place} 🎲`);
-      return;
+  // Instant local options; the AI pass swaps in route-specific ones.
+  const compare: CompareOption[] = useMemo(
+    () => (plan?.compare?.length ? plan.compare : buildCompareOptions({ travelers, nights, modes })),
+    [plan, travelers, nights, modes]
+  );
+
+  const activeTabs: StackMode[] = useMemo(() => {
+    const present = new Set(compare.map((o) => o.mode));
+    return [...transportModes.filter((m) => present.has(m)), ...(present.has("hotel") ? (["hotel"] as StackMode[]) : [])];
+  }, [compare]);
+
+  const currentTab: StackMode = activeTabs.includes(tab) ? tab : activeTabs[0] || "flight";
+
+  const tabOptions = useMemo(() => {
+    const list = compare.filter((o) => o.mode === currentTab);
+    if (sort === "cheap") return [...list].sort((a, b) => a.price - b.price);
+    if (sort === "save") return [...list].sort((a, b) => b.save - a.save);
+    return list;
+  }, [compare, currentTab, sort]);
+
+  const offers = plan?.fareIntel?.offers?.length ? plan.fareIntel.offers : defaultOffers;
+
+  // ---- stack math ----
+  const stack = useMemo(() => {
+    const entries: Array<{ mode: StackMode; option: CompareOption }> = [];
+    for (const mode of activeTabs) {
+      const index = picks[mode];
+      if (index === undefined) continue;
+      const list = compare.filter((o) => o.mode === mode);
+      const option = list[Math.min(index, list.length - 1)];
+      if (option) entries.push({ mode, option });
     }
-    setVibe(label);
-  }
+    return entries;
+  }, [picks, compare, activeTabs]);
 
-  function loadDemo() {
-    setOrigin("Bengaluru");
-    setDestination("Mumbai");
-    setVibe("Concert trip");
-    setTravelers(4);
-    setNights(3);
-    setTargetBudget(85000);
-    setTravelDateISO(dateFromMonths(4));
-    setPlanName("Mumbai concert weekend 🎧");
-    setStep(1);
-    showToast("Gen-Z concert weekend loaded 🎧");
-    trackActivity({ type: "scene_action", city: "Mumbai", category: "markets", label: "travel_plan_demo" });
-  }
+  const stackTotal = stack.reduce((sum, item) => sum + item.option.price, 0);
+  const directSave = stack.reduce((sum, item) => sum + item.option.save, 0);
+  const offerSave = offers.reduce((sum, offer, index) => (appliedOffers.has(index) ? sum + (offer.saveAmount || 0) : sum), 0);
+  const monthly = sip + liquid;
+  const growth = Math.max(0, Math.round(sipFutureValue(sip, 10, months) + sipFutureValue(liquid, 6, months) - monthly * months));
+  const totalSaved = directSave + offerSave + growth;
+  const payable = Math.max(0, stackTotal - offerSave - growth);
+  const offsetPct = stackTotal + directSave > 0 ? Math.min(85, Math.max(1, Math.round((totalSaved / (stackTotal + directSave)) * 100))) : 0;
 
   function toggleMode(mode: TransportMode) {
     setModes((current) => (current.includes(mode) ? current.filter((m) => m !== mode) : [...current, mode]));
-  }
-  function toggleMoment(moment: string) {
-    setMoments((current) => (current.includes(moment) ? current.filter((m) => m !== moment) : [...current, moment]));
+    setPlan(null);
   }
   function toggleCard(card: string) {
     setCards((current) => (current.includes(card) ? current.filter((c) => c !== card) : [...current, card].slice(0, 4)));
   }
-  function addCustomCard() {
-    const value = customCard.trim();
-    if (value && !cards.includes(value)) setCards((current) => [...current, value].slice(0, 4));
-    setCustomCard("");
+  function choose(index: number) {
+    setPicks((current) => ({ ...current, [currentTab]: index }));
+    showToast("Added to your smart stack ✨");
+  }
+  function removePick(mode: StackMode) {
+    setPicks((current) => {
+      const next = { ...current };
+      delete next[mode];
+      return next;
+    });
+  }
+  function surprise() {
+    const place = surprisePlaces[Math.floor(Math.random() * surprisePlaces.length)];
+    setDestination(place);
+    showToast(`Destination unlocked: ${place} 🎲`);
   }
 
-  async function generate() {
+  async function build() {
     setLoading(true);
-    setError("");
+    trackActivity({ type: "scene_action", city: destination || "Goa", category: "markets", label: "smart_stack_build" });
     try {
       const response = await fetch("/api/travel-plan", {
         method: "POST",
@@ -244,607 +186,305 @@ export default function TravelPlanner() {
           travelers,
           nights,
           travelDateISO,
-          targetBudget,
-          monthlyCapacity: monthlyCapacity ? Number(monthlyCapacity) : undefined,
-          riskLevel,
-          modes: modes.length ? modes : allModes,
+          targetBudget: Math.max(10000, stackTotal || 75000),
+          monthlyCapacity: monthly || undefined,
+          riskLevel: sip >= liquid ? "medium" : "low",
+          modes: modes.length ? modes : transportModes,
           cards,
-          vibe,
-          stay,
-          moments
+          vibe
         })
       });
       const data = (await response.json().catch(() => ({}))) as { plan?: TravelPlan; error?: string };
-      if (!response.ok || !data.plan) {
-        setError(data.error || "Could not build your plan. Please try again.");
-        return;
+      if (data.plan) {
+        setPlan(data.plan);
+        setAppliedOffers(new Set(data.plan.fareIntel?.offers?.length ? [0, 1] : [0, 1]));
+        showToast(data.plan.source === "ai" ? "Live options loaded ✨" : "Smart estimates loaded — verify with the links");
+      } else {
+        showToast(data.error || "Couldn't refresh options — showing estimates");
       }
-      setPlan(data.plan);
-      showToast("Your plan is ready. Main character energy unlocked ✨");
-      setTimeout(() => document.getElementById("aiPlan")?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
     } catch {
-      setError("Could not reach the planner. Please try again.");
+      showToast("Couldn't refresh options — showing estimates");
     } finally {
       setLoading(false);
     }
   }
 
-  function next() {
-    if (step < 4) {
-      setStep(step + 1);
-      return;
-    }
-    void generate();
-  }
-
-  // Deterministic calculator, recomputed live from the form (no AI, no network).
-  const liveCalc = useMemo(
-    () =>
-      buildCalculatorPlan({
-        origin,
-        destination,
-        travelers,
-        nights,
-        travelDateISO,
-        targetBudget,
-        monthlyCapacity: monthlyCapacity ? Number(monthlyCapacity) : undefined,
-        riskLevel,
-        modes: modes.length ? modes : allModes,
-        cards
-      }),
-    [origin, destination, travelers, nights, travelDateISO, targetBudget, monthlyCapacity, riskLevel, modes, cards]
-  );
-
-  const calc = plan ?? liveCalc;
-  const transportMax = plan && plan.transport.length ? Math.max(...plan.transport.map((t) => t.priceFrom || 1), 1) : 1;
-  const routeLabel = `${origin.trim() || "Your city"} → ${destination.trim() || "Goa"}`;
-  const offsetPct = Math.min(100, Math.max(1, calc.freeTravelPct));
-  const summaryLine = `${travelers} travellers · ${nights} nights · ${stay.toLowerCase()} stay · ${
-    modes.length ? modes.map((m) => transportMeta[m].label).join(" + ") : "flexible transport"
-  }`;
-
-  const barMonths = Math.min(12, Math.max(1, calc.monthsToGo));
-  const monthlyRate = calc.assumedAnnualReturnPct / 100 / 12;
-  const corpusBars = Array.from({ length: barMonths }, (_, index) => {
-    const k = Math.round(((index + 1) / barMonths) * calc.monthsToGo);
-    const value = calc.recommendedMonthly * k * (1 + monthlyRate * (k / 2));
-    return {
-      month: k,
-      height: Math.min(100, Math.max(8, Math.round((value / Math.max(1, targetBudget)) * 100))),
-      tip: `M${k} · ${inr(value)}`
-    };
-  });
-
-  const radarModes = modes.length ? modes : (["flight"] as TransportMode[]);
-
-  function downloadPdf() {
-    const milestones = [1, Math.max(1, Math.round(calc.monthsToGo / 2)), calc.monthsToGo]
-      .filter((month, index, arr) => arr.indexOf(month) === index)
-      .map((month) => ({ month, value: calc.recommendedMonthly * month * (1 + monthlyRate * (month / 2)) }));
-    openTravelPlanPdf({
-      planName: planName || "My next trip ✨",
-      origin,
-      destination,
-      startDateISO: travelDateISO,
-      endDateISO,
-      travelers,
-      nights,
-      vibe,
-      stay,
-      moments,
-      riskLevel,
-      targetBudget,
-      offsetPct,
-      milestones,
-      calc: liveCalc,
-      aiPlan: plan
+  function toggleOffer(index: number) {
+    setAppliedOffers((current) => {
+      const next = new Set(current);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
     });
-    showToast("PDF ready — use Save as PDF in the print dialog 📄");
-    trackActivity({ type: "scene_action", city: destination || "Goa", category: "markets", label: "travel_plan_pdf" });
+    showToast("Offer stack updated");
   }
 
-  // Full-fledged shareable plan — the whole itinerary + money plan as text,
-  // ready for the group chat (native share sheet on mobile, clipboard on web).
-  async function sharePlan() {
+  const summaryLine = `${travelers} travellers · ${nights} nights · ${vibe} · ${stack.map((s) => modeMeta[s.mode].label).join(" + ") || "no picks yet"}`;
+
+  async function share() {
     const dateLabel = new Date(travelDateISO).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
-    const activePlan = plan;
-    const transportLines = (activePlan?.transport.length ? activePlan.transport : radarModes.map((mode) => {
-      const [low, high] = fareRanges[mode];
-      return { mode, priceFrom: low, priceTo: high, duration: "", operator: "", note: "", best: false, platform: "" };
-    })).map((option) => {
-      const isRental = option.mode === "car" || option.mode === "bike";
-      const price = `${inr(option.priceFrom)}${option.priceTo ? `–${inr(option.priceTo)}` : "+"}${isRental ? "/day" : ""}`;
-      return `• ${transportMeta[option.mode].label}: ${price}${option.operator ? ` · ${option.operator}` : ""}${option.best ? " ⭐ best value" : ""}`;
-    });
-    const hotelLines = (activePlan?.hotels.length ? activePlan.hotels : []).map(
-      (tier) => `• ${tier.tier}: ${inr(tier.nightlyFrom)}/night${tier.example ? ` (${tier.example})` : ""} · ${tier.platform}`
-    );
-    const rentalLines = (activePlan?.rentals ?? []).map(
-      (rental) => `• ${rental.type === "car" ? "Self-drive car" : "Bike"}: ${inr(rental.perDayFrom)}${rental.perDayTo ? `–${inr(rental.perDayTo)}` : ""}/day · ${rental.vendor}`
-    );
-    const cardLines = (activePlan?.cardAdvice ?? []).map(
-      (advice) => `• ${advice.card} → ${advice.useFor}${advice.offer ? ` (${advice.offer})` : ""}`
-    );
-    const dealLines = (activePlan?.deals ?? []).slice(0, 4).map((deal) => `• ${deal}`);
-    const midMonth = Math.max(1, Math.round(calc.monthsToGo / 2));
-    const milestone = (k: number) => inr(calc.recommendedMonthly * k * (1 + monthlyRate * (k / 2)));
-
-    const text = [
-      `🌏 ${planName || "My next trip ✨"}`,
-      `${routeLabel} · ${dateLabel}`,
-      `${travelers} travellers · ${nights} nights · ${vibe} · ${stay.toLowerCase()} stay${moments.length ? ` · must-haves: ${moments.join(", ")}` : ""}`,
+    const lines = [
+      `🌏 ${destination} smart stack — ${origin} → ${destination} · ${dateLabel}`,
+      summaryLine,
       ``,
-      `💰 THE MONEY PLAN`,
-      `Budget ${inr(targetBudget)} · save ${inr(calc.recommendedMonthly)}/month for ${calc.monthsToGo} months (${riskLevel} risk, ${calc.assumedAnnualReturnPct}% p.a. illustrative)`,
-      `Corpus M1 ${milestone(1)} → M${midMonth} ${milestone(midMonth)} → M${calc.monthsToGo} ${inr(calc.projectedValue)}`,
-      `Growth + card rewards ≈ ${inr(calc.investmentGains + calc.netCardRewards)} (~${offsetPct}% of the trip) · your top-up ${inr(calc.outOfPocket)}`,
+      `🧳 THE STACK`,
+      ...stack.map((s) => `• ${modeMeta[s.mode].label}: ${s.option.name} — ${inr(s.option.price)} (saved ${inr(s.option.save)})`),
       ``,
-      `🚀 GETTING THERE (est.)`,
-      ...transportLines,
-      ...(rentalLines.length ? ["", "🛞 RENTALS ON ARRIVAL", ...rentalLines] : []),
-      ...(hotelLines.length ? ["", "🏨 STAY (per night, est.)", ...hotelLines] : ["", "🏨 STAY (est.)", `• Budget ${inr(1800 * nights)} · comfort ${inr(4500 * nights)} · premium ${inr(9000 * nights)} for ${nights} nights`]),
-      ...(cardLines.length ? ["", "💳 CARD PLAYS", ...cardLines] : []),
-      ...(dealLines.length ? ["", "🔥 TOP TIPS", ...dealLines] : []),
+      `💰 Trip total ${inr(stackTotal)} · you save ${inr(totalSaved)} (~${offsetPct}%) · final top-up ${inr(payable)}`,
+      `📈 Funding it: ${inr(monthly)}/month for ${months} months (illustrative growth ${inr(growth)})`,
+      ...(offerSave ? [`💳 Offers stacked: ${inr(offerSave)}`] : []),
       ``,
-      `Planned on CityMitra → ctmitra.com/travel-plan (estimates — verify before booking; not investment advice)`
+      `Planned on CityMitra → ctmitra.com/travel-plan (estimates — verify before booking)`
     ].join("\n");
-
-    const shareData = { title: planName || "CityMitra travel plan", text };
     if (typeof navigator.share === "function") {
       try {
-        await navigator.share(shareData);
-        showToast("Plan shared. Main character energy ✨");
+        await navigator.share({ title: `${destination} smart stack`, text: lines });
+        showToast("Stack shared ✨");
         return;
       } catch {
-        // fall through to clipboard (user may have dismissed the sheet)
+        /* fall through */
       }
     }
     try {
-      await navigator.clipboard.writeText(text);
-      showToast("Full plan copied. Send it to the group chat 🔗");
+      await navigator.clipboard.writeText(lines);
+      showToast("Stack copied for the group chat 🔗");
     } catch {
       showToast("Couldn't copy — screenshot works too 📸");
     }
-    trackActivity({ type: "scene_action", city: destination || "Goa", category: "markets", label: "travel_plan_share" });
+  }
+
+  function downloadPdf() {
+    const liveCalc = buildCalculatorPlan({
+      origin,
+      destination,
+      travelers,
+      nights,
+      travelDateISO,
+      targetBudget: Math.max(10000, stackTotal || 75000),
+      monthlyCapacity: monthly || undefined,
+      riskLevel: "medium",
+      modes,
+      cards
+    });
+    const end = new Date(travelDateISO);
+    end.setDate(end.getDate() + nights);
+    openTravelPlanPdf({
+      planName: `${destination} smart stack`,
+      origin,
+      destination,
+      startDateISO: travelDateISO,
+      endDateISO: end.toISOString().slice(0, 10),
+      travelers,
+      nights,
+      vibe,
+      stay: "comfort",
+      moments: [],
+      riskLevel: sip >= liquid ? "medium" : "low",
+      targetBudget: stackTotal || 75000,
+      offsetPct,
+      milestones: [1, Math.max(1, Math.round(months / 2)), months]
+        .filter((m, i, arr) => arr.indexOf(m) === i)
+        .map((m) => ({ month: m, value: monthly * m })),
+      calc: liveCalc,
+      aiPlan: plan
+    });
+    showToast("PDF ready — Save as PDF in the print dialog 📄");
   }
 
   return (
-    <div className="travelPlan">
-      <div className="travelPlanGrid" id="planResult">
-        {/* ===================== WIZARD ===================== */}
-        <section className="travelPlanForm tpCard" aria-label="Trip plan builder">
-          <div className="tpWizHead">
-            <div>
-              <small>Step {step} of 4</small>
-              <h2>{stepTitles[step - 1]}</h2>
-            </div>
-            <div className="tpWizTools">
-              <div className="tpProgress" role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={step}>
-                <span style={{ width: `${step * 25}%` }} />
-              </div>
-              <button type="button" className="tpMiniBtn" onClick={loadDemo}>
-                🎧 Load demo
-              </button>
-              <button type="button" className="tpMiniBtn" onClick={resetAll} title="Clear all selections">
-                <RotateCcw size={13} /> Start over
-              </button>
-            </div>
-          </div>
-
+    <div className="smartPlan">
+      {/* ============ HERO + TRIP STRIP ============ */}
+      <section className="spHero">
+        <span className="spEyebrow">✨ Trip funding, but make it smart</span>
+        <h1>
+          Your whole trip. <em>Compared, stacked and partly funded.</em>
+        </h1>
+        <p>
+          Flights, stays and rides in one output. Stack card offers, compare every option and use a smart monthly plan
+          so the trip hurts less.
+        </p>
+        <div className="spStrip">
           <datalist id="indiaCitiesList">
             {indiaCities.map((cityName) => (
               <option key={cityName} value={cityName} />
             ))}
           </datalist>
-
-          {step === 1 && (
-            <div className="tpStep">
-              <div className="travelPlanRow">
-                <label>
-                  From
-                  <input list="indiaCitiesList" placeholder="Your city" value={origin} onChange={(event) => setOrigin(event.target.value)} />
-                </label>
-                <label>
-                  To
-                  <input list="indiaCitiesList" placeholder="Dream destination" value={destination} onChange={(event) => setDestination(event.target.value)} />
-                </label>
-              </div>
-              <div className="travelPlanRow tpGap">
-                <label>
-                  Trip starts
-                  <input
-                    type="date"
-                    value={travelDateISO}
-                    min={new Date().toISOString().slice(0, 10)}
-                    onChange={(event) => event.target.value && setTravelDateISO(event.target.value)}
-                  />
-                </label>
-                <label>
-                  Trip ends <small>(sets nights)</small>
-                  <input
-                    type="date"
-                    value={endDateISO}
-                    min={travelDateISO}
-                    onChange={(event) => event.target.value && setEndDate(event.target.value)}
-                  />
-                </label>
-              </div>
-              <span className="travelPlanFieldLabel tpGap">Pick your trip vibe</span>
-              <div className="tpVibeGrid">
-                {vibes.map((option) => (
-                  <button
-                    type="button"
-                    key={option.label}
-                    className={vibe === option.label ? "tpVibe active" : "tpVibe"}
-                    onClick={() => pickVibe(option.label)}
-                  >
-                    <span className="tpVibeEmoji" aria-hidden="true">{option.emoji}</span>
-                    <b>{option.label}</b>
-                    <span>{option.sub}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="tpStep">
-              <div className="travelPlanRow">
-                <div className="tpStepperField">
-                  <span className="travelPlanFieldLabel">Travellers</span>
-                  <div className="tpStepper">
-                    <button type="button" onClick={() => setTravelers((v) => Math.max(1, v - 1))} aria-label="Fewer travellers">−</button>
-                    <b>{travelers}</b>
-                    <button type="button" onClick={() => setTravelers((v) => Math.min(20, v + 1))} aria-label="More travellers">+</button>
-                  </div>
-                </div>
-                <div className="tpStepperField">
-                  <span className="travelPlanFieldLabel">Nights</span>
-                  <div className="tpStepper">
-                    <button type="button" onClick={() => setNights((v) => Math.max(1, v - 1))} aria-label="Fewer nights">−</button>
-                    <b>{nights}</b>
-                    <button type="button" onClick={() => setNights((v) => Math.min(60, v + 1))} aria-label="More nights">+</button>
-                  </div>
-                </div>
-              </div>
-
-              <span className="travelPlanFieldLabel tpGap">Transport you&apos;d consider</span>
-              <div className="travelPlanChips">
-                {allModes.map((mode) => {
-                  const Icon = transportMeta[mode].icon;
-                  return (
-                    <button type="button" key={mode} className={modes.includes(mode) ? "chip active" : "chip"} onClick={() => toggleMode(mode)}>
-                      <Icon size={15} /> {transportMeta[mode].label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <span className="travelPlanFieldLabel tpGap">Stay style</span>
-              <div className="travelPlanChips">
-                {stayStyles.map((style) => (
-                  <button type="button" key={style} className={stay === style ? "chip active" : "chip"} onClick={() => setStay(style)}>
-                    {style}
-                  </button>
-                ))}
-              </div>
-
-              <span className="travelPlanFieldLabel tpGap">Must-have moments</span>
-              <div className="travelPlanChips">
-                {momentOptions.map((moment) => (
-                  <button type="button" key={moment} className={moments.includes(moment) ? "chip active" : "chip"} onClick={() => toggleMoment(moment)}>
-                    {moment}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="tpStep">
-              <div className="tpRangeRow">
-                <div className="tpRangeTop">
-                  <span className="travelPlanFieldLabel">Trip budget</span>
-                  <span className="tpRangeValue">{inr(targetBudget)}</span>
-                </div>
-                <input
-                  type="range"
-                  min={25000}
-                  max={500000}
-                  step={5000}
-                  value={targetBudget}
-                  onChange={(event) => setTargetBudget(Number(event.target.value))}
-                  aria-label="Trip budget"
-                />
-              </div>
-
-              <div className="tpRangeRow">
-                <div className="tpRangeTop">
-                  <span className="travelPlanFieldLabel">Months to departure</span>
-                  <span className="tpRangeValue">{months} months · {new Date(travelDateISO).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
-                </div>
-                <input
-                  type="range"
-                  min={3}
-                  max={18}
-                  step={1}
-                  value={Math.min(18, Math.max(3, months))}
-                  onChange={(event) => setTravelDateISO(dateFromMonths(Number(event.target.value)))}
-                  aria-label="Months to departure"
-                />
-              </div>
-
-              <span className="travelPlanFieldLabel tpGap">Risk comfort</span>
-              <div className="tpVibeGrid tpVibeGrid3">
-                {riskOptions.map((option) => (
-                  <button
-                    type="button"
-                    key={option.id}
-                    className={riskLevel === option.id ? "tpVibe active" : "tpVibe"}
-                    onClick={() => setRiskLevel(option.id)}
-                  >
-                    <span className="tpVibeEmoji" aria-hidden="true">{option.emoji}</span>
-                    <b>{option.label}</b>
-                    <span>{option.sub}</span>
-                  </button>
-                ))}
-              </div>
-
-              <label className="tpGap">
-                Monthly amount you can invest <small>(optional — we&apos;ll calculate it otherwise)</small>
-                <input
-                  type="number"
-                  min={0}
-                  step={500}
-                  placeholder="We'll calculate it for you"
-                  value={monthlyCapacity}
-                  onChange={(event) => setMonthlyCapacity(event.target.value)}
-                />
-              </label>
-            </div>
-          )}
-
-          {step === 4 && (
-            <div className="tpStep">
-              <span className="travelPlanFieldLabel">Cards you use <small>(for tailored rewards, up to 4)</small></span>
-              <div className="travelPlanChips">
-                {popularCards.map((card) => (
-                  <button type="button" key={card} className={cards.includes(card) ? "chip active" : "chip"} onClick={() => toggleCard(card)}>
-                    {cards.includes(card) ? <Check size={14} /> : <Plus size={14} />} {card}
-                  </button>
-                ))}
-              </div>
-              <div className="travelPlanCustomCard">
-                <input
-                  value={customCard}
-                  placeholder="Add another card…"
-                  onChange={(event) => setCustomCard(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      addCustomCard();
-                    }
-                  }}
-                />
-                <button type="button" onClick={addCustomCard} aria-label="Add card">
-                  <Plus size={16} />
-                </button>
-              </div>
-              {cards.length > 0 && (
-                <div className="travelPlanSelected">
-                  {cards.map((card) => (
-                    <span key={card}>
-                      {card}
-                      <button type="button" onClick={() => toggleCard(card)} aria-label={`Remove ${card}`}>
-                        <X size={12} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <span className="travelPlanFieldLabel tpGap">Group-chat personality</span>
-              <div className="tpVibeGrid tpVibeGrid3">
-                {personas.map((option) => (
-                  <button
-                    type="button"
-                    key={option.label}
-                    className={persona === option.label ? "tpVibe active" : "tpVibe"}
-                    onClick={() => setPersona(option.label)}
-                  >
-                    <span className="tpVibeEmoji" aria-hidden="true">{option.emoji}</span>
-                    <b>{option.label}</b>
-                    <span>{option.sub}</span>
-                  </button>
-                ))}
-              </div>
-
-              <label className="tpGap">
-                Plan name
-                <input value={planName} onChange={(event) => setPlanName(event.target.value)} placeholder="My next trip ✨" />
-              </label>
-            </div>
-          )}
-
-          <div className="tpWizActions">
-            <button type="button" className="tpBack" onClick={() => setStep(Math.max(1, step - 1))} disabled={step === 1}>
-              Back
-            </button>
-            <button type="button" className="travelPlanSubmit tpNext" onClick={next} disabled={loading}>
-              {loading ? "Building your plan…" : step === 4 ? "Generate my plan ✨" : "Next"}
-              {!loading && step < 4 && <ArrowRight size={17} />}
-            </button>
+          <div className="spField">
+            <label htmlFor="spFrom">From</label>
+            <input id="spFrom" list="indiaCitiesList" value={origin} onChange={(e) => setOrigin(e.target.value)} placeholder="Your city" />
           </div>
-          {error && <p className="travelPlanError">{error}</p>}
+          <div className="spField">
+            <label htmlFor="spTo">To</label>
+            <input id="spTo" list="indiaCitiesList" value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Dream spot" />
+          </div>
+          <div className="spField">
+            <label htmlFor="spDate">Departure</label>
+            <input id="spDate" type="date" min={new Date().toISOString().slice(0, 10)} value={travelDateISO} onChange={(e) => e.target.value && setTravelDateISO(e.target.value)} />
+          </div>
+          <div className="spField">
+            <label htmlFor="spNights">Nights</label>
+            <select id="spNights" value={nights} onChange={(e) => setNights(Number(e.target.value))}>
+              {[1, 2, 3, 4, 5, 6, 7, 10, 14].map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </div>
+          <div className="spField">
+            <label htmlFor="spTrav">Travellers</label>
+            <select id="spTrav" value={travelers} onChange={(e) => setTravelers(Number(e.target.value))}>
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </div>
+          <button type="button" className="spBuild" onClick={build} disabled={loading}>
+            {loading ? "Researching…" : "Build my smart trip"}
+          </button>
+        </div>
+      </section>
+
+      {/* ============ VIBE + FUNDING SCORE ============ */}
+      <div className="spTopGrid">
+        <section className="spCard">
+          <div className="spCardHead">
+            <div>
+              <h2>Pick your trip vibe</h2>
+              <p>This changes recommendations, not just colours.</p>
+            </div>
+            <button type="button" className="spMini" onClick={surprise}>🎲 Surprise me</button>
+          </div>
+          <div className="spChipRow">
+            {vibeOptions.map((option) => (
+              <button
+                key={option.label}
+                type="button"
+                className={vibe === option.label ? "spVibe active" : "spVibe"}
+                onClick={() => { setVibe(option.label); showToast(`${option.label} vibe applied`); }}
+              >
+                {option.emoji} {option.label}
+              </button>
+            ))}
+          </div>
+          <div className="spChipRow spModeRow">
+            {transportModes.map((mode) => {
+              const Icon = modeMeta[mode].icon;
+              return (
+                <button key={mode} type="button" className={modes.includes(mode) ? "spChip active" : "spChip"} onClick={() => toggleMode(mode)}>
+                  <Icon size={14} /> {modeMeta[mode].label}
+                </button>
+              );
+            })}
+          </div>
         </section>
 
-        {/* ===================== LIVE RESULTS ===================== */}
-        <div className="travelPlanResult">
-          <section className="tpCard tpCalcCard">
-            <div className="tpRouteRow">
-              <b className="tpRouteLabel">{routeLabel}</b>
-              <span className="tpLive">● LIVE PLAN</span>
+        <section className="spCard spScore">
+          <div className="spScoreTop">
+            <div>
+              <span className="spKicker">Smart funding score</span>
+              <h2>
+                Trip is <em>{offsetPct}% funded</em>
+              </h2>
+              <p>Offers + rewards + projected growth</p>
             </div>
-            <div className="tpRingRow">
-              <div
-                className="tpRing"
-                style={{ background: `conic-gradient(var(--orange) ${offsetPct}%, var(--chip) 0)` }}
-                role="img"
-                aria-label={`${offsetPct} percent of trip cost offset`}
-              >
-                <div className="tpRingInner">
-                  <strong>{offsetPct}%</strong>
-                  <span>offset</span>
-                </div>
-              </div>
-              <div>
-                <b className="tpVibeTitle">{vibe}, funded smarter.</b>
-                <p>
-                  Projected returns + card rewards can offset part of your {calc.monthsToGo}-month plan. Everything
-                  updates as you tap.
-                </p>
-                <span className="travelPlanSource calc">
-                  <Calculator size={12} /> Deterministic math
-                </span>
+            <div className="spRing" style={{ background: `conic-gradient(var(--green) ${offsetPct}%, #ece5dc 0)` }} role="img" aria-label={`${offsetPct} percent funded`}>
+              <div className="spRingInner">
+                <strong>{offsetPct}%</strong>
+                <span>offset</span>
               </div>
             </div>
-
-            <div className="tpTiles">
-              <div>
-                <span><Wallet size={13} /> Save / month</span>
-                <strong className="isOrange">{inr(calc.recommendedMonthly)}</strong>
-              </div>
-              <div>
-                <span><PiggyBank size={13} /> Trip corpus</span>
-                <strong>{inr(calc.projectedValue)}</strong>
-              </div>
-              <div>
-                <span><TrendingUp size={13} /> Growth + rewards</span>
-                <strong className="isTeal">{inr(calc.investmentGains + calc.netCardRewards)}</strong>
-              </div>
-              <div>
-                <span><Plane size={13} /> Your top-up</span>
-                <strong>{inr(calc.outOfPocket)}</strong>
-              </div>
-            </div>
-
-            <p className="calcGuardrail">
-              Math estimate only — {calc.assumedAnnualReturnPct}% p.a. assumed ({riskLevel} risk), markets can fall,
-              prices vary. A guardrail, not a quote. Not investment advice.
-            </p>
-          </section>
-
-          <section className="tpCard tpFareCard">
-            <div className="tpFareHead">
-              <b>Money momentum</b>
-              <div className="tpToggle" role="tablist" aria-label="Chart view">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={chart === "corpus"}
-                  className={chart === "corpus" ? "active" : ""}
-                  onClick={() => setChart("corpus")}
-                >
-                  Corpus
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={chart === "fare"}
-                  className={chart === "fare" ? "active" : ""}
-                  onClick={() => setChart("fare")}
-                >
-                  Fare radar
-                </button>
-              </div>
-            </div>
-
-            {chart === "corpus" ? (
-              <>
-                <div className="tpBars" aria-hidden="true">
-                  {corpusBars.map((bar) => (
-                    <span key={bar.month} title={bar.tip} style={{ height: `${bar.height}%` }} />
-                  ))}
-                </div>
-                <div className="tpBarsAxis">
-                  <span>M1</span>
-                  <span>growing month by month</span>
-                  <span>M{calc.monthsToGo}</span>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="tpFareRows">
-                  {radarModes.map((mode) => {
-                    const [low, high] = fareRanges[mode];
-                    const Icon = transportMeta[mode].icon;
-                    return (
-                      <div className="tpFareRow" key={mode}>
-                        <span className="tpFareMode"><Icon size={14} /> {transportMeta[mode].label}</span>
-                        <div className="tpFareTrack">
-                          <span style={{ width: `${Math.round((high / fareRadarMax) * 100)}%` }} />
-                        </div>
-                        <span className="tpFareRange">{inr(low)}–{inr(high)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="tpStayChips">
-                  <span className="isOrange">Stay · budget {inr(1800 * nights)}</span>
-                  <span className="isBlue">comfort {inr(4500 * nights)}</span>
-                  <span className="isTeal">premium {inr(9000 * nights)}</span>
-                </div>
-              </>
-            )}
-          </section>
-
-          <section className="tpCard tpSummaryCard">
-            <h4>{planName || "My next trip ✨"}</h4>
-            <p>{summaryLine}</p>
-            <div className="tpSummaryActions">
-              <button type="button" className="tpShareBtn" onClick={sharePlan}>
-                <Share2 size={15} /> Save &amp; share plan
-              </button>
-              <button type="button" className="tpShareBtn tpPdfBtn" onClick={downloadPdf}>
-                <FileDown size={15} /> Download PDF
-              </button>
-            </div>
-          </section>
-
-          {!plan && !loading && (
-            <div className="researchPrompt">
-              <span className="researchPromptIcon"><Sparkles size={22} /></span>
-              <h3>AI research candidates</h3>
-              <p>Finish the 4 steps and hit &quot;Generate my plan&quot; for named card, fund and stock candidates, transport + hotel price targets and a month-by-month plan — starting points you must verify before acting.</p>
-            </div>
-          )}
-
-          {loading && <div className="travelPlanEmpty"><span className="travelPlanSpinner" />Researching cards, funds, transport &amp; hotels…</div>}
-        </div>
+          </div>
+          <div className="spKpis">
+            <div><small>Trip total</small><b>{inr(stackTotal)}</b></div>
+            <div><small>You save</small><b className="isGreen">{inr(totalSaved)}</b></div>
+            <div><small>Save monthly</small><b className="isOrange">{inr(monthly)}</b></div>
+            <div><small>Final top-up</small><b>{inr(payable)}</b></div>
+          </div>
+          <div className="spProgress"><span style={{ width: `${offsetPct}%` }} /></div>
+        </section>
       </div>
 
-      {/* ===================== AI RESEARCH (after generate) ===================== */}
-      {plan && !loading && (
-        <div className="planStack tpAiStack" id="aiPlan">
-          <div className="researchHeader">
-            <h2 className="researchHeading">AI research candidates</h2>
-            <span className={plan.source === "ai" ? "travelPlanSource ai" : "travelPlanSource warn"}>
-              <Sparkles size={12} /> {plan.source === "ai" ? "AI-researched estimates · verify before booking" : "Smart estimates · live AI research is offline right now — tap the compare links to verify"}
-            </span>
-          </div>
-
-          <p className="travelPlanSummary">{plan.summary}</p>
-
-          {plan.vibeInsight && (
-            <p className="tpVibeInsight">
-              <span aria-hidden="true">{vibes.find((v) => v.label === vibe)?.emoji || "✨"}</span> {plan.vibeInsight}
+      {/* ============ COMPARE + SIDEBAR ============ */}
+      <div className="spResults">
+        <main>
+          <section className="spCard">
+            <div className="spCardHead">
+              <div>
+                <h2>Compare your travel stack</h2>
+                <p>{plan?.source === "ai" ? "Live AI research — prices include the strongest eligible offer." : "Smart estimates — hit Build for live AI research."}</p>
+              </div>
+              <div className="spSorts">
+                {([["best", "Best vibe"], ["cheap", "Cheapest"], ["save", "Most saved"]] as Array<[SortKey, string]>).map(([key, label]) => (
+                  <button key={key} type="button" className={sort === key ? "spChip active" : "spChip"} onClick={() => setSort(key)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="spTabs">
+              {activeTabs.map((mode) => {
+                const Icon = modeMeta[mode].icon;
+                return (
+                  <button key={mode} type="button" className={currentTab === mode ? "spTab active" : "spTab"} onClick={() => setTab(mode)}>
+                    <Icon size={14} /> {modeMeta[mode].label}
+                    {picks[mode] !== undefined && <span className="spTabDot" aria-label="selected" />}
+                  </button>
+                );
+              })}
+            </div>
+            {tabOptions.map((option) => {
+              const originalIndex = compare.filter((o) => o.mode === currentTab).indexOf(option);
+              const isSelected = picks[currentTab] === originalIndex;
+              return (
+                <article key={option.name + option.price} className={isSelected ? "spOption selected" : "spOption"}>
+                  <div className="spOptionTop">
+                    <div>
+                      <strong>{option.name}</strong>
+                      <span className="spOptionMode">{modeMeta[option.mode].label.toUpperCase()} OPTION</span>
+                    </div>
+                    <span className="spBadge">{option.tag}</span>
+                  </div>
+                  <div className="spOptionGrid">
+                    <div><small>Schedule / stay</small><b>{option.line1 || "—"}</b></div>
+                    <div><small>Details</small><b>{option.line2 || "—"}</b></div>
+                    <div><small>Included</small><b>{option.line3 || "—"}</b></div>
+                    <div><small>You save</small><b className="isGreen">{inr(option.save)}</b></div>
+                  </div>
+                  <div className="spOptionFoot">
+                    <div>
+                      <small>Final payable after offer</small>
+                      <div className="spPriceLine">
+                        <span className="spPrice">{inr(option.price)}</span>
+                        <span className="spOld">{inr(option.oldPrice)}</span>
+                      </div>
+                    </div>
+                    {isSelected ? (
+                      <button type="button" className="spSelect isOn" onClick={() => removePick(currentTab)}>
+                        Selected ✓ (tap to remove)
+                      </button>
+                    ) : (
+                      <button type="button" className="spSelect" onClick={() => choose(originalIndex)}>
+                        Choose this
+                      </button>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+            <p className="calcGuardrail">
+              {plan?.source === "ai"
+                ? "AI-researched estimates — final prices are session-based, verify at checkout."
+                : "Illustrative estimates until you build — tap Build my smart trip for AI research on your route."}
             </p>
-          )}
+          </section>
 
-          {plan.fareIntel && (
-            <section className="planStackCard tpIntelCard" style={{ top: 92 }}>
-              <h3 className="planSectionTitle"><Plane size={17} /> Fare intel — {routeLabel}</h3>
-              <p className="tpIntelHeadline">{plan.fareIntel.headline}</p>
+          {plan?.fareIntel && (
+            <section className="spCard spIntel">
+              <div className="spCardHead">
+                <div>
+                  <h2>✈️ Fare intel — {origin || "Your city"} → {destination}</h2>
+                  <p>{plan.fareIntel.headline}</p>
+                </div>
+              </div>
               {plan.fareIntel.flight && (
                 <div className="tpFlightSpot">
                   <span className="tpFlightName">✈️ {plan.fareIntel.flight.name}</span>
@@ -854,38 +494,10 @@ export default function TravelPlanner() {
                 </div>
               )}
               <div className="tpIntelStats">
-                {plan.fareIntel.expectedRange && (
-                  <div><span>Expected range</span><strong>{plan.fareIntel.expectedRange}</strong></div>
-                )}
-                {plan.fareIntel.targetPrice && (
-                  <div><span>Target after offers</span><strong className="isTeal">{plan.fareIntel.targetPrice}</strong></div>
-                )}
-                {plan.fareIntel.acceptablePrice && (
-                  <div><span>Acceptable up to</span><strong>{plan.fareIntel.acceptablePrice}</strong></div>
-                )}
+                {plan.fareIntel.expectedRange && <div><span>Expected range</span><strong>{plan.fareIntel.expectedRange}</strong></div>}
+                {plan.fareIntel.targetPrice && <div><span>Target after offers</span><strong className="isTeal">{plan.fareIntel.targetPrice}</strong></div>}
+                {plan.fareIntel.acceptablePrice && <div><span>Acceptable up to</span><strong>{plan.fareIntel.acceptablePrice}</strong></div>}
               </div>
-              {plan.fareIntel.offers.length > 0 && (
-                <>
-                  <h4 className="tpIntelSub">🔥 Best discounts currently available</h4>
-                  <div className="tpIntelTableWrap">
-                    <table className="tpIntelTable">
-                      <thead>
-                        <tr><th>Booking option</th><th>Offer</th><th>Valid till</th><th>Est. saving</th></tr>
-                      </thead>
-                      <tbody>
-                        {plan.fareIntel.offers.map((offer) => (
-                          <tr key={offer.option + offer.offer}>
-                            <td><strong>{offer.option}</strong></td>
-                            <td>{offer.offer}</td>
-                            <td>{offer.validTill || "Check at checkout"}</td>
-                            <td>{offer.saving}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
               {plan.fareIntel.recommendation.length > 0 && (
                 <>
                   <h4 className="tpIntelSub">🎯 My recommendation</h4>
@@ -896,151 +508,152 @@ export default function TravelPlanner() {
                   </ol>
                 </>
               )}
-              <p className="calcGuardrail">Offers are standing patterns — the exact discount and eligible card variant must be verified at payment.</p>
             </section>
           )}
 
-          {plan.transport.length > 0 && (
-            <section className="planStackCard" style={{ top: 98 }}>
-              <h3 className="planSectionTitle"><Car size={17} /> Best way to reach {plan.destination}</h3>
-              <div className="transportList">
-                {plan.transport.map((option) => {
-                  const Icon = transportMeta[option.mode].icon;
-                  const isRental = option.mode === "car" || option.mode === "bike";
-                  return (
-                    <div className={option.best ? "transportRow best" : "transportRow"} key={option.mode}>
-                      <span className="transportMode"><Icon size={16} /> {transportMeta[option.mode].label}</span>
-                      <div className="transportMeta">
-                        <span className="transportPrice">
-                          {inr(option.priceFrom)}
-                          {option.priceTo ? `–${inr(option.priceTo)}` : "+"}
-                          {isRental && <small>/day</small>}
-                        </span>
-                        <span className="transportTime"><Clock size={12} /> {option.duration}</span>
-                        {option.best && <span className="transportBadge">Best value</span>}
-                      </div>
-                      <div className="transportBar"><span style={{ width: `${Math.max(8, (option.priceFrom / transportMax) * 100)}%` }} /></div>
-                      <p>{[option.operator, option.note].filter(Boolean).join(" — ")}</p>
-                      <div className="tpRowFoot">
-                        {option.platform && <span>{option.platform}</span>}
-                        <a href={compareUrl(option.mode, origin, plan.destination, travelDateISO)} target="_blank" rel="noreferrer">
-                          Compare live ↗
-                        </a>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
+          {plan && plan.vibeInsight && (
+            <p className="tpVibeInsight">
+              <span aria-hidden="true">{vibeOptions.find((v) => v.label === vibe)?.emoji || "✨"}</span> {plan.vibeInsight}
+            </p>
           )}
+        </main>
 
-          {plan.rentals.length > 0 && (
-            <section className="planStackCard" style={{ top: 105 }}>
-              <h3 className="planSectionTitle"><Car size={17} /> Rentals on arrival</h3>
-              <div className="hotelGrid">
-                {plan.rentals.map((rental) => (
-                  <div className="hotelTier" key={rental.type}>
-                    <span className="hotelTierName">{rental.type === "car" ? "🚗 Self-drive car" : "🛵 Bike / scooter"}</span>
-                    <strong>
-                      {inr(rental.perDayFrom)}
-                      {rental.perDayTo ? `–${inr(rental.perDayTo)}` : ""}
-                      <small>/day</small>
-                    </strong>
-                    <span className="hotelPlatform">{rental.vendor}</span>
-                    <p>{rental.note}</p>
-                    <a className="tpCompareLink" href={compareUrl(rental.type, origin, plan.destination, travelDateISO)} target="_blank" rel="noreferrer">
-                      Check live rates ↗
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {plan.hotels.length > 0 && (
-            <section className="planStackCard" style={{ top: 112 }}>
-              <h3 className="planSectionTitle"><Hotel size={17} /> Where to stay &amp; rates</h3>
-              <div className="hotelGrid">
-                {plan.hotels.map((tier) => (
-                  <div className="hotelTier" key={tier.tier}>
-                    <span className="hotelTierName">{tier.tier}</span>
-                    <strong>{inr(tier.nightlyFrom)}<small>/night</small></strong>
-                    <span className="hotelPlatform">{tier.platform}</span>
-                    {tier.example && <em className="hotelExample">{tier.example}</em>}
-                    {tier.offer && <span className="cardAdviceOffer"><Tag size={11} /> {tier.offer}</span>}
-                    <p>{tier.note}</p>
-                    <a className="tpCompareLink" href={hotelsUrl(tier.tier, plan.destination)} target="_blank" rel="noreferrer">
-                      See live prices ↗
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {plan.cardAdvice.length > 0 && (
-            <section className="planStackCard" style={{ top: 126 }}>
-              <h3 className="planSectionTitle"><CreditCard size={17} /> How to pay for maximum rewards</h3>
-              <div className="cardAdviceList">
-                {plan.cardAdvice.map((advice) => (
-                  <div className="cardAdvice" key={advice.card}>
-                    <strong>{advice.card}</strong>
-                    <span className="cardAdviceTag">{advice.useFor}</span>
-                    {advice.offer && <span className="cardAdviceOffer"><Tag size={11} /> {advice.offer}</span>}
-                    <p>{advice.benefit}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <section className="planStackCard" style={{ top: 140 }}>
-            <h3 className="planSectionTitle"><LineChart size={17} /> Grow the money: funds, stocks &amp; cards</h3>
-            <div className="travelPlanInstruments">
-              {(["mutual_fund", "stock", "card"] as const).map((kind) => {
-                const items = plan.instruments.filter((item) => item.kind === kind);
-                if (items.length === 0) return null;
-                const Meta = kindMeta[kind];
-                const Icon = Meta.icon;
-                return (
-                  <div className="travelPlanInstrGroup" key={kind}>
-                    <h4><Icon size={16} /> {Meta.label}</h4>
-                    {items.map((item) => (
-                      <div className="travelPlanInstr" key={`${kind}-${item.name}`}>
-                        <div>
-                          <strong>{item.name}</strong>
-                          {item.tag && <span className="travelPlanTag">{item.tag}</span>}
-                        </div>
-                        <p>{item.detail}</p>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
+        <aside className="spAside">
+          <section className="spCard spDark">
+            <span className="spKicker light">Total savings stack</span>
+            <div className="spSaveBig">{inr(totalSaved)}</div>
+            <p>You keep this instead of paying full sticker price.</p>
+            <div className="spStackBar" aria-hidden="true">
+              <span style={{ width: `${Math.max(6, (directSave / Math.max(1, totalSaved)) * 100)}%` }} />
+              <span style={{ width: `${Math.max(6, (offerSave / Math.max(1, totalSaved)) * 100)}%` }} />
+              <span style={{ width: `${Math.max(6, (growth / Math.max(1, totalSaved)) * 100)}%` }} />
+            </div>
+            <div className="spLegend">
+              <div><span>Travel offers</span><b>{inr(directSave)}</b></div>
+              <div><span>Card offers</span><b>{inr(offerSave)}</b></div>
+              <div><span>Growth*</span><b>{inr(growth)}</b></div>
+              <div><span>Months to go</span><b>{months}</b></div>
             </div>
           </section>
 
-          <section className="planStackCard" style={{ top: 154 }}>
-            <h3 className="planSectionTitle"><PiggyBank size={17} /> Your month-by-month strategy</h3>
-            <ol className="travelPlanStrategy">
-              {plan.strategy.map((stepText, index) => (
-                <li key={index}>{stepText}</li>
+          <section className="spCard">
+            <div className="spCardHead">
+              <div>
+                <h3>Card offers to stack</h3>
+                <p>Tap to apply or remove.</p>
+              </div>
+            </div>
+            <div className="spOffers">
+              {offers.map((offer, index) => (
+                <button
+                  key={offer.option + index}
+                  type="button"
+                  className={appliedOffers.has(index) ? "spOffer isOn" : "spOffer"}
+                  onClick={() => toggleOffer(index)}
+                >
+                  <span>
+                    <strong>{offer.option}</strong>
+                    <small>{offer.offer}</small>
+                    <small className="spOfferTill">{offer.validTill || "Check at checkout"}</small>
+                  </span>
+                  <b>{offer.saving || (offer.saveAmount ? inr(offer.saveAmount) : "")}</b>
+                </button>
               ))}
-            </ol>
-            {plan.deals.length > 0 && (
-              <>
-                <h3 className="planSectionTitle dealsTitle"><Tag size={17} /> Money-saving deals</h3>
-                <ul className="dealsList">
-                  {plan.deals.map((deal, index) => (
-                    <li key={index}><Check size={14} /> {deal}</li>
-                  ))}
-                </ul>
-              </>
-            )}
-            <p className="travelPlanDisclaimer">{plan.disclaimer}</p>
+            </div>
+            <div className="spCardsRow">
+              <span className="spKicker">Your cards (for tailored offers)</span>
+              <div className="spChipRow">
+                {cardChoices.map((card) => (
+                  <button key={card} type="button" className={cards.includes(card) ? "spChip active" : "spChip"} onClick={() => toggleCard(card)}>
+                    {card}
+                  </button>
+                ))}
+              </div>
+            </div>
           </section>
-        </div>
+
+          <section className="spCard">
+            <div className="spCardHead">
+              <div>
+                <h3>Fund-it options</h3>
+                <p>Optional — returns chip in before you pay.</p>
+              </div>
+            </div>
+            <div className="spSlider">
+              <div className="spSliderTop">
+                <div><strong>Index SIP</strong><small>Broad-market option</small></div>
+                <span className="spRisk">Medium risk</span>
+              </div>
+              <input type="range" min={0} max={15000} step={500} value={sip} onChange={(e) => setSip(Number(e.target.value))} aria-label="Index SIP per month" />
+              <div className="spSliderScale"><small>₹0</small><b>{inr(sip)}/mo</b><small>₹15k</small></div>
+            </div>
+            <div className="spSlider">
+              <div className="spSliderTop">
+                <div><strong>Liquid fund bucket</strong><small>Short-term parking</small></div>
+                <span className="spRisk low">Lower risk</span>
+              </div>
+              <input type="range" min={0} max={15000} step={500} value={liquid} onChange={(e) => setLiquid(Number(e.target.value))} aria-label="Liquid fund per month" />
+              <div className="spSliderScale"><small>₹0</small><b>{inr(liquid)}/mo</b><small>₹15k</small></div>
+            </div>
+            <p className="disclaimerSmall">*Illustrative only — market-linked investments can fall and do not guarantee trip funding. Not investment advice.</p>
+          </section>
+
+          <div className="spActions">
+            <button type="button" className="spActionBtn" onClick={share}><Share2 size={15} /> Share stack</button>
+            <button type="button" className="spActionBtn" onClick={downloadPdf}><FileDown size={15} /> PDF</button>
+            <button type="button" className="spActionBtn" onClick={() => showToast("Saved to your vibe board ♡")}><Heart size={15} /> Save</button>
+          </div>
+        </aside>
+      </div>
+
+      {/* ============ AI EXTRAS (post-build) ============ */}
+      {plan && plan.source === "ai" && (
+        <section className="spCard spExtras">
+          <div className="spCardHead">
+            <div>
+              <h2><Sparkles size={18} /> The money strategy</h2>
+              <p>{plan.summary}</p>
+            </div>
+          </div>
+          <div className="spExtrasGrid">
+            <div>
+              <h4>📈 Month-by-month</h4>
+              <ol className="tpIntelRec">
+                {plan.strategy.map((step, index) => (
+                  <li key={index}>{step}</li>
+                ))}
+              </ol>
+            </div>
+            <div>
+              <h4>💳 Card plays</h4>
+              {plan.cardAdvice.map((advice) => (
+                <p key={advice.card} className="spCardPlay">
+                  <strong>{advice.card}</strong> → {advice.useFor}
+                  {advice.offer && <span className="cardAdviceOffer"><Tag size={11} /> {advice.offer}</span>}
+                </p>
+              ))}
+              <h4>🔥 Deals</h4>
+              <ul className="spDeals">
+                {plan.deals.map((deal, index) => (
+                  <li key={index}>{deal}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p className="calcGuardrail">{plan.disclaimer}</p>
+        </section>
       )}
+
+      {/* ============ STICKY DOCK ============ */}
+      <div className="spDock">
+        <div>
+          <small>Best funded payable</small>
+          <b>{inr(payable)}</b>
+        </div>
+        <button type="button" onClick={() => { void build(); showToast("Locking your smart stack…"); }} disabled={loading}>
+          {loading ? "Researching…" : plan ? "Refresh live prices →" : "Lock my smart stack →"}
+        </button>
+      </div>
 
       <div className={toast ? "tpToast show" : "tpToast"} role="status" aria-live="polite">
         {toast}

@@ -69,8 +69,23 @@ export type FareOffer = {
   option: string;
   offer: string;
   saving: string;
+  /** Numeric estimate of the saving in INR, for stacking math. */
+  saveAmount?: number;
   /** Published end date of the offer, or "check at checkout". */
   validTill?: string;
+};
+
+/** One bookable option in the compare stack (2-3 per mode + hotels). */
+export type CompareOption = {
+  mode: TransportMode | "hotel";
+  name: string;
+  tag: string;
+  line1: string;
+  line2: string;
+  line3: string;
+  price: number;
+  oldPrice: number;
+  save: number;
 };
 
 /** Rich fare intelligence for the primary route — the "is this a good price?" brief. */
@@ -107,6 +122,7 @@ export type TravelPlan = {
   rentals: RentalOption[];
   cardAdvice: CardAdvice[];
   deals: string[];
+  compare?: CompareOption[];
   fareIntel?: FareIntel;
   vibeInsight?: string;
   disclaimer: string;
@@ -246,6 +262,61 @@ function buildHotels(): HotelTier[] {
   ];
 }
 
+// Fallback compare stack — instant, plausible options per mode so the page
+// is useful before (or without) the AI research pass. Prices scale with the
+// party size / nights; the AI pass replaces these with route-specific rows.
+export function buildCompareOptions(input: { travelers?: number; nights?: number; modes?: TransportMode[] }): CompareOption[] {
+  const travelers = Math.max(1, input.travelers || 2);
+  const nights = Math.max(1, input.nights || 4);
+  const chosen = input.modes && input.modes.length ? input.modes : (["flight", "train"] as TransportMode[]);
+  const out: CompareOption[] = [];
+
+  if (chosen.includes("flight")) {
+    const base = 3800 * travelers;
+    out.push(
+      { mode: "flight", name: "IndiGo · direct", tag: "🔥 Best value", line1: "Morning departure", line2: "Direct · cabin 7kg + 15kg", line3: "Web check-in free", price: Math.round(base * 1.18), oldPrice: Math.round(base * 1.34), save: Math.round(base * 0.16) },
+      { mode: "flight", name: "Air India · direct", tag: "💨 Fastest", line1: "Midday departure", line2: "Direct · 20kg baggage", line3: "Meal included", price: Math.round(base * 1.26), oldPrice: Math.round(base * 1.4), save: Math.round(base * 0.14) },
+      { mode: "flight", name: "Air India Express", tag: "🪙 Cheapest", line1: "Evening departure", line2: "Direct · 15kg baggage", line3: "Paid seats", price: Math.round(base * 1.08), oldPrice: Math.round(base * 1.24), save: Math.round(base * 0.16) }
+    );
+  }
+  if (chosen.includes("train")) {
+    const base = 1400 * travelers;
+    out.push(
+      { mode: "train", name: "Rajdhani-class · 2A", tag: "⭐ Reliable", line1: "Overnight", line2: "Meals included", line3: "Book on IRCTC day 1", price: Math.round(base * 1.5), oldPrice: Math.round(base * 1.66), save: Math.round(base * 0.16) },
+      { mode: "train", name: "Superfast Express · 3A", tag: "🪙 Value", line1: "Overnight", line2: "AC 3-tier", line3: "ConfirmTkt predicts seats", price: base, oldPrice: Math.round(base * 1.15), save: Math.round(base * 0.15) }
+    );
+  }
+  if (chosen.includes("bus")) {
+    const base = 1100 * travelers;
+    out.push(
+      { mode: "bus", name: "Volvo AC Sleeper", tag: "🪙 Value", line1: "Overnight", line2: "AC sleeper · 1 stop", line3: "USB + blanket", price: base, oldPrice: Math.round(base * 1.2), save: Math.round(base * 0.2) },
+      { mode: "bus", name: "Premium Sleeper", tag: "😴 Comfort", line1: "Overnight", line2: "Private berth", line3: "Live tracking", price: Math.round(base * 1.25), oldPrice: Math.round(base * 1.44), save: Math.round(base * 0.19) }
+    );
+  }
+  if (chosen.includes("car")) {
+    const perDay = 2800;
+    const days = Math.max(1, nights);
+    out.push(
+      { mode: "car", name: "Self-drive hatchback", tag: "⚡ Flexible", line1: `${days} day${days > 1 ? "s" : ""}`, line2: "Zoomcar / Revv class", line3: "Unlimited-km plans", price: perDay * days, oldPrice: Math.round(perDay * days * 1.18), save: Math.round(perDay * days * 0.18) },
+      { mode: "car", name: "Chauffeur cab · airport + local", tag: "✅ Verified", line1: "Sedan", line2: "45 km/day included", line3: "Tolls extra", price: Math.round(1600 * days), oldPrice: Math.round(1950 * days), save: Math.round(350 * days) }
+    );
+  }
+  if (chosen.includes("bike")) {
+    const days = Math.max(1, nights);
+    out.push(
+      { mode: "bike", name: "Scooter rental", tag: "🔥 Most booked", line1: `${days} day${days > 1 ? "s" : ""}`, line2: "Royal Brothers / Onn class", line3: "2 helmets included", price: 650 * days, oldPrice: Math.round(650 * days * 1.25), save: Math.round(650 * days * 0.25) },
+      { mode: "bike", name: "Classic 350 rental", tag: "🏍 Tourer", line1: `${days} day${days > 1 ? "s" : ""}`, line2: "Highway-ready", line3: "Carry DL + deposit", price: 1250 * days, oldPrice: Math.round(1250 * days * 1.16), save: Math.round(1250 * days * 0.16) }
+    );
+  }
+  const rooms = Math.max(1, Math.ceil(travelers / 2));
+  out.push(
+    { mode: "hotel", name: "Boutique stay · 4.5★ rated", tag: "✨ Gen-Z pick", line1: `${nights} night${nights > 1 ? "s" : ""} · ${rooms} room${rooms > 1 ? "s" : ""}`, line2: "Breakfast included", line3: "Free cancellation", price: 4200 * nights * rooms, oldPrice: Math.round(4200 * nights * rooms * 1.17), save: Math.round(4200 * nights * rooms * 0.17) },
+    { mode: "hotel", name: "Comfort 3–4★ chain", tag: "⚖️ Balanced", line1: `${nights} night${nights > 1 ? "s" : ""} · ${rooms} room${rooms > 1 ? "s" : ""}`, line2: "Central location", line3: "Pay at hotel", price: 3000 * nights * rooms, oldPrice: Math.round(3000 * nights * rooms * 1.16), save: Math.round(3000 * nights * rooms * 0.16) },
+    { mode: "hotel", name: "Smart budget / hostel-core", tag: "🪙 Cheapest", line1: `${nights} night${nights > 1 ? "s" : ""}`, line2: "Clean + social", line3: "Lockers & wifi", price: 1400 * nights * rooms, oldPrice: Math.round(1400 * nights * rooms * 1.2), save: Math.round(1400 * nights * rooms * 0.2) }
+  );
+  return out;
+}
+
 function buildRentals(modes?: TransportMode[]): RentalOption[] {
   const chosen = modes && modes.length ? modes : [];
   const out: RentalOption[] = [];
@@ -350,6 +421,7 @@ export function buildCalculatorPlan(input: TravelPlanInput): TravelPlan {
     transport: buildTransport(input.modes),
     hotels: buildHotels(),
     rentals: buildRentals(input.modes),
+    compare: buildCompareOptions(input),
     cardAdvice: buildCardAdvice(input.cards),
     deals: DEFAULT_DEALS,
     disclaimer: DISCLAIMER,

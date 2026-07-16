@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import CityAskWidget from "@/app/components/CityAskWidget";
 import OfferRibbon from "@/app/components/OfferRibbon";
 import PageShell from "@/app/components/PageShell";
-import TravelPlanIntro from "@/app/components/TravelPlanIntro";
 import TravelPlanner from "@/app/components/TravelPlanner";
 
 export const metadata: Metadata = {
@@ -16,7 +15,6 @@ export default function TravelPlanPage() {
   return (
     <PageShell>
       <OfferRibbon city="Delhi" />
-      <TravelPlanIntro />
       <TravelPlanner />
       <CityAskWidget city="Goa" suggestions={["Plan a weekend trip under \u20b98k", "Best months to visit Goa on a budget", "Hidden beaches locals actually go to"]} />
     </PageShell>

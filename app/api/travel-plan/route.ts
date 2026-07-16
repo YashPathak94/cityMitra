@@ -4,6 +4,7 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import {
   buildCalculatorPlan,
   CardAdvice,
+  CompareOption,
   FareIntel,
   HotelTier,
   PlanInstrument,
@@ -170,6 +171,35 @@ function coerceStrings(value: unknown, max: number): string[] {
   return value.map((item) => String(item).slice(0, 180).trim()).filter(Boolean).slice(0, max);
 }
 
+const COMPARE_MODES = [...TRANSPORT_MODES, "hotel"];
+
+function coerceCompare(value: unknown): CompareOption[] {
+  if (!Array.isArray(value)) return [];
+  const out: CompareOption[] = [];
+  for (const item of value) {
+    const record = item as Record<string, unknown>;
+    const mode = String(record.mode || "");
+    if (!COMPARE_MODES.includes(mode)) continue;
+    const name = String(record.name || "").slice(0, 70).trim();
+    const price = num(record.price);
+    if (!name || !price) continue;
+    const oldPrice = Math.max(price, num(record.oldPrice, price));
+    out.push({
+      mode: mode as CompareOption["mode"],
+      name,
+      tag: String(record.tag || "").slice(0, 30).trim() || "Option",
+      line1: String(record.line1 || "").slice(0, 60).trim(),
+      line2: String(record.line2 || "").slice(0, 60).trim(),
+      line3: String(record.line3 || "").slice(0, 60).trim(),
+      price,
+      oldPrice,
+      save: Math.min(oldPrice - price + num(record.save, 0), oldPrice) || Math.max(0, oldPrice - price)
+    });
+    if (out.length >= 20) break;
+  }
+  return out;
+}
+
 function coerceFareIntel(value: unknown): FareIntel | undefined {
   if (!value || typeof value !== "object") return undefined;
   const record = value as Record<string, unknown>;
@@ -181,6 +211,7 @@ function coerceFareIntel(value: unknown): FareIntel | undefined {
           option: String(o.option || "").slice(0, 70).trim(),
           offer: String(o.offer || "").slice(0, 140).trim(),
           saving: String(o.saving || "").slice(0, 50).trim(),
+          saveAmount: o.saveAmount ? num(o.saveAmount) : undefined,
           validTill: o.validTill ? String(o.validTill).slice(0, 60).trim() : undefined
         }))
         .filter((o) => o.option && o.offer)
@@ -252,6 +283,7 @@ export async function POST(request: NextRequest) {
     `"strategy": string[] (4-6 short imperative steps), ` +
     `"instruments": [{"kind":"stock"|"mutual_fund"|"card","name":string,"detail":string(<=140),"tag":string}] (6-8: mutual funds + 2 trending large-cap stocks + 2 cards), ` +
     `"transport": [{"mode":"flight"|"train"|"bus"|"car"|"bike","priceFrom":number(INR),"priceTo":number(INR),"duration":string,"operator":string(airlines/operators),"platform":string(booking sites),"note":string(<=120),"best":boolean}] (one per requested mode; car/bike priced per rental day; mark the genuinely best one true), ` +
+    `"compare": [{"mode":"flight"|"train"|"bus"|"car"|"bike"|"hotel","name":string(operator + flight/train number or property name),"tag":string(short Gen-Z label with emoji, e.g. "\u{1F525} Best value"/"\u{1F4A8} Fastest"/"\u{1FA99} Cheapest"),"line1":string(schedule or stay length),"line2":string(key detail),"line3":string(what's included),"price":number(TOTAL INR for ${input.travelers || 1} traveller(s)${input.nights ? ` / ${input.nights} nights for hotels` : ""}, AFTER the strongest common offer),"oldPrice":number(sticker price before offers),"save":number(INR saved)}] (2-3 DIFFERENT real options per requested transport mode + exactly 3 hotel options at different price points — this is the main comparison users see, make every row concrete and bookable-sounding), ` +
     `"hotels": [{"tier":string,"nightlyFrom":number(INR),"platform":string,"example":string(2-3 named properties in ${input.destination}),"offer":string(the standing platform/card hotel offer for this tier, e.g. GOSTAYS-style code or card discount, with cap),"note":string(<=120)}] (3 tiers budget/comfort/premium), ` +
     `${rentalModes.length ? `"rentals": [{"type":"car"|"bike","vendor":string,"perDayFrom":number(INR),"perDayTo":number(INR),"note":string(<=120)}] (one per requested rental mode: ${rentalModes.join(",")}), ` : ""}` +
     `"cardAdvice": [{"card":string,"useFor":string,"offer":string(real standing reward structure + portal),"benefit":string(<=140, written like texting a money-smart friend — Gen-Z, zero banker-speak)}] (if userCards given, advise per card; else suggest 2 ideal card types), ` +
@@ -293,11 +325,13 @@ export async function POST(request: NextRequest) {
       const rentals = coerceRentals(parsed.rentals);
       const cardAdvice = coerceCardAdvice(parsed.cardAdvice);
       const deals = coerceStrings(parsed.deals, 5);
+      const compare = coerceCompare(parsed.compare);
       const fareIntel = coerceFareIntel(parsed.fareIntel);
       const vibeInsight = typeof parsed.vibeInsight === "string" ? parsed.vibeInsight.trim().slice(0, 300) : "";
       return NextResponse.json({
         plan: {
           ...base,
+          compare: compare.length ? compare : base.compare,
           fareIntel,
           vibeInsight: vibeInsight || undefined,
           summary: typeof parsed.summary === "string" && parsed.summary.trim() ? parsed.summary.trim().slice(0, 500) : base.summary,
