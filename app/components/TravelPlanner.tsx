@@ -18,6 +18,7 @@ import { indiaCities } from "@/lib/india-cities";
 import {
   buildCalculatorPlan,
   buildCompareOptions,
+  isInternationalDestination,
   monthsToTravel,
   sipFutureValue,
   type CompareOption,
@@ -88,6 +89,7 @@ export default function TravelPlanner() {
   const [travelDateISO, setTravelDateISO] = useState(defaultDate());
   const [nights, setNights] = useState(4);
   const [travelers, setTravelers] = useState(2);
+  const [roundTrip, setRoundTrip] = useState(true);
   const [tripBudget, setTripBudget] = useState(75000);
   const [vibe, setVibe] = useState("Balanced");
   const [modes, setModes] = useState<TransportMode[]>(["flight", "train"]);
@@ -132,10 +134,20 @@ export default function TravelPlanner() {
     setTimeout(() => setToast(""), 2200);
   }
 
+  const isInternational = useMemo(() => isInternationalDestination(destination), [destination]);
+  // Across borders only flights make sense — land modes are auto-parked.
+  const effectiveModes = useMemo<TransportMode[]>(
+    () => (isInternational ? ["flight"] : modes),
+    [isInternational, modes]
+  );
+
   // Instant local options; the AI pass swaps in route-specific ones.
   const compare: CompareOption[] = useMemo(
-    () => (plan?.compare?.length ? plan.compare : buildCompareOptions({ travelers, nights, modes })),
-    [plan, travelers, nights, modes]
+    () =>
+      plan?.compare?.length
+        ? plan.compare
+        : buildCompareOptions({ travelers, nights, modes: effectiveModes, origin, destination, roundTrip }),
+    [plan, travelers, nights, effectiveModes, origin, destination, roundTrip]
   );
 
   const activeTabs: StackMode[] = useMemo(() => {
@@ -234,9 +246,10 @@ export default function TravelPlanner() {
           targetBudget: Math.max(10000, tripBudget),
           monthlyCapacity: monthly || undefined,
           riskLevel: sip >= liquid ? "medium" : "low",
-          modes: modes.length ? modes : transportModes,
+          modes: effectiveModes.length ? effectiveModes : transportModes,
           cards,
-          vibe
+          vibe,
+          roundTrip
         })
       });
       const data = (await response.json().catch(() => ({}))) as { plan?: TravelPlan; error?: string };
@@ -361,11 +374,23 @@ export default function TravelPlanner() {
           </datalist>
           <div className="spField">
             <label htmlFor="spFrom">From</label>
-            <input id="spFrom" list="indiaCitiesList" value={origin} onChange={(e) => setOrigin(e.target.value)} placeholder="Your city" />
+            <input
+              id="spFrom"
+              list="indiaCitiesList"
+              value={origin}
+              onChange={(e) => { setOrigin(e.target.value); setPlan(null); }}
+              placeholder="Your city"
+            />
           </div>
           <div className="spField">
             <label htmlFor="spTo">To</label>
-            <input id="spTo" list="indiaCitiesList" value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Dream spot" />
+            <input
+              id="spTo"
+              list="indiaCitiesList"
+              value={destination}
+              onChange={(e) => { setDestination(e.target.value); setPlan(null); }}
+              placeholder="Dream spot"
+            />
           </div>
           <div className="spField">
             <label htmlFor="spStart">Trip starts</label>
@@ -374,6 +399,17 @@ export default function TravelPlanner() {
           <div className="spField">
             <label htmlFor="spEnd">Trip ends</label>
             <input id="spEnd" type="date" min={travelDateISO} value={endDateISO} onChange={(e) => e.target.value && setEndDate(e.target.value)} />
+          </div>
+          <div className="spField">
+            <span className="spFieldLabel">Trip type</span>
+            <div className="spTripType" role="radiogroup" aria-label="Trip type">
+              <button type="button" role="radio" aria-checked={roundTrip} className={roundTrip ? "active" : ""} onClick={() => { setRoundTrip(true); setPlan(null); }}>
+                Round
+              </button>
+              <button type="button" role="radio" aria-checked={!roundTrip} className={!roundTrip ? "active" : ""} onClick={() => { setRoundTrip(false); setPlan(null); }}>
+                1-way
+              </button>
+            </div>
           </div>
           <div className="spField">
             <label htmlFor="spTrav">Travellers</label>
@@ -450,11 +486,23 @@ export default function TravelPlanner() {
           </div>
 
           <span className="spGroupLabel">Transport you&apos;d consider</span>
+          {isInternational && (
+            <p className="spIntlHint">🌍 International route — comparing flights + stays (trains, buses &amp; rentals don&apos;t cross this border).</p>
+          )}
           <div className="spChipRow">
             {transportModes.map((mode) => {
               const Icon = modeMeta[mode].icon;
+              const disabled = isInternational && mode !== "flight";
+              const active = effectiveModes.includes(mode);
               return (
-                <button key={mode} type="button" className={modes.includes(mode) ? "spChip active" : "spChip"} onClick={() => toggleMode(mode)}>
+                <button
+                  key={mode}
+                  type="button"
+                  className={disabled ? "spChip isDisabled" : active ? "spChip active" : "spChip"}
+                  onClick={() => !disabled && toggleMode(mode)}
+                  disabled={disabled}
+                  title={disabled ? "Not available on international routes" : undefined}
+                >
                   <Icon size={14} /> {modeMeta[mode].label}
                 </button>
               );
@@ -579,7 +627,12 @@ export default function TravelPlanner() {
                     </div>
                     <div className="spOptionFoot">
                       <div>
-                        <small>Final payable after offer</small>
+                        <small>
+                          Final payable after offer
+                          {option.mode !== "hotel" && option.mode !== "car" && option.mode !== "bike"
+                            ? ` · ${roundTrip ? "round trip" : "one-way"} · ${travelers} traveller${travelers > 1 ? "s" : ""}`
+                            : ""}
+                        </small>
                         <div className="spPriceLine">
                           <span className="spPrice">{inr(option.price)}</span>
                           {option.oldPrice > option.price && <span className="spOld">{inr(option.oldPrice)}</span>}

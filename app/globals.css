@@ -14383,3 +14383,58 @@ a.dealCard:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- smart plan: trip type toggle, intl route state --- */
+
+.spFieldLabel {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.spTripType {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--soft);
+}
+
+.spTripType button {
+  flex: 1;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 6px 8px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.spTripType button.active {
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.spChip.isDisabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.spIntlHint {
+  margin: 0 0 8px;
+  padding: 9px 13px;
+  border-radius: 12px;
+  background: #eef4ff;
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.45;
+}

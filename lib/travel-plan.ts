@@ -1,3 +1,5 @@
+import { indiaCities } from "@/lib/india-cities";
+
 export type RiskLevel = "low" | "medium" | "high";
 
 export type TransportMode = "flight" | "train" | "bus" | "car" | "bike";
@@ -16,6 +18,8 @@ export type TravelPlanInput = {
   vibe?: string;
   stay?: string;
   moments?: string[];
+  /** Round trip (default) or one-way pricing for flights/trains/buses. */
+  roundTrip?: boolean;
 };
 
 export type PlanInstrument = {
@@ -266,27 +270,80 @@ function buildHotels(): HotelTier[] {
   ];
 }
 
+// Popular international destinations Indians actually fly to. Near = short-
+// haul (4-6h), far = long-haul. Unknown names default to domestic so small
+// Indian towns aren't mispriced; the AI pass handles true unknowns.
+const INTL_NEAR = ["dubai", "abu dhabi", "singapore", "bangkok", "phuket", "bali", "kuala lumpur", "colombo", "kathmandu", "male", "maldives", "vietnam", "hanoi", "da nang", "thailand", "sri lanka", "nepal", "uae", "malaysia", "almaty", "baku", "doha", "muscat"];
+const INTL_FAR = ["paris", "london", "amsterdam", "frankfurt", "berlin", "munich", "rome", "milan", "zurich", "vienna", "prague", "barcelona", "madrid", "lisbon", "istanbul", "new york", "san francisco", "los angeles", "toronto", "vancouver", "tokyo", "osaka", "seoul", "sydney", "melbourne", "auckland", "france", "germany", "italy", "spain", "switzerland", "uk", "usa", "europe", "japan", "australia", "canada", "greece", "athens", "cairo", "egypt"];
+
+export type RouteKind = "domestic" | "intl-near" | "intl-far";
+
+export function routeKind(destination?: string): RouteKind {
+  const d = (destination || "").trim().toLowerCase();
+  if (!d) return "domestic";
+  if (indiaCities.some((c) => c.toLowerCase() === d)) return "domestic";
+  if (INTL_FAR.some((x) => d.includes(x))) return "intl-far";
+  if (INTL_NEAR.some((x) => d.includes(x))) return "intl-near";
+  return "domestic";
+}
+
+export function isInternationalDestination(destination?: string): boolean {
+  return routeKind(destination) !== "domestic";
+}
+
 // Fallback compare stack — instant, plausible options per mode so the page
 // is useful before (or without) the AI research pass. Prices scale with the
-// party size / nights; the AI pass replaces these with route-specific rows.
-export function buildCompareOptions(input: { travelers?: number; nights?: number; modes?: TransportMode[] }): CompareOption[] {
+// party size / nights and the route (domestic vs international); the AI
+// pass replaces these with route-specific rows.
+export function buildCompareOptions(input: {
+  travelers?: number;
+  nights?: number;
+  modes?: TransportMode[];
+  origin?: string;
+  destination?: string;
+  roundTrip?: boolean;
+}): CompareOption[] {
   const travelers = Math.max(1, input.travelers || 2);
   const nights = Math.max(1, input.nights || 4);
+  const kind = routeKind(input.destination);
+  const rt = input.roundTrip === false ? 1 : 1.85;
+  const tripLabel = input.roundTrip === false ? "one-way" : "round trip";
   const chosen = input.modes && input.modes.length ? input.modes : (["flight", "train"] as TransportMode[]);
   const out: CompareOption[] = [];
 
-  if (chosen.includes("flight")) {
-    const base = 3800 * travelers;
+  // ---- International: flights + hotels only (no trains/buses/bikes across borders) ----
+  if (kind !== "domestic") {
+    const base = (kind === "intl-far" ? 24000 : 13500) * travelers * rt;
+    const far = kind === "intl-far";
     out.push(
-      { mode: "flight", name: "IndiGo · direct", tag: "🔥 Best value", line1: "Morning departure", line2: "Direct · cabin 7kg + 15kg", line3: "Web check-in free", price: Math.round(base * 1.18), oldPrice: Math.round(base * 1.34), save: Math.round(base * 0.16) },
-      { mode: "flight", name: "Air India · direct", tag: "💨 Fastest", line1: "Midday departure", line2: "Direct · 20kg baggage", line3: "Meal included", price: Math.round(base * 1.26), oldPrice: Math.round(base * 1.4), save: Math.round(base * 0.14) },
-      { mode: "flight", name: "Air India Express", tag: "🪙 Cheapest", line1: "Evening departure", line2: "Direct · 15kg baggage", line3: "Paid seats", price: Math.round(base * 1.08), oldPrice: Math.round(base * 1.24), save: Math.round(base * 0.16) },
-      { mode: "flight", name: "Akasa Air", tag: "🌱 New fleet", line1: "Early morning", line2: "Direct · 15kg baggage", line3: "Café menu onboard", price: Math.round(base * 1.14), oldPrice: Math.round(base * 1.28), save: Math.round(base * 0.14) },
-      { mode: "flight", name: "SpiceJet · 1 stop", tag: "🧳 Flexi fare", line1: "Afternoon departure", line2: "1 stop · 15kg baggage", line3: "Free date change", price: Math.round(base * 1.02), oldPrice: Math.round(base * 1.2), save: Math.round(base * 0.18) }
+      { mode: "flight", name: far ? "Air India · direct" : "IndiGo · direct", tag: "🔥 Best value", line1: far ? "13:05 → 19:35 · direct" : "08:20 → 11:05 · direct", line2: `${tripLabel} · 2×23kg`, line3: "Meals included", price: Math.round(base * 1.08), oldPrice: Math.round(base * 1.22), save: Math.round(base * 0.14) },
+      { mode: "flight", name: "Emirates · via Dubai", tag: "✨ Comfort", line1: far ? "04:15 → 13:40 · 1 stop" : "10:10 → 16:20 · 1 stop", line2: `${tripLabel} · 2×23kg`, line3: "Top-rated service", price: Math.round(base * 1.22), oldPrice: Math.round(base * 1.38), save: Math.round(base * 0.16) },
+      { mode: "flight", name: "Qatar Airways · via Doha", tag: "💺 Great layover", line1: far ? "03:40 → 12:55 · 1 stop" : "09:35 → 15:50 · 1 stop", line2: `${tripLabel} · 2×23kg`, line3: "Short Doha connection", price: Math.round(base * 1.18), oldPrice: Math.round(base * 1.34), save: Math.round(base * 0.16) },
+      { mode: "flight", name: far ? "Lufthansa · via Frankfurt" : "Thai / Singapore Air", tag: "💨 Fast option", line1: far ? "02:50 → 11:20 · 1 stop" : "07:45 → 13:30 · 1 stop", line2: `${tripLabel} · 2×23kg`, line3: "Frequent-flyer friendly", price: Math.round(base * 1.26), oldPrice: Math.round(base * 1.4), save: Math.round(base * 0.14) },
+      { mode: "flight", name: "Budget mix · 1 stop", tag: "🪙 Cheapest", line1: "22:30 → 08:15 (+1) · 1 stop", line2: `${tripLabel} · 20kg`, line3: "Longer layover, best fare", price: Math.round(base * 0.94), oldPrice: Math.round(base * 1.12), save: Math.round(base * 0.18) }
+    );
+    const rooms = Math.max(1, Math.ceil(travelers / 2));
+    const nightBase = far ? [5800, 10500, 19500] : [3200, 6800, 13500];
+    out.push(
+      { mode: "hotel", name: "Design hostel / citizenM-style", tag: "✨ Gen-Z pick", line1: `${nights} night${nights > 1 ? "s" : ""} · ${rooms} room${rooms > 1 ? "s" : ""}`, line2: "Central, social, great wifi", line3: "Free cancellation", price: nightBase[0] * nights * rooms, oldPrice: Math.round(nightBase[0] * nights * rooms * 1.16), save: Math.round(nightBase[0] * nights * rooms * 0.16) },
+      { mode: "hotel", name: "ibis / Holiday Inn Express class", tag: "⚖️ Balanced", line1: `${nights} night${nights > 1 ? "s" : ""} · ${rooms} room${rooms > 1 ? "s" : ""}`, line2: "3★ chain near transit", line3: "Breakfast add-on", price: nightBase[1] * nights * rooms, oldPrice: Math.round(nightBase[1] * nights * rooms * 1.15), save: Math.round(nightBase[1] * nights * rooms * 0.15) },
+      { mode: "hotel", name: "Marriott / Hilton class", tag: "💎 Premium", line1: `${nights} night${nights > 1 ? "s" : ""} · ${rooms} room${rooms > 1 ? "s" : ""}`, line2: "4-5★ · points eligible", line3: "Pay with hotel-rewards card", price: nightBase[2] * nights * rooms, oldPrice: Math.round(nightBase[2] * nights * rooms * 1.14), save: Math.round(nightBase[2] * nights * rooms * 0.14) }
+    );
+    return out;
+  }
+
+  if (chosen.includes("flight")) {
+    const base = 3800 * travelers * rt;
+    out.push(
+      { mode: "flight", name: "IndiGo · direct", tag: "🔥 Best value", line1: "06:10 → 08:35 · direct", line2: `${tripLabel} · 7kg + 15kg`, line3: "Web check-in free", price: Math.round(base * 1.18), oldPrice: Math.round(base * 1.34), save: Math.round(base * 0.16) },
+      { mode: "flight", name: "Air India · direct", tag: "💨 Fastest", line1: "12:40 → 14:55 · direct", line2: `${tripLabel} · 20kg`, line3: "Meal included", price: Math.round(base * 1.26), oldPrice: Math.round(base * 1.4), save: Math.round(base * 0.14) },
+      { mode: "flight", name: "Air India Express", tag: "🪙 Cheapest", line1: "19:20 → 21:50 · direct", line2: `${tripLabel} · 15kg`, line3: "Paid seats", price: Math.round(base * 1.08), oldPrice: Math.round(base * 1.24), save: Math.round(base * 0.16) },
+      { mode: "flight", name: "Akasa Air", tag: "🌱 New fleet", line1: "05:30 → 07:55 · direct", line2: `${tripLabel} · 15kg`, line3: "Café menu onboard", price: Math.round(base * 1.14), oldPrice: Math.round(base * 1.28), save: Math.round(base * 0.14) },
+      { mode: "flight", name: "SpiceJet · 1 stop", tag: "🧳 Flexi fare", line1: "14:15 → 18:40 · 1 stop", line2: `${tripLabel} · 15kg`, line3: "Free date change", price: Math.round(base * 1.02), oldPrice: Math.round(base * 1.2), save: Math.round(base * 0.18) }
     );
   }
   if (chosen.includes("train")) {
-    const base = 1400 * travelers;
+    const base = 1400 * travelers * rt;
     out.push(
       { mode: "train", name: "Rajdhani-class · 2A", tag: "⭐ Reliable", line1: "Overnight", line2: "Meals included", line3: "Book on IRCTC day 1", price: Math.round(base * 1.5), oldPrice: Math.round(base * 1.66), save: Math.round(base * 0.16) },
       { mode: "train", name: "Superfast Express · 3A", tag: "🪙 Value", line1: "Overnight", line2: "AC 3-tier", line3: "ConfirmTkt predicts seats", price: base, oldPrice: Math.round(base * 1.15), save: Math.round(base * 0.15) },
@@ -295,7 +352,7 @@ export function buildCompareOptions(input: { travelers?: number; nights?: number
     );
   }
   if (chosen.includes("bus")) {
-    const base = 1100 * travelers;
+    const base = 1100 * travelers * rt;
     out.push(
       { mode: "bus", name: "Volvo AC Sleeper", tag: "🪙 Value", line1: "Overnight", line2: "AC sleeper · 1 stop", line3: "USB + blanket", price: base, oldPrice: Math.round(base * 1.2), save: Math.round(base * 0.2) },
       { mode: "bus", name: "Premium Sleeper", tag: "😴 Comfort", line1: "Overnight", line2: "Private berth", line3: "Live tracking", price: Math.round(base * 1.25), oldPrice: Math.round(base * 1.44), save: Math.round(base * 0.19) },

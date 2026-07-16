@@ -56,7 +56,8 @@ function sanitize(body: Record<string, unknown>): TravelPlanInput | null {
     cards: cards && cards.length ? cards : undefined,
     vibe: String(body.vibe || "").slice(0, 40).trim() || undefined,
     stay: String(body.stay || "").slice(0, 30).trim() || undefined,
-    moments: moments && moments.length ? moments : undefined
+    moments: moments && moments.length ? moments : undefined,
+    roundTrip: body.roundTrip === false ? false : true
   };
 }
 
@@ -256,18 +257,27 @@ export async function POST(request: NextRequest) {
   }
 
   const rentalModes = (input.modes || []).filter((mode) => mode === "car" || mode === "bike");
+  const tripType = input.roundTrip === false ? "ONE-WAY" : "ROUND TRIP";
   const prompt =
-    `You are CityMitra's travel-funding strategist for Indian users (INR). Audience is Gen-Z — keep every line ` +
-    `punchy, friendly and jargon-free, but the numbers must feel like real quotes. Using the inputs below, produce a ` +
-    `plan where disciplined investing + smart transport/hotel choices + card offers fund the trip. India context only.\n\n` +
-    `Realism rules: price the ACTUAL ${input.origin || "metro origin"} → ${input.destination} route for the travel ` +
-    `month of ${input.travelDateISO}. Flights: give the typical booking-platform range (MakeMyTrip / Goibibo / ` +
-    `Skyscanner) and name the airlines that actually fly it. Trains: IRCTC class + fare. Bus: RedBus-style operator + ` +
-    `fare. Car/bike (only if requested): per-day SELF-DRIVE RENTAL pricing from Zoomcar/Savaari/Revv (car) or Royal ` +
-    `Brothers/Onn Bikes (bike). Hotels: name 2-3 real example properties per tier in ${input.destination} with typical ` +
-    `nightly rates for ${input.nights || 3} night(s). Cards: describe each card's REAL standing reward structure and ` +
-    `issuer portal (e.g. HDFC SmartBuy 5X, Axis Travel EDGE, Amex offers) — no invented expiry-dated promos. Prefer ` +
-    `index funds for short horizons; name real well-known Indian options but keep them illustrative. No guaranteed returns.\n\n` +
+    `You are CityMitra's travel-funding strategist for Indian travellers (all prices in INR). Audience is Gen-Z — ` +
+    `keep every line punchy, friendly and jargon-free, but the numbers must feel like real quotes. Using the inputs ` +
+    `below, produce a plan where disciplined investing + smart transport/hotel choices + card offers fund the trip.\n\n` +
+    `ROUTE INTELLIGENCE (critical): the route is ${input.origin || "a metro origin"} → ${input.destination}. First ` +
+    `decide if this is DOMESTIC (within India) or INTERNATIONAL. Use the correct price scale for the ACTUAL route ` +
+    `and the travel month of ${input.travelDateISO} — a Bengaluru→Paris round trip is ~₹45k-₹80k pp, Delhi→Goa is ` +
+    `~₹4k-₹9k pp; never reuse domestic numbers on international routes. ALL transport prices are ${tripType} totals ` +
+    `for ${input.travelers || 1} traveller(s) — state nothing as per-leg. For INTERNATIONAL routes: only flight and ` +
+    `hotel options exist — do NOT fabricate train/bus/car/bike rows even if requested; name real airlines that fly ` +
+    `the route (direct where they exist, plus 1-stop via real hubs like Dubai/Doha/Frankfurt with the layover city ` +
+    `named), and add one visa/entry + forex-card note in deals. For DOMESTIC: Flights via MakeMyTrip/Goibibo/` +
+    `Skyscanner with real airlines; Trains: IRCTC class + fare; Bus: RedBus-style operator + fare; Car/bike (only ` +
+    `if requested): per-day SELF-DRIVE RENTAL pricing from Zoomcar/Savaari/Revv or Royal Brothers/Onn Bikes. ` +
+    `Every flight/train/bus option MUST carry concrete timings in line1 as "HH:MM → HH:MM (+1 if overnight) · ` +
+    `direct/1 stop". Hotels: name 2-3 real example properties per tier IN ${input.destination} with typical nightly ` +
+    `rates for ${input.nights || 3} night(s). Cards: describe each card's REAL standing reward structure and issuer ` +
+    `portal (e.g. HDFC SmartBuy 5X, Axis Travel EDGE, Amex offers) — no invented expiry-dated promos; note forex ` +
+    `markup if international. Prefer index funds for short horizons; name real well-known Indian options but keep ` +
+    `them illustrative. No guaranteed returns.\n\n` +
     `Inputs: from=${input.origin || "user's city"}, to=${input.destination}, travellers=${input.travelers || 1}, ` +
     `nights=${input.nights || 3}, travelDate=${input.travelDateISO}, monthsToGo=${base.monthsToGo}, ` +
     `riskLevel=${input.riskLevel}, tripVibe=${input.vibe || "any"}, stayStyle=${input.stay || "comfort"}, ` +
@@ -275,7 +285,7 @@ export async function POST(request: NextRequest) {
     `recommendedMonthly=₹${base.recommendedMonthly}, projectedValue=₹${base.projectedValue}, ` +
     `investmentGains=₹${base.investmentGains}, cardSavings=₹${base.cardSavings}, freeTravelPct=${base.freeTravelPct}%, ` +
     `equity/debt=${base.allocation.equityPct}/${base.allocation.debtPct}, ` +
-    `transportModes=${(input.modes || TRANSPORT_MODES).join(",")}, ` +
+    `tripType=${tripType}, transportModes=${(input.modes || TRANSPORT_MODES).join(",")}, ` +
     `userCards=${(input.cards || []).join(",") || "none provided"}.\n\n` +
     `${input.vibe === "Spiritual" ? "The vibe is Spiritual — lean into temple towns, darshan timing, modest dress notes and early-morning slots in the tips.\n\n" : ""}` +
     `Return ONLY JSON: {` +
@@ -283,7 +293,7 @@ export async function POST(request: NextRequest) {
     `"strategy": string[] (4-6 short imperative steps), ` +
     `"instruments": [{"kind":"stock"|"mutual_fund"|"card","name":string,"detail":string(<=140),"tag":string}] (EXACTLY 10 "top picks to start investing": 4-5 real well-known mutual funds/index schemes + 3-4 trending large-cap stocks + 2 cards, ordered best-first for this horizon/risk), ` +
     `"transport": [{"mode":"flight"|"train"|"bus"|"car"|"bike","priceFrom":number(INR),"priceTo":number(INR),"duration":string,"operator":string(airlines/operators),"platform":string(booking sites),"note":string(<=120),"best":boolean}] (one per requested mode; car/bike priced per rental day; mark the genuinely best one true), ` +
-    `"compare": [{"mode":"flight"|"train"|"bus"|"car"|"bike"|"hotel","name":string(operator + flight/train number or property name),"tag":string(short Gen-Z label with emoji, e.g. "\u{1F525} Best value"/"\u{1F4A8} Fastest"/"\u{1FA99} Cheapest"),"line1":string(schedule or stay length),"line2":string(key detail),"line3":string(what's included),"price":number(TOTAL INR for ${input.travelers || 1} traveller(s)${input.nights ? ` / ${input.nights} nights for hotels` : ""}, AFTER the strongest common offer),"oldPrice":number(sticker price before offers),"save":number(INR saved)}] (3-5 DIFFERENT real options per requested transport mode — flights MUST have 5 (mix airlines, times, direct/1-stop), trains/buses 4 — + exactly 3 hotel options at different price points — this is the main comparison users see, make every row concrete and bookable-sounding), ` +
+    `"compare": [{"mode":"flight"|"train"|"bus"|"car"|"bike"|"hotel","name":string(operator + flight/train number or property name),"tag":string(short Gen-Z label with emoji, e.g. "\u{1F525} Best value"/"\u{1F4A8} Fastest"/"\u{1FA99} Cheapest"),"line1":string(schedule or stay length),"line2":string(key detail),"line3":string(what's included),"price":number(TOTAL INR for ${input.travelers || 1} traveller(s)${input.nights ? ` / ${input.nights} nights for hotels` : ""}, AFTER the strongest common offer),"oldPrice":number(sticker price before offers),"save":number(INR saved)}] (3-5 DIFFERENT real options per requested transport mode — flights MUST have 5 (mix airlines, times, direct/1-stop), trains/buses 4; on INTERNATIONAL routes return ONLY flight + hotel options — + exactly 3 hotel options at different price points; every price is a ${tripType} total — this is the main comparison users see, make every row concrete and bookable-sounding), ` +
     `"hotels": [{"tier":string,"nightlyFrom":number(INR),"platform":string,"example":string(2-3 named properties in ${input.destination}),"offer":string(the standing platform/card hotel offer for this tier, e.g. GOSTAYS-style code or card discount, with cap),"note":string(<=120)}] (3 tiers budget/comfort/premium), ` +
     `${rentalModes.length ? `"rentals": [{"type":"car"|"bike","vendor":string,"perDayFrom":number(INR),"perDayTo":number(INR),"note":string(<=120)}] (one per requested rental mode: ${rentalModes.join(",")}), ` : ""}` +
     `"cardAdvice": [{"card":string,"useFor":string,"offer":string(real standing reward structure + portal),"benefit":string(<=140, written like texting a money-smart friend — Gen-Z, zero banker-speak)}] (if userCards given, advise per card; else suggest 2 ideal card types), ` +
