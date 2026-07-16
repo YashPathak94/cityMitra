@@ -45,6 +45,8 @@ export type HotelTier = {
   note: string;
   /** Named example properties — e.g. "Ginger Panjim · Zostel Goa". */
   example?: string;
+  /** Standing platform/card offer for this tier — e.g. "Goibibo GOSTAYS ~10% off". */
+  offer?: string;
 };
 
 export type RentalOption = {
@@ -67,11 +69,15 @@ export type FareOffer = {
   option: string;
   offer: string;
   saving: string;
+  /** Published end date of the offer, or "check at checkout". */
+  validTill?: string;
 };
 
 /** Rich fare intelligence for the primary route — the "is this a good price?" brief. */
 export type FareIntel = {
   headline: string;
+  /** Concrete flight spotlight — e.g. { name: "IndiGo 6E 2349", timing: "10:55 Delhi → 12:20 Prayagraj", duration: "1h 25m", benchmark: "₹5,668 before add-ons" }. */
+  flight?: { name: string; timing: string; duration: string; benchmark: string };
   expectedRange: string;
   targetPrice: string;
   acceptablePrice: string;

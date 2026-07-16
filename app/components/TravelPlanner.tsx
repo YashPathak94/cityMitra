@@ -845,6 +845,14 @@ export default function TravelPlanner() {
             <section className="planStackCard tpIntelCard" style={{ top: 92 }}>
               <h3 className="planSectionTitle"><Plane size={17} /> Fare intel — {routeLabel}</h3>
               <p className="tpIntelHeadline">{plan.fareIntel.headline}</p>
+              {plan.fareIntel.flight && (
+                <div className="tpFlightSpot">
+                  <span className="tpFlightName">✈️ {plan.fareIntel.flight.name}</span>
+                  <span>{plan.fareIntel.flight.timing}</span>
+                  {plan.fareIntel.flight.duration && <span>⏱ {plan.fareIntel.flight.duration}</span>}
+                  {plan.fareIntel.flight.benchmark && <span className="tpFlightFare">{plan.fareIntel.flight.benchmark}</span>}
+                </div>
+              )}
               <div className="tpIntelStats">
                 {plan.fareIntel.expectedRange && (
                   <div><span>Expected range</span><strong>{plan.fareIntel.expectedRange}</strong></div>
@@ -857,29 +865,36 @@ export default function TravelPlanner() {
                 )}
               </div>
               {plan.fareIntel.offers.length > 0 && (
-                <div className="tpIntelTableWrap">
-                  <table className="tpIntelTable">
-                    <thead>
-                      <tr><th>Booking option</th><th>Offer</th><th>Est. saving</th></tr>
-                    </thead>
-                    <tbody>
-                      {plan.fareIntel.offers.map((offer) => (
-                        <tr key={offer.option + offer.offer}>
-                          <td>{offer.option}</td>
-                          <td>{offer.offer}</td>
-                          <td>{offer.saving}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <>
+                  <h4 className="tpIntelSub">🔥 Best discounts currently available</h4>
+                  <div className="tpIntelTableWrap">
+                    <table className="tpIntelTable">
+                      <thead>
+                        <tr><th>Booking option</th><th>Offer</th><th>Valid till</th><th>Est. saving</th></tr>
+                      </thead>
+                      <tbody>
+                        {plan.fareIntel.offers.map((offer) => (
+                          <tr key={offer.option + offer.offer}>
+                            <td><strong>{offer.option}</strong></td>
+                            <td>{offer.offer}</td>
+                            <td>{offer.validTill || "Check at checkout"}</td>
+                            <td>{offer.saving}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
               {plan.fareIntel.recommendation.length > 0 && (
-                <ol className="tpIntelRec">
-                  {plan.fareIntel.recommendation.map((move, index) => (
-                    <li key={index}>{move}</li>
-                  ))}
-                </ol>
+                <>
+                  <h4 className="tpIntelSub">🎯 My recommendation</h4>
+                  <ol className="tpIntelRec">
+                    {plan.fareIntel.recommendation.map((move, index) => (
+                      <li key={index}>{move}</li>
+                    ))}
+                  </ol>
+                </>
               )}
               <p className="calcGuardrail">Offers are standing patterns — the exact discount and eligible card variant must be verified at payment.</p>
             </section>
@@ -952,6 +967,7 @@ export default function TravelPlanner() {
                     <strong>{inr(tier.nightlyFrom)}<small>/night</small></strong>
                     <span className="hotelPlatform">{tier.platform}</span>
                     {tier.example && <em className="hotelExample">{tier.example}</em>}
+                    {tier.offer && <span className="cardAdviceOffer"><Tag size={11} /> {tier.offer}</span>}
                     <p>{tier.note}</p>
                     <a className="tpCompareLink" href={hotelsUrl(tier.tier, plan.destination)} target="_blank" rel="noreferrer">
                       See live prices ↗

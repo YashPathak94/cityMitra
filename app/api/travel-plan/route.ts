@@ -118,7 +118,8 @@ function coerceHotels(value: unknown): HotelTier[] {
       nightlyFrom: num(record.nightlyFrom),
       platform: String(record.platform || "").slice(0, 60).trim(),
       note: String(record.note || "").slice(0, 140).trim(),
-      example: record.example ? String(record.example).slice(0, 90).trim() : undefined
+      example: record.example ? String(record.example).slice(0, 90).trim() : undefined,
+      offer: record.offer ? String(record.offer).slice(0, 90).trim() : undefined
     });
     if (out.length >= 4) break;
   }
@@ -178,14 +179,26 @@ function coerceFareIntel(value: unknown): FareIntel | undefined {
     ? (record.offers as Array<Record<string, unknown>>)
         .map((o) => ({
           option: String(o.option || "").slice(0, 70).trim(),
-          offer: String(o.offer || "").slice(0, 120).trim(),
-          saving: String(o.saving || "").slice(0, 50).trim()
+          offer: String(o.offer || "").slice(0, 140).trim(),
+          saving: String(o.saving || "").slice(0, 50).trim(),
+          validTill: o.validTill ? String(o.validTill).slice(0, 60).trim() : undefined
         }))
         .filter((o) => o.option && o.offer)
         .slice(0, 6)
     : [];
+  const flightRecord = record.flight as Record<string, unknown> | undefined;
+  const flight =
+    flightRecord && String(flightRecord.name || "").trim()
+      ? {
+          name: String(flightRecord.name || "").slice(0, 60).trim(),
+          timing: String(flightRecord.timing || "").slice(0, 90).trim(),
+          duration: String(flightRecord.duration || "").slice(0, 30).trim(),
+          benchmark: String(flightRecord.benchmark || "").slice(0, 80).trim()
+        }
+      : undefined;
   return {
     headline,
+    flight,
     expectedRange: String(record.expectedRange || "").slice(0, 60).trim(),
     targetPrice: String(record.targetPrice || "").slice(0, 60).trim(),
     acceptablePrice: String(record.acceptablePrice || "").slice(0, 60).trim(),
@@ -239,9 +252,9 @@ export async function POST(request: NextRequest) {
     `"strategy": string[] (4-6 short imperative steps), ` +
     `"instruments": [{"kind":"stock"|"mutual_fund"|"card","name":string,"detail":string(<=140),"tag":string}] (6-8: mutual funds + 2 trending large-cap stocks + 2 cards), ` +
     `"transport": [{"mode":"flight"|"train"|"bus"|"car"|"bike","priceFrom":number(INR),"priceTo":number(INR),"duration":string,"operator":string(airlines/operators),"platform":string(booking sites),"note":string(<=120),"best":boolean}] (one per requested mode; car/bike priced per rental day; mark the genuinely best one true), ` +
-    `"hotels": [{"tier":string,"nightlyFrom":number(INR),"platform":string,"example":string(2-3 named properties in ${input.destination}),"note":string(<=120)}] (3 tiers budget/comfort/premium), ` +
+    `"hotels": [{"tier":string,"nightlyFrom":number(INR),"platform":string,"example":string(2-3 named properties in ${input.destination}),"offer":string(the standing platform/card hotel offer for this tier, e.g. GOSTAYS-style code or card discount, with cap),"note":string(<=120)}] (3 tiers budget/comfort/premium), ` +
     `${rentalModes.length ? `"rentals": [{"type":"car"|"bike","vendor":string,"perDayFrom":number(INR),"perDayTo":number(INR),"note":string(<=120)}] (one per requested rental mode: ${rentalModes.join(",")}), ` : ""}` +
-    `"cardAdvice": [{"card":string,"useFor":string,"offer":string(real standing reward structure + portal),"benefit":string(<=140)}] (if userCards given, advise per card; else suggest 2 ideal card types), ` +
+    `"cardAdvice": [{"card":string,"useFor":string,"offer":string(real standing reward structure + portal),"benefit":string(<=140, written like texting a money-smart friend — Gen-Z, zero banker-speak)}] (if userCards given, advise per card; else suggest 2 ideal card types), ` +
     `"fareIntel": {"headline":string(<=200: the single best concrete option for the primary mode — e.g. typical airline + departure window + duration for this route),"expectedRange":string(e.g. "₹5,300–₹6,500"),"targetPrice":string("good deal below X after offers"),"acceptablePrice":string,"recommendation":string[](3-4 ordered booking moves: which site first, which offer to apply, what to compare, what to avoid),"offers":[{"option":string(platform + payment method),"offer":string(the standing offer pattern, incl. code ONLY if it is a stable long-running one),"saving":string(estimated ₹ saving on this fare)}] (4-6 rows)}, ` +
     `"vibeInsight": string (<=260 chars: read the ${input.vibe || "trip"} vibe like a friend — what to prioritise in ${input.destination}, best time of day, one insider move${input.vibe === "Spiritual" ? ", darshan/aarti slots" : ""}), ` +
     `"deals": string[] (4-5 concrete money-saving booking tips${input.vibe === "Spiritual" ? ", incl. darshan/aarti timing" : ""})}.`;

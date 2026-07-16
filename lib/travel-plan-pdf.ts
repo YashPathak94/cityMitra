@@ -54,14 +54,21 @@ const fmtDate = (iso: string) =>
 
 function fareIntelHtml(intel: FareIntel): string {
   const rows = intel.offers
-    .map((o) => `<tr><td>${escapeHtml(o.option)}</td><td>${escapeHtml(o.offer)}</td><td>${escapeHtml(o.saving)}</td></tr>`)
+    .map(
+      (o) =>
+        `<tr><td><strong>${escapeHtml(o.option)}</strong></td><td>${escapeHtml(o.offer)}</td><td>${escapeHtml(o.validTill || "Check at checkout")}</td><td>${escapeHtml(o.saving)}</td></tr>`
+    )
     .join("");
+  const flight = intel.flight
+    ? `<p><strong>✈ ${escapeHtml(intel.flight.name)}</strong> · ${escapeHtml(intel.flight.timing)}${intel.flight.duration ? ` · ${escapeHtml(intel.flight.duration)}` : ""}${intel.flight.benchmark ? ` · ${escapeHtml(intel.flight.benchmark)}` : ""}</p>`
+    : "";
   return `
     <h2>Fare intel</h2>
     <p><strong>${escapeHtml(intel.headline)}</strong></p>
+    ${flight}
     <p>Expected range: <strong>${escapeHtml(intel.expectedRange)}</strong> · Target after offers: <strong>${escapeHtml(intel.targetPrice)}</strong> · Acceptable up to: <strong>${escapeHtml(intel.acceptablePrice)}</strong></p>
-    ${rows ? `<table><thead><tr><th>Booking option</th><th>Offer</th><th>Estimated saving</th></tr></thead><tbody>${rows}</tbody></table>` : ""}
-    ${intel.recommendation.length ? `<ol>${intel.recommendation.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ol>` : ""}`;
+    ${rows ? `<h2>Best discounts currently available</h2><table><thead><tr><th>Booking option</th><th>Offer</th><th>Valid till</th><th>Estimated saving</th></tr></thead><tbody>${rows}</tbody></table>` : ""}
+    ${intel.recommendation.length ? `<h2>Recommendation</h2><ol>${intel.recommendation.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ol>` : ""}`;
 }
 
 function rentalsHtml(rentals: RentalOption[]): string {
@@ -90,7 +97,10 @@ export function openTravelPlanPdf(ctx: TravelPlanPdfContext) {
     })
     .join("");
   const hotelRows = plan.hotels
-    .map((h) => `<tr><td>${escapeHtml(h.tier)}</td><td>${inr(h.nightlyFrom)}/night</td><td>${escapeHtml(h.example || "")}<small>${escapeHtml([h.platform, h.note].filter(Boolean).join(" · "))}</small></td></tr>`)
+    .map(
+      (h) =>
+        `<tr><td>${escapeHtml(h.tier)}</td><td>${inr(h.nightlyFrom)}/night</td><td>${escapeHtml(h.offer || "—")}</td><td>${escapeHtml(h.example || "")}<small>${escapeHtml([h.platform, h.note].filter(Boolean).join(" · "))}</small></td></tr>`
+    )
     .join("");
   const cardRows = plan.cardAdvice
     .map((c) => `<tr><td>${escapeHtml(c.card)}</td><td>${escapeHtml(c.useFor)}</td><td>${escapeHtml(c.offer || "")}<small>${escapeHtml(c.benefit)}</small></td></tr>`)
@@ -127,7 +137,7 @@ export function openTravelPlanPdf(ctx: TravelPlanPdfContext) {
       <table><thead><tr><th>Mode</th><th>Fare</th><th>Duration</th><th>Operators & booking</th></tr></thead><tbody>${transportRows}</tbody></table>
       ${rentalsHtml(plan.rentals)}
       <h2>Where to stay</h2>
-      <table><thead><tr><th>Tier</th><th>Rate</th><th>Examples & platforms</th></tr></thead><tbody>${hotelRows}</tbody></table>
+      <table><thead><tr><th>Tier</th><th>Rate</th><th>Offer</th><th>Examples & platforms</th></tr></thead><tbody>${hotelRows}</tbody></table>
       ${cardRows ? `<h2>Card plays</h2><table><thead><tr><th>Card</th><th>Use for</th><th>Offer & benefit</th></tr></thead><tbody>${cardRows}</tbody></table>` : ""}
       ${plan.strategy.length ? `<h2>Month-by-month strategy</h2><ol>${plan.strategy.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ol>` : ""}
       ${instruments ? `<h2>Grow the money</h2><ul>${instruments}</ul>` : ""}
