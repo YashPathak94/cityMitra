@@ -75,7 +75,7 @@ function coerceInstruments(value: unknown): PlanInstrument[] {
       detail: String(record.detail || "").slice(0, 200).trim(),
       tag: record.tag ? String(record.tag).slice(0, 40).trim() : undefined
     });
-    if (out.length >= 8) break;
+    if (out.length >= 10) break;
   }
   return out;
 }
@@ -281,9 +281,9 @@ export async function POST(request: NextRequest) {
     `Return ONLY JSON: {` +
     `"summary": string (<=420 chars, mention the freeTravelPct framing, Gen-Z friendly), ` +
     `"strategy": string[] (4-6 short imperative steps), ` +
-    `"instruments": [{"kind":"stock"|"mutual_fund"|"card","name":string,"detail":string(<=140),"tag":string}] (6-8: mutual funds + 2 trending large-cap stocks + 2 cards), ` +
+    `"instruments": [{"kind":"stock"|"mutual_fund"|"card","name":string,"detail":string(<=140),"tag":string}] (EXACTLY 10 "top picks to start investing": 4-5 real well-known mutual funds/index schemes + 3-4 trending large-cap stocks + 2 cards, ordered best-first for this horizon/risk), ` +
     `"transport": [{"mode":"flight"|"train"|"bus"|"car"|"bike","priceFrom":number(INR),"priceTo":number(INR),"duration":string,"operator":string(airlines/operators),"platform":string(booking sites),"note":string(<=120),"best":boolean}] (one per requested mode; car/bike priced per rental day; mark the genuinely best one true), ` +
-    `"compare": [{"mode":"flight"|"train"|"bus"|"car"|"bike"|"hotel","name":string(operator + flight/train number or property name),"tag":string(short Gen-Z label with emoji, e.g. "\u{1F525} Best value"/"\u{1F4A8} Fastest"/"\u{1FA99} Cheapest"),"line1":string(schedule or stay length),"line2":string(key detail),"line3":string(what's included),"price":number(TOTAL INR for ${input.travelers || 1} traveller(s)${input.nights ? ` / ${input.nights} nights for hotels` : ""}, AFTER the strongest common offer),"oldPrice":number(sticker price before offers),"save":number(INR saved)}] (2-3 DIFFERENT real options per requested transport mode + exactly 3 hotel options at different price points — this is the main comparison users see, make every row concrete and bookable-sounding), ` +
+    `"compare": [{"mode":"flight"|"train"|"bus"|"car"|"bike"|"hotel","name":string(operator + flight/train number or property name),"tag":string(short Gen-Z label with emoji, e.g. "\u{1F525} Best value"/"\u{1F4A8} Fastest"/"\u{1FA99} Cheapest"),"line1":string(schedule or stay length),"line2":string(key detail),"line3":string(what's included),"price":number(TOTAL INR for ${input.travelers || 1} traveller(s)${input.nights ? ` / ${input.nights} nights for hotels` : ""}, AFTER the strongest common offer),"oldPrice":number(sticker price before offers),"save":number(INR saved)}] (3-5 DIFFERENT real options per requested transport mode — flights MUST have 5 (mix airlines, times, direct/1-stop), trains/buses 4 — + exactly 3 hotel options at different price points — this is the main comparison users see, make every row concrete and bookable-sounding), ` +
     `"hotels": [{"tier":string,"nightlyFrom":number(INR),"platform":string,"example":string(2-3 named properties in ${input.destination}),"offer":string(the standing platform/card hotel offer for this tier, e.g. GOSTAYS-style code or card discount, with cap),"note":string(<=120)}] (3 tiers budget/comfort/premium), ` +
     `${rentalModes.length ? `"rentals": [{"type":"car"|"bike","vendor":string,"perDayFrom":number(INR),"perDayTo":number(INR),"note":string(<=120)}] (one per requested rental mode: ${rentalModes.join(",")}), ` : ""}` +
     `"cardAdvice": [{"card":string,"useFor":string,"offer":string(real standing reward structure + portal),"benefit":string(<=140, written like texting a money-smart friend — Gen-Z, zero banker-speak)}] (if userCards given, advise per card; else suggest 2 ideal card types), ` +

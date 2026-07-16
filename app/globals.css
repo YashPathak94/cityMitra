@@ -13235,7 +13235,7 @@ a.dealCard:focus-visible {
 .smartPlan {
   width: min(1240px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 10px 0 120px;
+  padding: 10px 0 24px;
 }
 
 .spHero {
@@ -13304,8 +13304,14 @@ a.dealCard:focus-visible {
   border-radius: 20px;
   padding: 10px;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 0.6fr 0.7fr auto;
+  grid-template-columns: 1fr 1fr 1.15fr 1.15fr 0.7fr auto;
   gap: 8px;
+}
+
+.spField input[type="date"] {
+  font-size: 0.86rem;
+  letter-spacing: -0.01em;
+  min-width: 0;
 }
 
 .spField {
@@ -13866,10 +13872,19 @@ a.dealCard:focus-visible {
   font-weight: 700;
 }
 
+.spOffer > span {
+  min-width: 0;
+}
+
 .spOffer > b {
   flex: none;
+  max-width: 96px;
   color: var(--green);
   font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  text-align: right;
+  overflow-wrap: break-word;
+  line-height: 1.35;
 }
 
 .spCardsRow {
@@ -14014,10 +14029,9 @@ a.dealCard:focus-visible {
 }
 
 .spDock {
-  position: fixed;
-  left: 50%;
+  position: sticky;
   bottom: 14px;
-  transform: translateX(-50%);
+  margin: 18px auto 0;
   width: min(720px, calc(100% - 24px));
   background: rgba(15, 20, 38, 0.94);
   backdrop-filter: blur(16px);
@@ -14057,6 +14071,20 @@ a.dealCard:focus-visible {
 
 .spDock button:not(:disabled):hover {
   transform: translateY(-1px);
+}
+
+@media (max-width: 1200px) {
+  .spStrip {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .spField:nth-of-type(3n) {
+    border-right: 0;
+  }
+
+  .spBuild {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 960px) {
@@ -14099,7 +14127,7 @@ a.dealCard:focus-visible {
 
 @media (max-width: 640px) {
   .smartPlan {
-    padding-bottom: 130px;
+    padding-bottom: 20px;
   }
 
   .spHero {
@@ -14267,6 +14295,91 @@ a.dealCard:focus-visible {
 
 @media (max-width: 640px) {
   .spInputRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- smart plan: score column, top-10 picks, nearby explore --- */
+
+.spScoreCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.spPicksGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.spPick {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--soft);
+  min-width: 0;
+}
+
+.spPickNo {
+  flex: none;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 1.2px var(--orange);
+}
+
+.spPick strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 800;
+  overflow-wrap: break-word;
+}
+
+.spPickKind {
+  display: inline-block;
+  margin-top: 3px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.spPickKind.is-mutual_fund { background: #eef4ff; color: var(--blue); }
+.spPickKind.is-stock { background: #eafbf3; color: #108854; }
+.spPickKind.is-card { background: var(--chip); color: var(--orange); }
+
+.spPick p {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.nearbyExploreMore {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.nearbyExploreMore .secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+@media (max-width: 700px) {
+  .spPicksGrid {
     grid-template-columns: 1fr;
   }
 }

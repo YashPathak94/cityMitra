@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowUpRight, Clock } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { categories, CategoryKey } from "@/data/city-directory";
@@ -129,6 +130,15 @@ export default function NearbyPanel({
           }))}
         />
       )}
+
+      <div className="nearbyExploreMore">
+        <button type="button" className="secondaryButton" onClick={onOpenNearbyOptions}>
+          Explore more nearby <ArrowUpRight size={15} />
+        </button>
+        <Link className="ghostButton" href="/cities">
+          Browse city guides →
+        </Link>
+      </div>
 
       <NearbyDock locationOn={Boolean(userLocation)} onLocation={onRequestLocation} onOpenMaps={onOpenNearbyOptions} />
     </aside>

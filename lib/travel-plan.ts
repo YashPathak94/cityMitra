@@ -165,7 +165,11 @@ const fallbackInstruments = (risk: RiskLevel): PlanInstrument[] => {
   const equity: PlanInstrument[] = [
     { kind: "mutual_fund", name: "Nifty 50 Index Fund", detail: "Low-cost, diversified large-cap exposure for the growth portion.", tag: "Index · Low cost" },
     { kind: "mutual_fund", name: "Nifty Next 50 Index Fund", detail: "Slightly higher growth potential than Nifty 50, still diversified.", tag: "Index · Growth" },
-    { kind: "stock", name: "Blue-chip large caps (e.g. HDFC Bank, TCS, Reliance)", detail: "Illustrative examples only — prefer index funds for short horizons.", tag: "Large cap · Example" }
+    { kind: "mutual_fund", name: "Flexi-cap Fund", detail: "Actively managed across market caps — pick a 5★-rated, low-expense one.", tag: "Flexi · Active" },
+    { kind: "mutual_fund", name: "Sensex Index Fund", detail: "30 blue-chips, ultra-low cost — a simple second index leg.", tag: "Index · Core" },
+    { kind: "stock", name: "HDFC Bank", detail: "Illustrative large-cap example — prefer index funds for short horizons.", tag: "Large cap" },
+    { kind: "stock", name: "TCS", detail: "Illustrative IT large-cap example with steady dividends.", tag: "Large cap" },
+    { kind: "stock", name: "Reliance Industries", detail: "Illustrative diversified conglomerate example.", tag: "Large cap" }
   ];
   const debt: PlanInstrument[] = [
     { kind: "mutual_fund", name: "Liquid / Ultra-short Debt Fund", detail: "Parks money safely for near-term goals with steadier returns than equity.", tag: "Debt · Stable" }
@@ -174,9 +178,9 @@ const fallbackInstruments = (risk: RiskLevel): PlanInstrument[] => {
     { kind: "card", name: "Co-branded travel card (air-mile)", detail: "Typically 2–5% value back on flights & hotels; waived fuel surcharge.", tag: "~2–5% travel value" },
     { kind: "card", name: "Flat-cashback card", detail: "Steady cashback on everyday spends you redirect into your travel SIP.", tag: "~1.5–2% cashback" }
   ];
-  if (risk === "low") return [...debt, equity[0], ...cards];
-  if (risk === "high") return [...equity, ...cards];
-  return [equity[0], equity[1], ...debt, ...cards];
+  if (risk === "low") return [...debt, equity[0], equity[1], equity[3], ...cards, equity[2], equity[4], equity[5]].slice(0, 10);
+  if (risk === "high") return [...equity, ...debt, ...cards].slice(0, 10);
+  return [equity[0], equity[1], equity[2], equity[3], ...debt, equity[4], equity[5], equity[6], ...cards].slice(0, 10);
 };
 
 const TRANSPORT_BASE: Record<
@@ -276,21 +280,27 @@ export function buildCompareOptions(input: { travelers?: number; nights?: number
     out.push(
       { mode: "flight", name: "IndiGo · direct", tag: "🔥 Best value", line1: "Morning departure", line2: "Direct · cabin 7kg + 15kg", line3: "Web check-in free", price: Math.round(base * 1.18), oldPrice: Math.round(base * 1.34), save: Math.round(base * 0.16) },
       { mode: "flight", name: "Air India · direct", tag: "💨 Fastest", line1: "Midday departure", line2: "Direct · 20kg baggage", line3: "Meal included", price: Math.round(base * 1.26), oldPrice: Math.round(base * 1.4), save: Math.round(base * 0.14) },
-      { mode: "flight", name: "Air India Express", tag: "🪙 Cheapest", line1: "Evening departure", line2: "Direct · 15kg baggage", line3: "Paid seats", price: Math.round(base * 1.08), oldPrice: Math.round(base * 1.24), save: Math.round(base * 0.16) }
+      { mode: "flight", name: "Air India Express", tag: "🪙 Cheapest", line1: "Evening departure", line2: "Direct · 15kg baggage", line3: "Paid seats", price: Math.round(base * 1.08), oldPrice: Math.round(base * 1.24), save: Math.round(base * 0.16) },
+      { mode: "flight", name: "Akasa Air", tag: "🌱 New fleet", line1: "Early morning", line2: "Direct · 15kg baggage", line3: "Café menu onboard", price: Math.round(base * 1.14), oldPrice: Math.round(base * 1.28), save: Math.round(base * 0.14) },
+      { mode: "flight", name: "SpiceJet · 1 stop", tag: "🧳 Flexi fare", line1: "Afternoon departure", line2: "1 stop · 15kg baggage", line3: "Free date change", price: Math.round(base * 1.02), oldPrice: Math.round(base * 1.2), save: Math.round(base * 0.18) }
     );
   }
   if (chosen.includes("train")) {
     const base = 1400 * travelers;
     out.push(
       { mode: "train", name: "Rajdhani-class · 2A", tag: "⭐ Reliable", line1: "Overnight", line2: "Meals included", line3: "Book on IRCTC day 1", price: Math.round(base * 1.5), oldPrice: Math.round(base * 1.66), save: Math.round(base * 0.16) },
-      { mode: "train", name: "Superfast Express · 3A", tag: "🪙 Value", line1: "Overnight", line2: "AC 3-tier", line3: "ConfirmTkt predicts seats", price: base, oldPrice: Math.round(base * 1.15), save: Math.round(base * 0.15) }
+      { mode: "train", name: "Superfast Express · 3A", tag: "🪙 Value", line1: "Overnight", line2: "AC 3-tier", line3: "ConfirmTkt predicts seats", price: base, oldPrice: Math.round(base * 1.15), save: Math.round(base * 0.15) },
+      { mode: "train", name: "Duronto-class · 2A", tag: "💨 Fast rail", line1: "Overnight", line2: "Fewer stops · meals", line3: "Bedding included", price: Math.round(base * 1.35), oldPrice: Math.round(base * 1.5), save: Math.round(base * 0.15) },
+      { mode: "train", name: "Vande Bharat / Chair car", tag: "✨ Day train", line1: "Daytime", line2: "CC · on-board catering", line3: "Fastest day option", price: Math.round(base * 1.2), oldPrice: Math.round(base * 1.32), save: Math.round(base * 0.12) }
     );
   }
   if (chosen.includes("bus")) {
     const base = 1100 * travelers;
     out.push(
       { mode: "bus", name: "Volvo AC Sleeper", tag: "🪙 Value", line1: "Overnight", line2: "AC sleeper · 1 stop", line3: "USB + blanket", price: base, oldPrice: Math.round(base * 1.2), save: Math.round(base * 0.2) },
-      { mode: "bus", name: "Premium Sleeper", tag: "😴 Comfort", line1: "Overnight", line2: "Private berth", line3: "Live tracking", price: Math.round(base * 1.25), oldPrice: Math.round(base * 1.44), save: Math.round(base * 0.19) }
+      { mode: "bus", name: "Premium Sleeper", tag: "😴 Comfort", line1: "Overnight", line2: "Private berth", line3: "Live tracking", price: Math.round(base * 1.25), oldPrice: Math.round(base * 1.44), save: Math.round(base * 0.19) },
+      { mode: "bus", name: "State RTC Volvo", tag: "✅ Reliable", line1: "Overnight", line2: "AC seater-sleeper", line3: "Official counters", price: Math.round(base * 0.9), oldPrice: Math.round(base * 1.02), save: Math.round(base * 0.12) },
+      { mode: "bus", name: "Electric AC coach", tag: "🌱 Eco pick", line1: "Overnight", line2: "Quiet e-coach", line3: "USB + wifi", price: Math.round(base * 1.1), oldPrice: Math.round(base * 1.26), save: Math.round(base * 0.16) }
     );
   }
   if (chosen.includes("car")) {

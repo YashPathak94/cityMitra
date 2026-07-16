@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import CityAskWidget from "@/app/components/CityAskWidget";
 import OfferRibbon from "@/app/components/OfferRibbon";
 import PageShell from "@/app/components/PageShell";
 import TravelPlanner from "@/app/components/TravelPlanner";
@@ -16,7 +15,6 @@ export default function TravelPlanPage() {
     <PageShell>
       <OfferRibbon city="Delhi" />
       <TravelPlanner />
-      <CityAskWidget city="Goa" suggestions={["Plan a weekend trip under \u20b98k", "Best months to visit Goa on a budget", "Hidden beaches locals actually go to"]} />
     </PageShell>
   );
 }

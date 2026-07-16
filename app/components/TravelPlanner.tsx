@@ -24,6 +24,7 @@ import {
   type TransportMode,
   type TravelPlan
 } from "@/lib/travel-plan";
+import CityAskWidget from "@/app/components/CityAskWidget";
 import { openTravelPlanPdf } from "@/lib/travel-plan-pdf";
 import { trackActivity } from "@/lib/tracking";
 
@@ -152,6 +153,23 @@ export default function TravelPlanner() {
   }, [compare, currentTab, sort]);
 
   const offers = plan?.fareIntel?.offers?.length ? plan.fareIntel.offers : defaultOffers;
+
+  // Top-10 starter picks — AI-researched after Build, curated defaults before.
+  const topPicks = useMemo(() => {
+    if (plan?.instruments?.length) return plan.instruments.slice(0, 10);
+    return buildCalculatorPlan({
+      origin,
+      destination,
+      travelers,
+      nights,
+      travelDateISO,
+      targetBudget: Math.max(10000, tripBudget),
+      riskLevel: sip >= liquid ? "medium" : "low",
+      modes,
+      cards
+    }).instruments.slice(0, 10);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plan, sip, liquid, travelDateISO]);
 
   // ---- stack math ----
   const stack = useMemo(() => {
@@ -453,6 +471,7 @@ export default function TravelPlanner() {
           </div>
         </section>
 
+        <div className="spScoreCol">
         <section className="spCard spScore">
           <div className="spScoreTop">
             <div>
@@ -482,6 +501,33 @@ export default function TravelPlanner() {
           </div>
           <div className="spProgress"><span style={{ width: `${offsetPct}%` }} /></div>
         </section>
+
+        <section className="spCard">
+          <div className="spCardHead">
+            <div>
+              <h3>Fund-it options</h3>
+              <p>Your {inr(monthly)}/month feeds the score above.</p>
+            </div>
+          </div>
+          <div className="spSlider">
+            <div className="spSliderTop">
+              <div><strong>Index SIP</strong><small>Broad-market option</small></div>
+              <span className="spRisk">Medium risk</span>
+            </div>
+            <input type="range" min={0} max={15000} step={500} value={sip} onChange={(e) => setSip(Number(e.target.value))} aria-label="Index SIP per month" />
+            <div className="spSliderScale"><small>₹0</small><b>{inr(sip)}/mo</b><small>₹15k</small></div>
+          </div>
+          <div className="spSlider">
+            <div className="spSliderTop">
+              <div><strong>Liquid fund bucket</strong><small>Short-term parking</small></div>
+              <span className="spRisk low">Lower risk</span>
+            </div>
+            <input type="range" min={0} max={15000} step={500} value={liquid} onChange={(e) => setLiquid(Number(e.target.value))} aria-label="Liquid fund per month" />
+            <div className="spSliderScale"><small>₹0</small><b>{inr(liquid)}/mo</b><small>₹15k</small></div>
+          </div>
+          <p className="disclaimerSmall">*Illustrative only — market-linked investments can fall and do not guarantee trip funding. Not investment advice.</p>
+        </section>
+        </div>
       </div>
 
       {/* ============ COMPARE + SIDEBAR ============ */}
@@ -646,32 +692,6 @@ export default function TravelPlanner() {
             </div>
           </section>
 
-          <section className="spCard">
-            <div className="spCardHead">
-              <div>
-                <h3>Fund-it options</h3>
-                <p>Your {inr(monthly)}/month, fine-tuned.</p>
-              </div>
-            </div>
-            <div className="spSlider">
-              <div className="spSliderTop">
-                <div><strong>Index SIP</strong><small>Broad-market option</small></div>
-                <span className="spRisk">Medium risk</span>
-              </div>
-              <input type="range" min={0} max={15000} step={500} value={sip} onChange={(e) => setSip(Number(e.target.value))} aria-label="Index SIP per month" />
-              <div className="spSliderScale"><small>₹0</small><b>{inr(sip)}/mo</b><small>₹15k</small></div>
-            </div>
-            <div className="spSlider">
-              <div className="spSliderTop">
-                <div><strong>Liquid fund bucket</strong><small>Short-term parking</small></div>
-                <span className="spRisk low">Lower risk</span>
-              </div>
-              <input type="range" min={0} max={15000} step={500} value={liquid} onChange={(e) => setLiquid(Number(e.target.value))} aria-label="Liquid fund per month" />
-              <div className="spSliderScale"><small>₹0</small><b>{inr(liquid)}/mo</b><small>₹15k</small></div>
-            </div>
-            <p className="disclaimerSmall">*Illustrative only — market-linked investments can fall and do not guarantee trip funding. Not investment advice.</p>
-          </section>
-
           <div className="spActions">
             <button type="button" className="spActionBtn" onClick={share}><Share2 size={15} /> Share stack</button>
             <button type="button" className="spActionBtn" onClick={downloadPdf}><FileDown size={15} /> PDF</button>
@@ -717,6 +737,46 @@ export default function TravelPlanner() {
           <p className="calcGuardrail">{plan.disclaimer}</p>
         </section>
       )}
+
+      {/* ============ TOP 10 TO START INVESTING ============ */}
+      <section className="spCard spExtras">
+        <div className="spCardHead">
+          <div>
+            <h2>📊 Top 10 to start investing</h2>
+            <p>
+              {plan?.source === "ai"
+                ? `Researched for your ${months}-month horizon and risk mix — verify with a SEBI-registered advisor.`
+                : "Curated starter picks for a short horizon — Build refreshes these for your exact plan."}
+            </p>
+          </div>
+        </div>
+        <ol className="spPicksGrid">
+          {topPicks.map((pick, index) => (
+            <li key={pick.name} className="spPick">
+              <span className="spPickNo">{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <strong>{pick.name}</strong>
+                <span className={`spPickKind is-${pick.kind}`}>
+                  {pick.kind === "mutual_fund" ? "Mutual fund" : pick.kind === "stock" ? "Stock" : "Card"}
+                  {pick.tag ? ` · ${pick.tag}` : ""}
+                </span>
+                <p>{pick.detail}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <p className="calcGuardrail">Illustrative starting points, not investment advice — markets can fall; verify before investing.</p>
+      </section>
+
+      {/* ============ KEEP PLANNING IN CITY CHAT ============ */}
+      <CityAskWidget
+        city={destination || "your city"}
+        suggestions={[
+          `Plan my ${nights}-night ${vibe} trip to ${destination || "Goa"} day-by-day`,
+          `Best areas to stay in ${destination || "Goa"} for a ${vibe.toLowerCase()} trip`,
+          `Hidden gems and local food in ${destination || "Goa"}`
+        ]}
+      />
 
       {/* ============ STICKY DOCK ============ */}
       <div className="spDock">
