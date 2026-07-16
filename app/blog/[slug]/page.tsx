@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, CalendarDays, User } from "lucide-react";
 import { blogPosts, getBlogPost } from "@/data/blog-posts";
+import CityAskWidget from "@/app/components/CityAskWidget";
 import PageShell from "@/app/components/PageShell";
 import ShareRow from "@/app/components/ShareRow";
 
@@ -106,6 +107,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </Link>
         </section>
       </article>
+      <CityAskWidget />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </PageShell>
   );

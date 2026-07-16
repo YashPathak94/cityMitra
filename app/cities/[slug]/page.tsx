@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, BadgeCheck, Bus, CalendarDays, Lightbulb, MapPinned, Wallet } from "lucide-react";
 import { cityGuides, getCityGuide } from "@/data/city-guides";
 import { categories, directory } from "@/data/city-directory";
+import CityAskWidget from "@/app/components/CityAskWidget";
 import PageShell from "@/app/components/PageShell";
 import ShareRow from "@/app/components/ShareRow";
 
@@ -142,6 +143,8 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
             ))}
           </ul>
         </section>
+
+        <CityAskWidget city={guide.name} />
 
         <section className="guideCta">
           <h2>Plan {guide.name} with the AI guide</h2>

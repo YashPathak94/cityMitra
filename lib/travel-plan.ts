@@ -63,6 +63,22 @@ export type CardAdvice = {
   offer?: string;
 };
 
+export type FareOffer = {
+  option: string;
+  offer: string;
+  saving: string;
+};
+
+/** Rich fare intelligence for the primary route — the "is this a good price?" brief. */
+export type FareIntel = {
+  headline: string;
+  expectedRange: string;
+  targetPrice: string;
+  acceptablePrice: string;
+  recommendation: string[];
+  offers: FareOffer[];
+};
+
 export type TravelPlan = {
   destination: string;
   monthsToGo: number;
@@ -85,6 +101,8 @@ export type TravelPlan = {
   rentals: RentalOption[];
   cardAdvice: CardAdvice[];
   deals: string[];
+  fareIntel?: FareIntel;
+  vibeInsight?: string;
   disclaimer: string;
   source: "ai" | "calculator";
 };

@@ -9,11 +9,13 @@ import {
   Check,
   Clock,
   CreditCard,
+  FileDown,
   Hotel,
   LineChart,
   PiggyBank,
   Plane,
   Plus,
+  RotateCcw,
   Share2,
   Sparkles,
   Tag,
@@ -25,6 +27,7 @@ import {
 import { useMemo, useState } from "react";
 import { indiaCities } from "@/lib/india-cities";
 import { buildCalculatorPlan, monthsToTravel, type RiskLevel, type TransportMode, type TravelPlan } from "@/lib/travel-plan";
+import { openTravelPlanPdf } from "@/lib/travel-plan-pdf";
 import { trackActivity } from "@/lib/tracking";
 
 const inr = (value: number) => `₹${Math.max(0, Math.round(value)).toLocaleString("en-IN")}`;
@@ -144,8 +147,42 @@ export default function TravelPlanner() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
 
-  // The date is the source of truth; the months slider reads/writes it.
+  // The start date is the source of truth; the months slider reads/writes it
+  // and the end date derives from nights (editing it writes nights back).
   const months = useMemo(() => monthsToTravel(travelDateISO), [travelDateISO]);
+  const endDateISO = useMemo(() => {
+    const d = new Date(travelDateISO);
+    d.setDate(d.getDate() + nights);
+    return d.toISOString().slice(0, 10);
+  }, [travelDateISO, nights]);
+
+  function setEndDate(iso: string) {
+    const diff = Math.round((new Date(iso).getTime() - new Date(travelDateISO).getTime()) / 86400000);
+    if (Number.isFinite(diff) && diff >= 1) setNights(Math.min(60, diff));
+  }
+
+  function resetAll() {
+    setStep(1);
+    setOrigin("Delhi");
+    setDestination("Goa");
+    setVibe("Beach reset");
+    setTravelers(2);
+    setNights(4);
+    setModes(["flight", "train"]);
+    setStay("Comfort");
+    setMoments(["Sunset spot", "Local food"]);
+    setTargetBudget(100000);
+    setTravelDateISO(dateFromMonths(6));
+    setMonthlyCapacity("");
+    setRiskLevel("medium");
+    setCards(["HDFC Regalia"]);
+    setCustomCard("");
+    setPersona("The planner");
+    setPlanName("Goa glow-up trip ✨");
+    setPlan(null);
+    setError("");
+    showToast("Fresh slate. Plan a new one ↺");
+  }
 
   function showToast(message: string) {
     setToast(message);
@@ -280,6 +317,32 @@ export default function TravelPlanner() {
 
   const radarModes = modes.length ? modes : (["flight"] as TransportMode[]);
 
+  function downloadPdf() {
+    const milestones = [1, Math.max(1, Math.round(calc.monthsToGo / 2)), calc.monthsToGo]
+      .filter((month, index, arr) => arr.indexOf(month) === index)
+      .map((month) => ({ month, value: calc.recommendedMonthly * month * (1 + monthlyRate * (month / 2)) }));
+    openTravelPlanPdf({
+      planName: planName || "My next trip ✨",
+      origin,
+      destination,
+      startDateISO: travelDateISO,
+      endDateISO,
+      travelers,
+      nights,
+      vibe,
+      stay,
+      moments,
+      riskLevel,
+      targetBudget,
+      offsetPct,
+      milestones,
+      calc: liveCalc,
+      aiPlan: plan
+    });
+    showToast("PDF ready — use Save as PDF in the print dialog 📄");
+    trackActivity({ type: "scene_action", city: destination || "Goa", category: "markets", label: "travel_plan_pdf" });
+  }
+
   // Full-fledged shareable plan — the whole itinerary + money plan as text,
   // ready for the group chat (native share sheet on mobile, clipboard on web).
   async function sharePlan() {
@@ -362,6 +425,9 @@ export default function TravelPlanner() {
               <button type="button" className="tpMiniBtn" onClick={loadDemo}>
                 🎧 Load demo
               </button>
+              <button type="button" className="tpMiniBtn" onClick={resetAll} title="Clear all selections">
+                <RotateCcw size={13} /> Start over
+              </button>
             </div>
           </div>
 
@@ -383,15 +449,26 @@ export default function TravelPlanner() {
                   <input list="indiaCitiesList" placeholder="Dream destination" value={destination} onChange={(event) => setDestination(event.target.value)} />
                 </label>
               </div>
-              <label className="tpGap">
-                Travel date <small>(when does the trip start?)</small>
-                <input
-                  type="date"
-                  value={travelDateISO}
-                  min={new Date().toISOString().slice(0, 10)}
-                  onChange={(event) => event.target.value && setTravelDateISO(event.target.value)}
-                />
-              </label>
+              <div className="travelPlanRow tpGap">
+                <label>
+                  Trip starts
+                  <input
+                    type="date"
+                    value={travelDateISO}
+                    min={new Date().toISOString().slice(0, 10)}
+                    onChange={(event) => event.target.value && setTravelDateISO(event.target.value)}
+                  />
+                </label>
+                <label>
+                  Trip ends <small>(sets nights)</small>
+                  <input
+                    type="date"
+                    value={endDateISO}
+                    min={travelDateISO}
+                    onChange={(event) => event.target.value && setEndDate(event.target.value)}
+                  />
+                </label>
+              </div>
               <span className="travelPlanFieldLabel tpGap">Pick your trip vibe</span>
               <div className="tpVibeGrid">
                 {vibes.map((option) => (
@@ -724,9 +801,14 @@ export default function TravelPlanner() {
           <section className="tpCard tpSummaryCard">
             <h4>{planName || "My next trip ✨"}</h4>
             <p>{summaryLine}</p>
-            <button type="button" className="tpShareBtn" onClick={sharePlan}>
-              <Share2 size={15} /> Save &amp; share plan
-            </button>
+            <div className="tpSummaryActions">
+              <button type="button" className="tpShareBtn" onClick={sharePlan}>
+                <Share2 size={15} /> Save &amp; share plan
+              </button>
+              <button type="button" className="tpShareBtn tpPdfBtn" onClick={downloadPdf}>
+                <FileDown size={15} /> Download PDF
+              </button>
+            </div>
           </section>
 
           {!plan && !loading && (
@@ -752,6 +834,56 @@ export default function TravelPlanner() {
           </div>
 
           <p className="travelPlanSummary">{plan.summary}</p>
+
+          {plan.vibeInsight && (
+            <p className="tpVibeInsight">
+              <span aria-hidden="true">{vibes.find((v) => v.label === vibe)?.emoji || "✨"}</span> {plan.vibeInsight}
+            </p>
+          )}
+
+          {plan.fareIntel && (
+            <section className="planStackCard tpIntelCard" style={{ top: 92 }}>
+              <h3 className="planSectionTitle"><Plane size={17} /> Fare intel — {routeLabel}</h3>
+              <p className="tpIntelHeadline">{plan.fareIntel.headline}</p>
+              <div className="tpIntelStats">
+                {plan.fareIntel.expectedRange && (
+                  <div><span>Expected range</span><strong>{plan.fareIntel.expectedRange}</strong></div>
+                )}
+                {plan.fareIntel.targetPrice && (
+                  <div><span>Target after offers</span><strong className="isTeal">{plan.fareIntel.targetPrice}</strong></div>
+                )}
+                {plan.fareIntel.acceptablePrice && (
+                  <div><span>Acceptable up to</span><strong>{plan.fareIntel.acceptablePrice}</strong></div>
+                )}
+              </div>
+              {plan.fareIntel.offers.length > 0 && (
+                <div className="tpIntelTableWrap">
+                  <table className="tpIntelTable">
+                    <thead>
+                      <tr><th>Booking option</th><th>Offer</th><th>Est. saving</th></tr>
+                    </thead>
+                    <tbody>
+                      {plan.fareIntel.offers.map((offer) => (
+                        <tr key={offer.option + offer.offer}>
+                          <td>{offer.option}</td>
+                          <td>{offer.offer}</td>
+                          <td>{offer.saving}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {plan.fareIntel.recommendation.length > 0 && (
+                <ol className="tpIntelRec">
+                  {plan.fareIntel.recommendation.map((move, index) => (
+                    <li key={index}>{move}</li>
+                  ))}
+                </ol>
+              )}
+              <p className="calcGuardrail">Offers are standing patterns — the exact discount and eligible card variant must be verified at payment.</p>
+            </section>
+          )}
 
           {plan.transport.length > 0 && (
             <section className="planStackCard" style={{ top: 98 }}>

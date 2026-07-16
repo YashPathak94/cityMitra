@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, MapPinned } from "lucide-react";
 import { cityGuides } from "@/data/city-guides";
+import CityAskWidget from "@/app/components/CityAskWidget";
 import PageShell from "@/app/components/PageShell";
 
 export const metadata: Metadata = {
@@ -48,6 +49,7 @@ export default function CitiesIndexPage() {
           </Link>
         ))}
       </section>
+      <CityAskWidget />
     </PageShell>
   );
 }

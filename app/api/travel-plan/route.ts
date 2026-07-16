@@ -4,6 +4,7 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import {
   buildCalculatorPlan,
   CardAdvice,
+  FareIntel,
   HotelTier,
   PlanInstrument,
   RentalOption,
@@ -168,6 +169,31 @@ function coerceStrings(value: unknown, max: number): string[] {
   return value.map((item) => String(item).slice(0, 180).trim()).filter(Boolean).slice(0, max);
 }
 
+function coerceFareIntel(value: unknown): FareIntel | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const record = value as Record<string, unknown>;
+  const headline = String(record.headline || "").slice(0, 220).trim();
+  if (!headline) return undefined;
+  const offers = Array.isArray(record.offers)
+    ? (record.offers as Array<Record<string, unknown>>)
+        .map((o) => ({
+          option: String(o.option || "").slice(0, 70).trim(),
+          offer: String(o.offer || "").slice(0, 120).trim(),
+          saving: String(o.saving || "").slice(0, 50).trim()
+        }))
+        .filter((o) => o.option && o.offer)
+        .slice(0, 6)
+    : [];
+  return {
+    headline,
+    expectedRange: String(record.expectedRange || "").slice(0, 60).trim(),
+    targetPrice: String(record.targetPrice || "").slice(0, 60).trim(),
+    acceptablePrice: String(record.acceptablePrice || "").slice(0, 60).trim(),
+    recommendation: coerceStrings(record.recommendation, 4),
+    offers
+  };
+}
+
 export async function POST(request: NextRequest) {
   if (!rateLimit(`travel-plan:${clientIp(request)}`, 20, 60_000)) {
     return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
@@ -216,6 +242,8 @@ export async function POST(request: NextRequest) {
     `"hotels": [{"tier":string,"nightlyFrom":number(INR),"platform":string,"example":string(2-3 named properties in ${input.destination}),"note":string(<=120)}] (3 tiers budget/comfort/premium), ` +
     `${rentalModes.length ? `"rentals": [{"type":"car"|"bike","vendor":string,"perDayFrom":number(INR),"perDayTo":number(INR),"note":string(<=120)}] (one per requested rental mode: ${rentalModes.join(",")}), ` : ""}` +
     `"cardAdvice": [{"card":string,"useFor":string,"offer":string(real standing reward structure + portal),"benefit":string(<=140)}] (if userCards given, advise per card; else suggest 2 ideal card types), ` +
+    `"fareIntel": {"headline":string(<=200: the single best concrete option for the primary mode — e.g. typical airline + departure window + duration for this route),"expectedRange":string(e.g. "₹5,300–₹6,500"),"targetPrice":string("good deal below X after offers"),"acceptablePrice":string,"recommendation":string[](3-4 ordered booking moves: which site first, which offer to apply, what to compare, what to avoid),"offers":[{"option":string(platform + payment method),"offer":string(the standing offer pattern, incl. code ONLY if it is a stable long-running one),"saving":string(estimated ₹ saving on this fare)}] (4-6 rows)}, ` +
+    `"vibeInsight": string (<=260 chars: read the ${input.vibe || "trip"} vibe like a friend — what to prioritise in ${input.destination}, best time of day, one insider move${input.vibe === "Spiritual" ? ", darshan/aarti slots" : ""}), ` +
     `"deals": string[] (4-5 concrete money-saving booking tips${input.vibe === "Spiritual" ? ", incl. darshan/aarti timing" : ""})}.`;
 
   const models = [process.env.OPENAI_MODEL || "gpt-5-mini", "gpt-4o-mini"];
@@ -243,9 +271,13 @@ export async function POST(request: NextRequest) {
       const rentals = coerceRentals(parsed.rentals);
       const cardAdvice = coerceCardAdvice(parsed.cardAdvice);
       const deals = coerceStrings(parsed.deals, 5);
+      const fareIntel = coerceFareIntel(parsed.fareIntel);
+      const vibeInsight = typeof parsed.vibeInsight === "string" ? parsed.vibeInsight.trim().slice(0, 300) : "";
       return NextResponse.json({
         plan: {
           ...base,
+          fareIntel,
+          vibeInsight: vibeInsight || undefined,
           summary: typeof parsed.summary === "string" && parsed.summary.trim() ? parsed.summary.trim().slice(0, 500) : base.summary,
           strategy: strategy.length ? strategy : base.strategy,
           instruments: instruments.length ? instruments : base.instruments,

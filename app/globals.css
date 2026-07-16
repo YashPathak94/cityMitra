@@ -12907,3 +12907,277 @@ a.dealCard:focus-visible {
   font-weight: 800;
   color: var(--orange);
 }
+
+/* --- Discover-your-city ask widget --- */
+
+.cityAsk {
+  width: min(1180px, calc(100% - 32px));
+  margin: 34px auto 44px;
+  padding: clamp(24px, 4vw, 40px);
+  border-radius: 28px;
+  background:
+    radial-gradient(480px circle at 8% 0%, rgba(249, 115, 22, 0.14), transparent 60%),
+    radial-gradient(520px circle at 92% 10%, rgba(37, 99, 235, 0.12), transparent 60%),
+    var(--soft);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.cityAsk h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--orange);
+}
+
+.cityAsk p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.cityAskInput {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(640px, 100%);
+  margin: 16px auto 0;
+  min-height: 56px;
+  padding: 6px 6px 6px 20px;
+  border: 1.5px solid var(--orange);
+  border-radius: 999px;
+  background: var(--white);
+}
+
+.cityAskInput input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.cityAskInput button {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--gradient);
+  color: var(--white);
+  display: grid;
+  place-items: center;
+  transition: transform 200ms var(--smooth), opacity 200ms var(--smooth);
+}
+
+.cityAskInput button:disabled {
+  opacity: 0.45;
+}
+
+.cityAskInput button:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+.cityAskPills {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.cityAskPills button {
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--white);
+  padding: 11px 18px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--ink);
+  transition: transform 200ms var(--smooth), border-color 200ms var(--smooth), color 200ms var(--smooth);
+}
+
+.cityAskPills button:hover {
+  transform: translateY(-2px);
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+/* --- travel plan: fare intel, vibe insight, PDF --- */
+
+.tpVibeInsight {
+  margin: 0 0 14px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--chip);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.tpIntelCard {
+  border-left: 4px solid var(--blue);
+}
+
+.tpIntelHeadline {
+  margin: 4px 0 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.tpIntelStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.tpIntelStats > div {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--soft);
+}
+
+.tpIntelStats span {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tpIntelStats strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.tpIntelTableWrap {
+  overflow-x: auto;
+  margin: 4px 0 10px;
+}
+
+.tpIntelTable {
+  width: 100%;
+  min-width: 420px;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.tpIntelTable th {
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--soft);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tpIntelTable td {
+  padding: 9px 10px;
+  border-top: 1px solid var(--line);
+  vertical-align: top;
+  line-height: 1.45;
+}
+
+.tpIntelTable td:last-child {
+  font-weight: 800;
+  color: var(--green);
+  white-space: nowrap;
+}
+
+.tpIntelRec {
+  margin: 6px 0 8px;
+  padding-left: 20px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.tpSummaryActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.tpPdfBtn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: none;
+}
+
+@media (max-width: 560px) {
+  .tpSummaryActions {
+    grid-template-columns: 1fr;
+  }
+
+  .tpIntelStats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- chat: vibe starters + itinerary PDF --- */
+
+.chatVibesLabel {
+  margin: 16px 0 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.chatVibes {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chatVibes button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  padding: 9px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+  transition: transform 200ms var(--smooth), border-color 200ms var(--smooth);
+}
+
+.chatVibes button:hover {
+  transform: translateY(-2px);
+  border-color: var(--orange);
+}
+
+.chatPdfBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--chip);
+  padding: 8px 14px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--orange);
+  transition: transform 200ms var(--smooth);
+}
+
+.chatPdfBtn:hover {
+  transform: translateY(-2px);
+}

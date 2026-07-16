@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowUp,
   Crown,
+  FileDown,
   LogIn,
   LogOut,
   Menu,
@@ -15,6 +16,7 @@ import {
   X
 } from "lucide-react";
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
+import { openItineraryPdf } from "@/lib/travel-plan-pdf";
 import { buildConcierge } from "@/lib/booking";
 import { categories } from "@/data/city-directory";
 import LogoMark from "@/app/components/Logo";
@@ -47,6 +49,21 @@ const suggestions = [
   "Leh road-trip checklist",
   "Wholesale markets in Delhi"
 ];
+
+// Vibe starters — one tap kicks off the interactive itinerary interview.
+const vibeStarters = [
+  { emoji: "\u{1F30A}", label: "Beach reset" },
+  { emoji: "\u{1F3D4}\uFE0F", label: "Adventure" },
+  { emoji: "\u{1F35C}", label: "Food crawl" },
+  { emoji: "\u{1F3A7}", label: "Concert trip" },
+  { emoji: "\u{1F6D5}", label: "Spiritual" },
+  { emoji: "\u2728", label: "Luxury soft life" }
+];
+
+// An assistant reply that reads like a day-by-day plan gets a PDF button.
+function looksLikeItinerary(content: string): boolean {
+  return /day\s*1|itinerary|##\s/i.test(content) && content.length > 350;
+}
 
 type LocalPicks = { label: string; city: string; items: Array<{ name: string; area: string; query: string }> };
 
@@ -402,6 +419,18 @@ export default function ChatWorkspace() {
                   </button>
                 ))}
               </div>
+              <p className="chatVibesLabel">or start with a vibe</p>
+              <div className="chatVibes">
+                {vibeStarters.map((v) => (
+                  <button
+                    key={v.label}
+                    type="button"
+                    onClick={() => send(`I want a ${v.label} trip. Ask me 2-3 quick questions (city, dates, budget) one by one, then build my day-by-day itinerary.`)}
+                  >
+                    <span aria-hidden="true">{v.emoji}</span> {v.label}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             messages.map((message, index) => (
@@ -409,7 +438,18 @@ export default function ChatWorkspace() {
                 <div className="chatAvatar">{message.role === "user" ? "You" : <Sparkles size={15} />}</div>
                 <div className="chatBody">
                   {message.role === "assistant" && message.content ? (
-                    <MarkdownText content={message.content} />
+                    <>
+                      <MarkdownText content={message.content} />
+                      {looksLikeItinerary(message.content) && (
+                        <button
+                          type="button"
+                          className="chatPdfBtn"
+                          onClick={() => openItineraryPdf(active?.title || "My itinerary", message.content)}
+                        >
+                          <FileDown size={14} /> Save itinerary as PDF
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <p>{message.content || (loading ? "Thinking…" : "")}</p>
                   )}
