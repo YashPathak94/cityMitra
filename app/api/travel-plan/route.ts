@@ -259,12 +259,16 @@ export async function POST(request: NextRequest) {
     `"vibeInsight": string (<=260 chars: read the ${input.vibe || "trip"} vibe like a friend — what to prioritise in ${input.destination}, best time of day, one insider move${input.vibe === "Spiritual" ? ", darshan/aarti slots" : ""}), ` +
     `"deals": string[] (4-5 concrete money-saving booking tips${input.vibe === "Spiritual" ? ", incl. darshan/aarti timing" : ""})}.`;
 
-  const models = [process.env.OPENAI_MODEL || "gpt-5-mini", "gpt-4o-mini"];
+  // gpt-4o-mini leads: this is a large structured-JSON retrieval task and
+  // 4o-mini finishes it in ~5-12s, while gpt-5-mini (even at minimal
+  // reasoning effort) regularly overruns any timeout that fits two attempts
+  // into the 60s function window. OPENAI_MODEL still overrides the primary.
+  const models = [...new Set([process.env.OPENAI_MODEL || "gpt-4o-mini", "gpt-4o-mini"])];
   for (const model of models) {
     try {
       const controller = new AbortController();
-      // 25s per attempt so the fallback model still fits inside maxDuration.
-      const timeout = setTimeout(() => controller.abort(), 25_000);
+      // 28s per attempt so the fallback model still fits inside maxDuration.
+      const timeout = setTimeout(() => controller.abort(), 28_000);
       const completion = await openai.chat.completions.create(
         {
           model,
