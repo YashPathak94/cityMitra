@@ -250,12 +250,17 @@ export async function POST(request: NextRequest) {
   for (const model of models) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 45_000);
+      // 25s per attempt so the fallback model still fits inside maxDuration.
+      const timeout = setTimeout(() => controller.abort(), 25_000);
       const completion = await openai.chat.completions.create(
         {
           model,
           messages: [{ role: "user", content: prompt }],
-          response_format: { type: "json_object" }
+          response_format: { type: "json_object" },
+          // gpt-5 family defaults to heavy reasoning, which blows past any
+          // sane API timeout on a schema this large — minimal keeps it fast
+          // without hurting a mostly retrieval/formatting task.
+          ...(model.startsWith("gpt-5") ? { reasoning_effort: "minimal" as const } : {})
         },
         { signal: controller.signal }
       );
