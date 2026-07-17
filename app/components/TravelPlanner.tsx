@@ -360,11 +360,10 @@ export default function TravelPlanner() {
       <section className="spHero">
         <span className="spEyebrow">✨ Trip funding, but make it smart</span>
         <h1>
-          Your whole trip. <em>Compared, stacked and partly funded.</em>
+          Your next trip just entered its <em>funded era.</em>
         </h1>
         <p>
-          Set the trip, the budget and what you can save monthly — get every option compared with offers stacked and a
-          funding plan that softens the bill.
+          Compare flights, stays and rides, stack the best offers and build a monthly plan that softens the bill.
         </p>
         <div className="spStrip">
           <datalist id="indiaCitiesList">
@@ -420,7 +419,7 @@ export default function TravelPlanner() {
             </select>
           </div>
           <button type="button" className="spBuild" onClick={build} disabled={loading}>
-            {loading ? "Researching…" : "Build my smart trip"}
+            {loading ? "Researching…" : "Fund My Trip ✨"}
           </button>
         </div>
       </section>
