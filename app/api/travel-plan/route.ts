@@ -282,15 +282,18 @@ export async function POST(request: NextRequest) {
     `nights=${input.nights || 3}, travelDate=${input.travelDateISO}, monthsToGo=${base.monthsToGo}, ` +
     `riskLevel=${input.riskLevel}, tripVibe=${input.vibe || "any"}, stayStyle=${input.stay || "comfort"}, ` +
     `mustHaves=${(input.moments || []).join("/") || "none"}, targetBudget=₹${input.targetBudget}, ` +
-    `recommendedMonthly=₹${base.recommendedMonthly}, projectedValue=₹${base.projectedValue}, ` +
-    `investmentGains=₹${base.investmentGains}, cardSavings=₹${base.cardSavings}, freeTravelPct=${base.freeTravelPct}%, ` +
+    `suggestedMonthlySetAside=₹${base.recommendedMonthly}, estCardRewards=₹${base.netCardRewards}, ` +
     `equity/debt=${base.allocation.equityPct}/${base.allocation.debtPct}, ` +
     `tripType=${tripType}, transportModes=${(input.modes || TRANSPORT_MODES).join(",")}, ` +
     `userCards=${(input.cards || []).join(",") || "none provided"}.\n\n` +
+    `FUNDING FRAMING (important): the user SETS A SAVING BUDGET and picks options themselves; the app's live score ` +
+    `already shows the exact "% funded" — so DO NOT quote any specific "X% funded" or "offset N%" number, it will ` +
+    `contradict the screen. Frame funding qualitatively: travel discounts + stacked card offers + a monthly set-aside. ` +
+    `${base.monthsToGo < 2 ? "This trip is <2 months away — DO NOT recommend investing/SIPs (no time to grow); recommend a plain monthly set-aside in cash/liquid, and lean the whole strategy on booking-window timing + stacking offers." : "With runway, a modest monthly SIP toward the trip adds a little growth on top of offers."}\n\n` +
     `${input.vibe === "Spiritual" ? "The vibe is Spiritual — lean into temple towns, darshan timing, modest dress notes and early-morning slots in the tips.\n\n" : ""}` +
     `Return ONLY JSON: {` +
-    `"summary": string (<=420 chars, mention the freeTravelPct framing, Gen-Z friendly), ` +
-    `"strategy": string[] (4-6 short imperative steps), ` +
+    `"summary": string (<=380 chars, Gen-Z friendly; describe HOW the trip gets funded — discounts, card offers, monthly saving — WITHOUT quoting any % figure), ` +
+    `"strategy": string[] (4-6 short imperative steps${base.monthsToGo < 2 ? "; investing NOT included — saving + smart booking only" : ""}), ` +
     `"instruments": [{"kind":"stock"|"mutual_fund"|"card","name":string,"detail":string(<=140),"tag":string}] (EXACTLY 10 "top picks to start investing": 4-5 real well-known mutual funds/index schemes + 3-4 trending large-cap stocks + 2 cards, ordered best-first for this horizon/risk), ` +
     `"transport": [{"mode":"flight"|"train"|"bus"|"car"|"bike","priceFrom":number(INR),"priceTo":number(INR),"duration":string,"operator":string(airlines/operators),"platform":string(booking sites),"note":string(<=120),"best":boolean}] (one per requested mode; car/bike priced per rental day; mark the genuinely best one true), ` +
     `"compare": [{"mode":"flight"|"train"|"bus"|"car"|"bike"|"hotel","name":string(operator + flight/train number or property name),"tag":string(short Gen-Z label with emoji, e.g. "\u{1F525} Best value"/"\u{1F4A8} Fastest"/"\u{1FA99} Cheapest"),"line1":string(schedule or stay length),"line2":string(key detail),"line3":string(what's included),"price":number(TOTAL INR for ${input.travelers || 1} traveller(s)${input.nights ? ` / ${input.nights} nights for hotels` : ""}, AFTER the strongest common offer),"oldPrice":number(sticker price before offers),"save":number(INR saved)}] (3-5 DIFFERENT real options per requested transport mode — flights MUST have 5 (mix airlines, times, direct/1-stop), trains/buses 4; on INTERNATIONAL routes return ONLY flight + hotel options — + exactly 3 hotel options at different price points; every price is a ${tripType} total — this is the main comparison users see, make every row concrete and bookable-sounding), ` +

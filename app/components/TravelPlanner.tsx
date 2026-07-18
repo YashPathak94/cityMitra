@@ -196,13 +196,27 @@ export default function TravelPlanner() {
     return entries;
   }, [picks, compare, activeTabs]);
 
+  // Coherent trip math — every figure reconciles: stickerTotal - youSave = payable.
+  // stackTotal is the price AFTER travel discounts (what booking sites show as
+  // "final"); stickerTotal is before. Card offers + investment growth are the
+  // extra ways CityMitra shaves the net out-of-pocket further.
+  const stickerTotal = stack.reduce((sum, item) => sum + item.option.oldPrice, 0);
   const stackTotal = stack.reduce((sum, item) => sum + item.option.price, 0);
-  const directSave = stack.reduce((sum, item) => sum + item.option.save, 0);
-  const offerSave = offers.reduce((sum, offer, index) => (appliedOffers.has(index) ? sum + (offer.saveAmount || 0) : sum), 0);
-  const growth = Math.max(0, Math.round(sipFutureValue(sip, 10, months) + sipFutureValue(liquid, 6, months) - monthly * months));
-  const totalSaved = directSave + offerSave + growth;
+  const travelSave = Math.max(0, stickerTotal - stackTotal);
+  // Card offers can't exceed what's left of the fare after travel discounts.
+  const offerSave = Math.min(
+    stackTotal,
+    offers.reduce((sum, offer, index) => (appliedOffers.has(index) ? sum + (offer.saveAmount || 0) : sum), 0)
+  );
+  // Investing only meaningfully funds a trip with runway — under ~2 months it
+  // can't grow in time, so we don't pretend it offsets the bill.
+  const canInvest = months >= 2;
+  const growth = canInvest
+    ? Math.max(0, Math.round(sipFutureValue(sip, 10, months) + sipFutureValue(liquid, 6, months) - monthly * months))
+    : 0;
   const payable = Math.max(0, stackTotal - offerSave - growth);
-  const offsetPct = stackTotal + directSave > 0 ? Math.min(85, Math.max(1, Math.round((totalSaved / (stackTotal + directSave)) * 100))) : 0;
+  const youSave = Math.max(0, stickerTotal - payable);
+  const offsetPct = stickerTotal > 0 ? Math.min(90, Math.max(0, Math.round((youSave / stickerTotal) * 100))) : 0;
   const budgetDelta = tripBudget - payable;
 
   function toggleMode(mode: TransportMode) {
@@ -294,8 +308,8 @@ export default function TravelPlanner() {
       `🧳 THE STACK`,
       ...stack.map((s) => `• ${modeMeta[s.mode].label}: ${s.option.name} — ${inr(s.option.price)} (saved ${inr(s.option.save)})`),
       ``,
-      `💰 Trip total ${inr(stackTotal)} vs budget ${inr(tripBudget)} (${budgetDelta >= 0 ? `${inr(budgetDelta)} headroom` : `over by ${inr(-budgetDelta)}`})`,
-      `You save ${inr(totalSaved)} (~${offsetPct}%) · final top-up ${inr(payable)}`,
+      `💰 Trip price ${inr(stickerTotal)} → you pay ${inr(payable)} after funding (budget ${inr(tripBudget)}, ${budgetDelta >= 0 ? `${inr(budgetDelta)} to spare` : `${inr(-budgetDelta)} over`})`,
+      `You save ${inr(youSave)} (~${offsetPct}% of the trip)`,
       `📈 Funding it: ${inr(monthly)}/month for ${months} months (illustrative growth ${inr(growth)})`,
       ...(offerSave ? [`💳 Offers stacked: ${inr(offerSave)}`] : []),
       ``,
@@ -526,7 +540,7 @@ export default function TravelPlanner() {
               <h2>
                 Trip is <em>{offsetPct}% funded</em>
               </h2>
-              <p>Offers + rewards + projected growth</p>
+              <p>{canInvest ? "Travel discounts + card offers + projected growth" : "Travel discounts + card offers (too soon to invest)"}</p>
             </div>
             <div className="spRing" style={{ background: `conic-gradient(var(--green) ${offsetPct}%, #ece5dc 0)` }} role="img" aria-label={`${offsetPct} percent funded`}>
               <div className="spRingInner">
@@ -536,8 +550,8 @@ export default function TravelPlanner() {
             </div>
           </div>
           <div className="spKpis">
-            <div><small>Trip total</small><b>{inr(stackTotal)}</b></div>
-            <div><small>You save</small><b className="isGreen">{inr(totalSaved)}</b></div>
+            <div><small>Trip price</small><b>{inr(stickerTotal)}</b></div>
+            <div><small>You save</small><b className="isGreen">{inr(youSave)}</b></div>
             <div><small>Save monthly</small><b className="isOrange">{inr(monthly)}</b></div>
             <div><small>Final top-up</small><b>{inr(payable)}</b></div>
           </div>
@@ -703,15 +717,15 @@ export default function TravelPlanner() {
         <aside className="spAside">
           <section className="spCard spDark">
             <span className="spKicker light">Total savings stack</span>
-            <div className="spSaveBig">{inr(totalSaved)}</div>
+            <div className="spSaveBig">{inr(youSave)}</div>
             <p>You keep this instead of paying full sticker price.</p>
             <div className="spStackBar" aria-hidden="true">
-              <span style={{ width: `${Math.max(6, (directSave / Math.max(1, totalSaved)) * 100)}%` }} />
-              <span style={{ width: `${Math.max(6, (offerSave / Math.max(1, totalSaved)) * 100)}%` }} />
-              <span style={{ width: `${Math.max(6, (growth / Math.max(1, totalSaved)) * 100)}%` }} />
+              <span style={{ width: `${Math.max(4, (travelSave / Math.max(1, youSave)) * 100)}%` }} />
+              <span style={{ width: `${Math.max(4, (offerSave / Math.max(1, youSave)) * 100)}%` }} />
+              <span style={{ width: `${Math.max(4, (growth / Math.max(1, youSave)) * 100)}%` }} />
             </div>
             <div className="spLegend">
-              <div><span>Travel offers</span><b>{inr(directSave)}</b></div>
+              <div><span>Travel discount</span><b>{inr(travelSave)}</b></div>
               <div><span>Card offers</span><b>{inr(offerSave)}</b></div>
               <div><span>Growth*</span><b>{inr(growth)}</b></div>
               <div><span>Months to go</span><b>{months}</b></div>

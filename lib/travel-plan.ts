@@ -439,27 +439,60 @@ export function buildCalculatorPlan(input: TravelPlanInput): TravelPlan {
   const months = monthsToTravel(input.travelDateISO);
   const annual = RETURN_BY_RISK[input.riskLevel];
   const budget = Math.max(0, input.targetBudget || 0);
+  // Under ~2 months there's no runway to invest — it's a plain set-aside.
+  const shortHorizon = months < 2;
 
-  const needed = requiredMonthly(budget, annual, months);
-  const monthly = input.monthlyCapacity && input.monthlyCapacity > 0 ? input.monthlyCapacity : needed;
-
-  const projectedValue = inr(sipFutureValue(monthly, annual, months));
-  const contributions = inr(monthly * months);
-  const investmentGains = inr(projectedValue - contributions);
+  // Card rewards shave the trip; you save the REST as a simple monthly
+  // set-aside (not "invest the whole trip cost"). Investment growth on those
+  // contributions is a bonus on top, not the funding source.
   const cardSavings = inr(budget * 0.04);
   const cardFeeEstimate = input.cards && input.cards.length ? 2000 : 0;
   const netCardRewards = Math.max(0, cardSavings - cardFeeEstimate);
+  const netTripCost = Math.max(0, budget - netCardRewards);
+
+  const setAside = months > 0 ? netTripCost / months : netTripCost;
+  const monthly = input.monthlyCapacity && input.monthlyCapacity > 0 ? input.monthlyCapacity : setAside;
+
+  const contributions = inr(monthly * months);
+  const projectedValue = shortHorizon ? contributions : inr(sipFutureValue(monthly, annual, months));
+  const investmentGains = Math.max(0, projectedValue - contributions);
   const outOfPocket = inr(budget - investmentGains - netCardRewards);
   const freeTravelPct = budget > 0 ? Math.min(100, Math.round(((investmentGains + netCardRewards) / budget) * 100)) : 0;
 
-  const equityPct = EQUITY_BY_RISK[input.riskLevel];
+  const equityPct = shortHorizon ? 0 : EQUITY_BY_RISK[input.riskLevel];
   const routeLabel = input.origin ? `${input.origin} → ${input.destination}` : input.destination;
   const partyLabel = input.travelers && input.travelers > 1 ? ` for ${input.travelers} travellers` : "";
+
+  const summary = shortHorizon
+    ? `Your ${routeLabel} trip${partyLabel} is close, so this is about smart booking, not investing. Set aside about ` +
+      `₹${inr(monthly).toLocaleString("en-IN")}/month, stack verified card offers and travel discounts, and ` +
+      `~₹${inr(netCardRewards).toLocaleString("en-IN")} of estimated rewards trims the bill. Too little runway for market growth this time — book at the right window instead.`
+    : `Set aside about ₹${inr(monthly).toLocaleString("en-IN")}/month for ${months} months toward the ` +
+      `₹${inr(netTripCost).toLocaleString("en-IN")} you actually need. Parked in an illustrative ${annual}% p.a. mix it could add ` +
+      `~₹${inr(investmentGains).toLocaleString("en-IN")} of growth (not guaranteed), and ~₹${inr(netCardRewards).toLocaleString("en-IN")} in ` +
+      `card rewards trims it further — so returns + rewards quietly fund part of your ${routeLabel} trip${partyLabel}.`;
+
+  const strategy = shortHorizon
+    ? [
+        `Auto-transfer ₹${inr(monthly).toLocaleString("en-IN")} to a separate savings/liquid account each week so the trip money is ready in time.`,
+        "Skip market investing this close to travel — a dip could derail the trip; keep it in cash or a liquid fund.",
+        "Put every booking on a rewards card and redeem the points/cashback straight against the trip.",
+        "Book flights/hotels in the cheapest window and stack one bank offer per booking — that's your real saving here."
+      ]
+    : [
+        `Start an automated monthly SIP of ₹${inr(monthly).toLocaleString("en-IN")} the day after payday so it never gets skipped.`,
+        `Split it ${equityPct}% growth / ${100 - equityPct}% stable to match a ${input.riskLevel}-risk, ${months}-month horizon.`,
+        "Route everyday spends through a rewards card and sweep the cashback into the same SIP.",
+        months <= 12
+          ? "With under a year to go, keep most of it in stable debt/liquid funds — equity swings too much over short windows."
+          : "With a longer runway, let the equity portion compound and review the allocation every quarter.",
+        "One month before travel, move the corpus to a liquid fund so a market dip can't derail the trip."
+      ];
 
   return {
     destination: input.destination,
     monthsToGo: months,
-    assumedAnnualReturnPct: annual,
+    assumedAnnualReturnPct: shortHorizon ? 0 : annual,
     recommendedMonthly: inr(monthly),
     contributions,
     projectedValue,
@@ -470,20 +503,8 @@ export function buildCalculatorPlan(input: TravelPlanInput): TravelPlan {
     outOfPocket,
     freeTravelPct,
     allocation: { equityPct, debtPct: 100 - equityPct },
-    summary:
-      `Invest about ₹${inr(monthly).toLocaleString("en-IN")}/month for ${months} month${months > 1 ? "s" : ""} at an illustrative ` +
-      `${annual}% p.a. By your travel date your money could grow to ~₹${projectedValue.toLocaleString("en-IN")}, with ` +
-      `~₹${investmentGains.toLocaleString("en-IN")} of that being potential growth (illustrative, not guaranteed). Add ~₹${netCardRewards.toLocaleString("en-IN")} in estimated card rewards after annual fees ` +
-      `and you could offset roughly ${freeTravelPct}% of your ${routeLabel} trip${partyLabel} cost through planned saving, estimated rewards and verified discounts.`,
-    strategy: [
-      `Open an automated monthly SIP of ₹${inr(monthly).toLocaleString("en-IN")} the day after payday so it never gets skipped.`,
-      `Split it ${equityPct}% growth / ${100 - equityPct}% stable to match a ${input.riskLevel}-risk, ${months}-month horizon.`,
-      "Route everyday spends through a rewards card and sweep the cashback into the same SIP.",
-      months <= 12
-        ? "With under a year to go, lean on stable debt funds — equity is volatile over short windows."
-        : "With a longer runway, let the equity portion compound and review allocation every quarter.",
-      "One month before travel, move the corpus to a liquid fund so a market dip can't derail the trip."
-    ],
+    summary,
+    strategy,
     instruments: fallbackInstruments(input.riskLevel),
     transport: buildTransport(input.modes),
     hotels: buildHotels(),
