@@ -7,13 +7,15 @@ import {
   FileDown,
   Heart,
   Hotel,
+  Loader2,
   Plane,
   Share2,
   Sparkles,
   Tag,
-  TrainFront
+  TrainFront,
+  X
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { indiaCities } from "@/lib/india-cities";
 import {
   buildCalculatorPlan,
@@ -104,6 +106,7 @@ export default function TravelPlanner() {
   const [appliedOffers, setAppliedOffers] = useState<Set<number>>(new Set([0, 1]));
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resultsOpen, setResultsOpen] = useState(false);
   const [toast, setToast] = useState("");
 
   const months = useMemo(() => monthsToTravel(travelDateISO), [travelDateISO]);
@@ -133,6 +136,23 @@ export default function TravelPlanner() {
     setToast(message);
     setTimeout(() => setToast(""), 2200);
   }
+
+  useEffect(() => {
+    if (!resultsOpen && !loading) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape" && !loading) setResultsOpen(false);
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [resultsOpen, loading]);
 
   const isInternational = useMemo(() => isInternationalDestination(destination), [destination]);
   // Across borders only flights make sense — land modes are auto-parked.
@@ -245,6 +265,7 @@ export default function TravelPlanner() {
   }
 
   async function build() {
+    setResultsOpen(true);
     setLoading(true);
     trackActivity({ type: "scene_action", city: destination || "Goa", category: "markets", label: "smart_stack_build" });
     try {
@@ -592,7 +613,48 @@ export default function TravelPlanner() {
       </div>
 
       {/* ============ COMPARE + SIDEBAR ============ */}
-      <div className="spResults">
+      <section className="spOutputLauncher spCard">
+        <div>
+          <span className="spKicker">Interactive output</span>
+          <h2>Your complete travel stack, without the endless scroll.</h2>
+          <p>Build the plan and compare routes, offers, funding and savings in one focused screen.</p>
+        </div>
+        <div className="spOutputActions">
+          <button type="button" className="spBuild" onClick={() => void build()} disabled={loading}>
+            {loading ? "Building magic…" : "Build smart plan"}
+          </button>
+          <button type="button" className="spActionBtn" onClick={() => setResultsOpen(true)} disabled={!plan}>
+            Open current output
+          </button>
+        </div>
+      </section>
+
+      {(resultsOpen || loading) && (
+        <div className="spModalOverlay" role="dialog" aria-modal="true" aria-label="CityMitra travel plan output">
+          {loading ? (
+            <section className="spMagicLoader" role="status" aria-live="polite">
+              <div className="spMagicOrb"><Loader2 size={42} /></div>
+              <span className="spKicker">CityMitra is planning</span>
+              <h2>Hey CityMitra user, sit back and relax, magic is going on.</h2>
+              <p>Comparing your route, offers and funding plan while keeping the corrected production calculations intact.</p>
+              <div className="spMagicBar"><span /></div>
+            </section>
+          ) : (
+            <section className="spPlanModal">
+              <div className="spModalHead">
+                <div>
+                  <span className="spKicker">{origin || "Your city"} → {destination || "Your destination"}</span>
+                  <h2>{destination || "Your destination"} smart travel stack</h2>
+                  <p>{summaryLine}</p>
+                </div>
+                <div className="spModalActions">
+                  <button type="button" className="spActionBtn" onClick={share}><Share2 size={16} /> Share</button>
+                  <button type="button" className="spActionBtn spModalDownloadBtn" onClick={downloadPdf}><FileDown size={16} /> PDF</button>
+                  <button type="button" className="spCloseBtn" onClick={() => setResultsOpen(false)} aria-label="Close travel plan output"><X size={20} /></button>
+                </div>
+              </div>
+              <div className="spModalBody">
+      <div className="spResults spResultsInModal">
         <main>
           <section className="spCard">
             <div className="spCardHead">
@@ -854,6 +916,11 @@ export default function TravelPlanner() {
           {loading ? "Researching…" : plan ? "Refresh live prices →" : "Lock my smart stack →"}
         </button>
       </div>
+              </div>
+            </section>
+          )}
+        </div>
+      )}
 
       <div className={toast ? "tpToast show" : "tpToast"} role="status" aria-live="polite">
         {toast}
