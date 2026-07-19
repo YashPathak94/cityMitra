@@ -3819,9 +3819,9 @@ body {
   display: none;
   overflow: hidden;
   border-bottom: 1px solid var(--line);
-  background: rgba(255, 247, 237, 0.97);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  /* Fully opaque so the hero never bleeds through the open menu. */
+  background: var(--paper);
+  box-shadow: 0 24px 44px rgba(15, 23, 42, 0.14);
 }
 
 .mobileMenu a {
@@ -11762,19 +11762,30 @@ a.dealCard:focus-visible {
   transform: scale(1.03);
 }
 
+/* Highlighted secondary CTA — a gradient-bordered pill so it reads as an
+   action alongside the primary "Fund my trip" without a second solid blob. */
 .cmHeroLink {
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  background: transparent;
-  padding: 0 0 2px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--muted);
-  transition: color 200ms var(--smooth);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 58px;
+  padding: 0 34px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(var(--white), var(--white)) padding-box,
+    linear-gradient(135deg, #fb923c, #ea580c 55%, #2563eb) border-box;
+  color: var(--orange);
+  font-size: 0.98rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 250ms var(--smooth), box-shadow 250ms var(--smooth);
 }
 
 .cmHeroLink:hover {
-  color: var(--ink);
+  transform: scale(1.03);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.2);
+  color: var(--orange);
 }
 
 .cmHeroStats {
@@ -14682,4 +14693,119 @@ a.dealCard:focus-visible {
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.45;
+}
+
+/* ===========================================================================
+   Mobile header polish: full-width aligned search, no city-name clipping,
+   full-width tap targets in the open menu.
+=========================================================================== */
+
+.mobileMenu {
+  padding-bottom: 12px;
+}
+
+/* The mobile search field must span the content column, not the 180px
+   desktop cap it inherits from .navSearchTrigger. */
+.mobileSearchTrigger.navSearchTrigger {
+  display: flex;
+  width: min(1180px, calc(100% - 32px));
+  max-width: none;
+  margin: 12px auto 6px;
+  height: 50px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  font-size: 0.94rem;
+  justify-content: flex-start;
+  border-radius: 14px;
+}
+
+.mobileSearchTrigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobileMenu .mobileLogin {
+  width: min(1180px, calc(100% - 32px));
+  margin: 8px auto 0;
+  padding: 14px 4px 4px;
+}
+
+/* Hero CTAs stretch to full-width, easy-to-tap pills on small screens. */
+@media (max-width: 560px) {
+  .cmHeroActions {
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cmHeroCta,
+  .cmHeroLink {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Give the city name room on small phones so it never clips to "D…". */
+@media (max-width: 520px) {
+  .brandTagline {
+    display: none;
+  }
+
+  .glassNavInner {
+    gap: 10px;
+  }
+
+  .cityPickerButton {
+    max-width: 150px;
+  }
+}
+
+@media (max-width: 380px) {
+  .brandText {
+    font-size: 1.02rem;
+  }
+
+  .cityPickerButton {
+    max-width: 124px;
+    padding: 8px 11px;
+  }
+}
+
+/* --- Chat: travel-plan context banner --- */
+
+.chatTravelContext {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: min(560px, 100%);
+  margin: 4px auto 6px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--chip);
+  border: 1px solid var(--line);
+}
+
+.chatTravelContext span {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.chatTravelContext button {
+  border: 0;
+  border-radius: 999px;
+  background: var(--gradient);
+  color: var(--white);
+  padding: 9px 16px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: transform 200ms var(--smooth);
+}
+
+.chatTravelContext button:hover {
+  transform: translateY(-1px);
 }

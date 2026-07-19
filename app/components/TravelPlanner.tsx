@@ -239,6 +239,29 @@ export default function TravelPlanner() {
   const offsetPct = stickerTotal > 0 ? Math.min(90, Math.max(0, Math.round((youSave / stickerTotal) * 100))) : 0;
   const budgetDelta = tripBudget - payable;
 
+  // Hand the current plan to City Chat so a follow-up conversation already
+  // knows the route, dates, vibe and budget (read back in ChatWorkspace).
+  useEffect(() => {
+    try {
+      const context = {
+        route: `${origin || "your city"} → ${destination}`,
+        dates: `${travelDateISO} to ${endDateISO} (${nights} night${nights > 1 ? "s" : ""})`,
+        travellers: travelers,
+        tripType: roundTrip ? "round trip" : "one-way",
+        vibe,
+        budget: tripBudget,
+        monthlySaving: monthly,
+        picks: stack.map((item) => `${modeMeta[item.mode].label}: ${item.option.name} (${inr(item.option.price)})`),
+        payable,
+        offsetPct,
+        ts: Date.now()
+      };
+      window.localStorage.setItem("cm-travel-context", JSON.stringify(context));
+    } catch {
+      /* localStorage unavailable — non-fatal */
+    }
+  }, [origin, destination, travelDateISO, endDateISO, nights, travelers, roundTrip, vibe, tripBudget, monthly, stack, payable, offsetPct]);
+
   function toggleMode(mode: TransportMode) {
     setModes((current) => (current.includes(mode) ? current.filter((m) => m !== mode) : [...current, mode]));
     setPlan(null);

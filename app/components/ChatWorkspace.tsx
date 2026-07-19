@@ -97,6 +97,35 @@ export default function ChatWorkspace() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pip, setPip] = useState<{ groups: ConciergeGroup[]; local: LocalPicks | null } | null>(null);
   const [city, setCity] = useState("Delhi");
+  const [travelContext, setTravelContext] = useState<string | null>(null);
+
+  // Pick up a trip the user just built on /travel-plan so the chat is aware
+  // of the route, dates, vibe and budget without them repeating it.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("cm-travel-context");
+      if (!raw) return;
+      const ctx = JSON.parse(raw) as {
+        ts?: number;
+        route?: string;
+        dates?: string;
+        travellers?: number;
+        tripType?: string;
+        vibe?: string;
+        budget?: number;
+        monthlySaving?: number;
+        picks?: string[];
+        payable?: number;
+        offsetPct?: number;
+      };
+      if (!ctx.ts || Date.now() - ctx.ts > 86400000) return; // ignore plans older than a day
+      const inr = (n?: number) => `₹${Math.max(0, Math.round(n || 0)).toLocaleString("en-IN")}`;
+      const text = `Route ${ctx.route}; ${ctx.dates}; ${ctx.travellers} travellers ${ctx.tripType}; vibe ${ctx.vibe}; trip budget ${inr(ctx.budget)}; saving ${inr(ctx.monthlySaving)}/month; selected: ${(ctx.picks || []).join(", ") || "none yet"}; est. pay ${inr(ctx.payable)}, ~${ctx.offsetPct}% funded.`;
+      setTravelContext(text);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const endRef = useRef<HTMLDivElement>(null);
   const seededRef = useRef(false);
@@ -246,7 +275,7 @@ export default function ChatWorkspace() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
-        body: JSON.stringify({ question: trimmed, city: detected || city, messages: history })
+        body: JSON.stringify({ question: trimmed, city: detected || city, messages: history, travelContext: travelContext || undefined })
       });
 
       if (!response.ok || !response.body) {
@@ -412,6 +441,14 @@ export default function ChatWorkspace() {
               <span className="chatWelcomeMark"><Sparkles size={22} /></span>
               <h1>What can I help you plan?</h1>
               <p>Ask about any Indian city — places, routes, hotels, food, repairs, and more.</p>
+              {travelContext && (
+                <div className="chatTravelContext">
+                  <span>🧳 Continuing your Travel Plan — I know your route, dates, vibe &amp; budget.</span>
+                  <button type="button" onClick={() => send("Turn my travel plan into a day-by-day itinerary with a budget per day.")}>
+                    Build the itinerary →
+                  </button>
+                </div>
+              )}
               <div className="chatSuggestions">
                 {suggestions.map((suggestion) => (
                   <button key={suggestion} type="button" onClick={() => send(suggestion)}>
