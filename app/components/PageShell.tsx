@@ -18,14 +18,11 @@ export default function PageShell({ children }: { children: React.ReactNode }) {
           </Link>
           <nav className="subpageLinks" aria-label="Site navigation">
             <Link href="/">Home</Link>
-            <Link href="/cities">City Guide</Link>
             <Link href="/chat">City Chat</Link>
             <Link href="/travel-plan">Travel Plan</Link>
+            <Link href="/blog">Blogs</Link>
             <Link href="/offers">Offers</Link>
-            <Link href="/#nearby">Top Picks</Link>
-            <Link href="/blog">Blog</Link>
-            <Link href="/about">About</Link>
-            <Link href="/contact">Contact</Link>
+            <Link href="/pro">Pro</Link>
           </nav>
         </div>
       </header>
