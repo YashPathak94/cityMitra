@@ -26,7 +26,6 @@ function XGlyph({ size = 13 }: { size?: number }) {
 // beyond a share title, and every tap is tracked as a "share" event.
 export default function ShareRow({ title }: { title: string }) {
   const [copied, setCopied] = useState(false);
-  const [canNativeShare] = useState(() => typeof navigator !== "undefined" && typeof navigator.share === "function");
 
   function currentUrl() {
     return window.location.href.split("#")[0];
@@ -51,6 +50,11 @@ export default function ShareRow({ title }: { title: string }) {
   }
 
   async function shareNative() {
+    if (typeof navigator.share !== "function") {
+      await copyLink();
+      return;
+    }
+
     track("native");
     try {
       await navigator.share({ title, url: currentUrl() });
@@ -79,11 +83,9 @@ export default function ShareRow({ title }: { title: string }) {
       <button type="button" className="shareBtn" onClick={shareX} aria-label="Share on X">
         <XGlyph /> Post
       </button>
-      {canNativeShare && (
-        <button type="button" className="shareBtn" onClick={shareNative} aria-label="Share via device">
-          <Share2 size={14} /> Share
-        </button>
-      )}
+      <button type="button" className="shareBtn" onClick={shareNative} aria-label="Share via device">
+        <Share2 size={14} /> Share
+      </button>
       <button type="button" className="shareBtn" onClick={copyLink} aria-label="Copy link">
         {copied ? <Check size={14} /> : <Link2 size={14} />} {copied ? "Copied" : "Copy link"}
       </button>
