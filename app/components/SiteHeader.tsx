@@ -10,6 +10,7 @@ import LogoMark from "./Logo";
 
 const navLinks: Array<{ href: string; id?: string; label: string }> = [
   { href: "#top", label: "Home" },
+  { href: "/cities", label: "City Guide" },
   { href: "/chat", label: "City Chat" },
   { href: "/travel-plan", label: "Travel Plan" },
   { href: "/blog", label: "Blogs" },

@@ -1,0 +1,138 @@
+.explorer {
+  display: grid;
+  gap: 18px;
+}
+
+.toolbar {
+  display: grid;
+  gap: 12px;
+  padding-block: 16px;
+  border-block: 1px solid var(--line);
+}
+
+.searchBox {
+  display: flex;
+  width: min(520px, 100%);
+  min-height: 48px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  padding: 0 16px;
+  color: var(--orange);
+}
+
+.searchBox input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+}
+
+.themeFilters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  color: var(--muted);
+  scrollbar-width: thin;
+}
+
+.themeFilters > svg,
+.themeFilters button {
+  flex: 0 0 auto;
+}
+
+.themeFilters button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  padding: 0 14px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.themeFilters button:hover,
+.themeFilters button.active {
+  border-color: var(--orange);
+  background: var(--orange);
+  color: #fff;
+}
+
+.resultLine {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.resultLine strong {
+  color: var(--orange);
+  font-size: 1.3rem;
+}
+
+.resultLine span {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.cardThemes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.cardThemes span {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--soft);
+  padding: 4px 8px;
+  color: var(--orange);
+  font-size: 0.62rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.empty {
+  display: flex;
+  min-height: 180px;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.empty button {
+  border: 0;
+  background: transparent;
+  color: var(--orange);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .resultLine {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .resultLine span {
+    width: 100%;
+    margin-left: 0;
+  }
+}

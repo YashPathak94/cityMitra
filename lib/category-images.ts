@@ -69,7 +69,27 @@ const CATEGORY_THEME: Record<CategoryKey, ImageTheme> = {
   evcharging: "fuel",
   restrooms: "city",
   news: "city",
-  agriculture: "market"
+  agriculture: "market",
+  pharmacies: "hospital",
+  dentists: "hospital",
+  diagnostics: "hospital",
+  cafes: "food",
+  bakeries: "food",
+  nightlife: "food",
+  cinemas: "city",
+  museums: "city",
+  parks: "city",
+  temples: "city",
+  wedding: "market",
+  jewellery: "market",
+  furniture: "market",
+  groceries: "market",
+  courier: "repair",
+  cabs: "cab",
+  "bike-rental": "cab",
+  "car-rental": "cab",
+  coworking: "city",
+  "pet-care": "hospital"
 };
 
 export function imageForTheme(theme: ImageTheme, variant = 0): string {

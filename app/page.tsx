@@ -1,8 +1,10 @@
 "use client";
 
 import { MotionConfig } from "motion/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { categories, CategoryKey, cities, directory } from "@/data/city-directory";
+import { categories, categoryHref, CategoryKey, cities, directory } from "@/data/city-directory";
+import { cityGuides } from "@/data/city-guides";
 import {
   buildCategoryMatrix,
   buildGeneratedResults,
@@ -35,6 +37,7 @@ import SiteHeader from "@/app/components/SiteHeader";
 import { AboutSection, CoverageSection } from "@/app/components/MarketingSections";
 
 export default function Home() {
+  const router = useRouter();
   const [city, setCity] = useState<string>("Delhi");
   const [category, setCategory] = useState<CategoryKey>("markets");
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
@@ -235,6 +238,11 @@ export default function Home() {
 
     const activeCity = cityFromText || city;
     trackActivity({ type: "search_submit", city: activeCity, category: detectedCategory || category, label: trimmedSearch });
+    const guide = cityGuides.find((item) => item.name.toLowerCase() === activeCity.toLowerCase());
+    if (guide && detectedCategory) {
+      router.push(categoryHref(guide.slug, detectedCategory));
+      return;
+    }
     document.getElementById("directory")?.scrollIntoView({ behavior: "smooth" });
   }
 

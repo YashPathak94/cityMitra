@@ -2,8 +2,10 @@
 
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Map, MapPin, Navigation, Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import { useRouter } from "next/navigation";
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
-import { categories, CategoryKey, DirectoryItem } from "@/data/city-directory";
+import { categories, categoryHref, CategoryKey, DirectoryItem } from "@/data/city-directory";
+import { cityGuides } from "@/data/city-guides";
 import { cityAliases, NearbyCard, photoSearchImage, titleCaseCity } from "@/lib/city-intel";
 
 const autoRotateIntervalMs = 1500;
@@ -50,11 +52,13 @@ export default function DirectoryExplorer({
   onOpenMap,
   onSearchMap
 }: DirectoryExplorerProps) {
+  const router = useRouter();
   const selectedCategory = categories.find((item) => item.key === category);
   const SelectedCategoryIcon = selectedCategory?.icon;
   const activeCategoryResult = selectedItems[categoryFrameIndex] || selectedItems[0];
   const [hovered, setHovered] = useState(false);
   const [citySearch, setCitySearch] = useState("");
+  const [showAllCities, setShowAllCities] = useState(false);
   const [categorySearch, setCategorySearch] = useState("");
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [hasHiddenCategories, setHasHiddenCategories] = useState(false);
@@ -64,6 +68,16 @@ export default function DirectoryExplorer({
   const categoryGridRef = useRef<HTMLDivElement>(null);
 
   const filteredCities = visibleCities.filter((item) => item.toLowerCase().includes(citySearch.trim().toLowerCase()));
+  const isSearchingCities = citySearch.trim().length > 0;
+  const cityPreviewLimit = 12;
+  const previewCities = filteredCities.slice(0, cityPreviewLimit);
+  const displayedCities =
+    isSearchingCities || showAllCities
+      ? filteredCities
+      : city && !previewCities.includes(city)
+        ? [city, ...previewCities.filter((item) => item !== city)].slice(0, cityPreviewLimit)
+        : previewCities;
+  const hasMoreCities = !isSearchingCities && filteredCities.length > cityPreviewLimit;
   const filteredCategories = categories.filter((item) =>
     item.label.toLowerCase().includes(categorySearch.trim().toLowerCase())
   );
@@ -116,6 +130,11 @@ export default function DirectoryExplorer({
 
   function handleSelectCategory(nextCategory: CategoryKey) {
     onSelectCategory(nextCategory);
+    const cityGuide = cityGuides.find((guide) => guide.name.toLowerCase() === city.toLowerCase());
+    if (cityGuide) {
+      router.push(categoryHref(cityGuide.slug, nextCategory));
+      return;
+    }
     revealResults();
   }
 
@@ -188,9 +207,9 @@ export default function DirectoryExplorer({
               <b>1</b> <MapPin size={14} /> Choose your city
             </span>
           </div>
-          <div className="filterGroup" aria-label="City selector">
-            {filteredCities.length > 0 ? (
-              filteredCities.map((item) => (
+          <div className="filterGroup" id="home-city-selector" aria-label="City selector">
+            {displayedCities.length > 0 ? (
+              displayedCities.map((item) => (
                 <motion.button
                   className={city === item ? "active" : ""}
                   key={item}
@@ -209,6 +228,25 @@ export default function DirectoryExplorer({
               </button>
             )}
           </div>
+          {hasMoreCities && (
+            <button
+              type="button"
+              className="categoryMoreBtn cityMoreBtn"
+              onClick={() => setShowAllCities((current) => !current)}
+              aria-expanded={showAllCities}
+              aria-controls="home-city-selector"
+            >
+              {showAllCities ? (
+                <>
+                  Show fewer cities <ChevronUp size={16} />
+                </>
+              ) : (
+                <>
+                  Show all {filteredCities.length} cities <ChevronDown size={16} />
+                </>
+              )}
+            </button>
+          )}
         </div>
 
         <div className="filterBlock">

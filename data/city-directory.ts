@@ -1,29 +1,46 @@
 import {
   AirVent,
+  Armchair,
+  Bike,
+  BriefcaseBusiness,
   Building2,
   Bug,
+  CakeSlice,
   CarFront,
+  CarTaxiFront,
+  Clapperboard,
+  Coffee,
   Dumbbell,
   Flame,
+  FlaskConical,
   GraduationCap,
   Hammer,
+  Heart,
   HeartPulse,
   Hotel,
+  KeyRound,
   Landmark,
   MapPin,
   Fuel,
+  Gem,
   Newspaper,
+  Package,
+  PawPrint,
+  Pill,
   PlugZap,
   Scissors,
   Sparkles,
   ShoppingBag,
+  ShoppingBasket,
   Stethoscope,
   Toilet,
   Tractor,
+  Trees,
   Trophy,
   Truck,
   Utensils,
   Volleyball,
+  Wine,
   Wrench,
   Zap
 } from "lucide-react";
@@ -58,7 +75,27 @@ export type CategoryKey =
   | "evcharging"
   | "restrooms"
   | "doctors"
-  | "agriculture";
+  | "agriculture"
+  | "pharmacies"
+  | "dentists"
+  | "diagnostics"
+  | "cafes"
+  | "bakeries"
+  | "nightlife"
+  | "cinemas"
+  | "museums"
+  | "parks"
+  | "temples"
+  | "wedding"
+  | "jewellery"
+  | "furniture"
+  | "groceries"
+  | "courier"
+  | "cabs"
+  | "bike-rental"
+  | "car-rental"
+  | "coworking"
+  | "pet-care";
 
 export type DirectoryItem = {
   name: string;
@@ -74,39 +111,109 @@ export type DirectoryItem = {
 };
 
 export const categories = [
-  { key: "markets", label: "Wholesale", icon: Building2, tint: "#f97316" },
-  { key: "sarees", label: "Sarees", icon: ShoppingBag, tint: "#db2777" },
-  { key: "electronics", label: "Electronics", icon: Zap, tint: "#2563eb" },
-  { key: "hospitals", label: "Hospitals", icon: HeartPulse, tint: "#dc2626" },
-  { key: "malls", label: "Malls", icon: Landmark, tint: "#7c3aed" },
-  { key: "play", label: "Play Arena", icon: Volleyball, tint: "#0891b2" },
-  { key: "schools", label: "Schools", icon: GraduationCap, tint: "#0d9488" },
-  { key: "food", label: "Eateries", icon: Utensils, tint: "#ea580c" },
-  { key: "grooming", label: "Grooming", icon: Sparkles, tint: "#c026d3" },
-  { key: "salon", label: "Salon & Spa", icon: Scissors, tint: "#e11d48" },
-  { key: "repair", label: "Vehicle Repair", icon: CarFront, tint: "#475569" },
-  { key: "plumber", label: "Plumber", icon: Wrench, tint: "#0284c7" },
-  { key: "electrician", label: "Electrician", icon: Zap, tint: "#ca8a04" },
-  { key: "carpenter", label: "Carpenter", icon: Hammer, tint: "#a16207" },
-  { key: "pandit", label: "Pandit", icon: Flame, tint: "#ea580c" },
-  { key: "movers", label: "Packers & Movers", icon: Truck, tint: "#2563eb" },
-  { key: "gym", label: "Gym & Fitness", icon: Dumbbell, tint: "#16a34a" },
-  { key: "laundry", label: "Laundry", icon: Sparkles, tint: "#0891b2" },
-  { key: "acrepair", label: "AC Repair", icon: AirVent, tint: "#0284c7" },
-  { key: "pestcontrol", label: "Pest Control", icon: Bug, tint: "#65a30d" },
-  { key: "petrol", label: "Petrol Pumps", icon: Fuel, tint: "#059669" },
-  { key: "hotels", label: "Hotels", icon: Hotel, tint: "#7c3aed" },
-  { key: "dinner", label: "Dinner", icon: Utensils, tint: "#ea580c" },
-  { key: "sightseeing", label: "Sightseeing", icon: MapPin, tint: "#0891b2" },
-  { key: "doctors", label: "Doctors", icon: Stethoscope, tint: "#dc2626" },
-  { key: "sportsacademy", label: "Sports Academy", icon: Trophy, tint: "#16a34a" },
-  { key: "evcharging", label: "EV Charging", icon: PlugZap, tint: "#059669" },
-  { key: "restrooms", label: "Public Restrooms", icon: Toilet, tint: "#0284c7" },
-  { key: "news", label: "News & Media", icon: Newspaper, tint: "#475569" },
-  { key: "agriculture", label: "Agriculture", icon: Tractor, tint: "#65a30d" }
+  { key: "markets", slug: "wholesale", label: "Wholesale", icon: Building2, tint: "#f97316" },
+  { key: "sarees", slug: "sarees", label: "Sarees", icon: ShoppingBag, tint: "#db2777" },
+  { key: "electronics", slug: "electronics", label: "Electronics", icon: Zap, tint: "#2563eb" },
+  { key: "hospitals", slug: "hospitals", label: "Hospitals", icon: HeartPulse, tint: "#dc2626" },
+  { key: "malls", slug: "malls", label: "Malls", icon: Landmark, tint: "#7c3aed" },
+  { key: "play", slug: "play-arena", label: "Play Arena", icon: Volleyball, tint: "#0891b2" },
+  { key: "schools", slug: "schools", label: "Schools", icon: GraduationCap, tint: "#0d9488" },
+  { key: "food", slug: "eateries", label: "Eateries", icon: Utensils, tint: "#ea580c" },
+  { key: "grooming", slug: "grooming", label: "Grooming", icon: Sparkles, tint: "#c026d3" },
+  { key: "salon", slug: "salon-spa", label: "Salon & Spa", icon: Scissors, tint: "#e11d48" },
+  { key: "repair", slug: "vehicle-repair", label: "Vehicle Repair", icon: CarFront, tint: "#475569" },
+  { key: "plumber", slug: "plumbers", label: "Plumber", icon: Wrench, tint: "#0284c7" },
+  { key: "electrician", slug: "electricians", label: "Electrician", icon: Zap, tint: "#ca8a04" },
+  { key: "carpenter", slug: "carpenters", label: "Carpenter", icon: Hammer, tint: "#a16207" },
+  { key: "pandit", slug: "pandits", label: "Pandit", icon: Flame, tint: "#ea580c" },
+  { key: "movers", slug: "packers-movers", label: "Packers & Movers", icon: Truck, tint: "#2563eb" },
+  { key: "gym", slug: "gyms", label: "Gym & Fitness", icon: Dumbbell, tint: "#16a34a" },
+  { key: "laundry", slug: "laundry", label: "Laundry", icon: Sparkles, tint: "#0891b2" },
+  { key: "acrepair", slug: "ac-repair", label: "AC Repair", icon: AirVent, tint: "#0284c7" },
+  { key: "pestcontrol", slug: "pest-control", label: "Pest Control", icon: Bug, tint: "#65a30d" },
+  { key: "petrol", slug: "petrol-pumps", label: "Petrol Pumps", icon: Fuel, tint: "#059669" },
+  { key: "hotels", slug: "hotels", label: "Hotels", icon: Hotel, tint: "#7c3aed" },
+  { key: "dinner", slug: "dinner", label: "Dinner", icon: Utensils, tint: "#ea580c" },
+  { key: "sightseeing", slug: "sightseeing", label: "Sightseeing", icon: MapPin, tint: "#0891b2" },
+  { key: "doctors", slug: "doctors", label: "Doctors", icon: Stethoscope, tint: "#dc2626" },
+  { key: "sportsacademy", slug: "sports-academies", label: "Sports Academy", icon: Trophy, tint: "#16a34a" },
+  { key: "evcharging", slug: "ev-charging", label: "EV Charging", icon: PlugZap, tint: "#059669" },
+  { key: "restrooms", slug: "public-restrooms", label: "Public Restrooms", icon: Toilet, tint: "#0284c7" },
+  { key: "news", slug: "news-media", label: "News & Media", icon: Newspaper, tint: "#475569" },
+  { key: "agriculture", slug: "agriculture", label: "Agriculture", icon: Tractor, tint: "#65a30d" },
+  { key: "pharmacies", slug: "pharmacies", label: "Pharmacies", icon: Pill, tint: "#0f766e" },
+  { key: "dentists", slug: "dentists", label: "Dentists", icon: Stethoscope, tint: "#2563eb" },
+  { key: "diagnostics", slug: "diagnostic-labs", label: "Diagnostic Labs", icon: FlaskConical, tint: "#7c3aed" },
+  { key: "cafes", slug: "cafes", label: "Cafes", icon: Coffee, tint: "#b45309" },
+  { key: "bakeries", slug: "bakeries", label: "Bakeries", icon: CakeSlice, tint: "#db2777" },
+  { key: "nightlife", slug: "nightlife", label: "Nightlife", icon: Wine, tint: "#7c3aed" },
+  { key: "cinemas", slug: "cinemas", label: "Cinemas", icon: Clapperboard, tint: "#dc2626" },
+  { key: "museums", slug: "museums", label: "Museums", icon: Landmark, tint: "#475569" },
+  { key: "parks", slug: "parks", label: "Parks", icon: Trees, tint: "#15803d" },
+  { key: "temples", slug: "temples", label: "Temples", icon: Flame, tint: "#ea580c" },
+  { key: "wedding", slug: "wedding-services", label: "Wedding Services", icon: Heart, tint: "#e11d48" },
+  { key: "jewellery", slug: "jewellery", label: "Jewellery", icon: Gem, tint: "#ca8a04" },
+  { key: "furniture", slug: "furniture", label: "Furniture", icon: Armchair, tint: "#92400e" },
+  { key: "groceries", slug: "groceries", label: "Groceries", icon: ShoppingBasket, tint: "#16a34a" },
+  { key: "courier", slug: "courier-services", label: "Courier Services", icon: Package, tint: "#2563eb" },
+  { key: "cabs", slug: "cabs", label: "Cabs", icon: CarTaxiFront, tint: "#ca8a04" },
+  { key: "bike-rental", slug: "bike-rentals", label: "Bike Rentals", icon: Bike, tint: "#0891b2" },
+  { key: "car-rental", slug: "car-rentals", label: "Car Rentals", icon: KeyRound, tint: "#475569" },
+  { key: "coworking", slug: "coworking", label: "Coworking", icon: BriefcaseBusiness, tint: "#2563eb" },
+  { key: "pet-care", slug: "pet-care", label: "Pet Care", icon: PawPrint, tint: "#db2777" }
 ] as const;
 
-export const cities = ["Delhi", "Mumbai", "Bengaluru", "Jaipur", "Surat", "Hyderabad", "Leh"] as const;
+export const cities = [
+  "Delhi",
+  "Mumbai",
+  "Bengaluru",
+  "Jaipur",
+  "Surat",
+  "Hyderabad",
+  "Leh",
+  "Prayagraj",
+  "Varanasi",
+  "Indore",
+  "Ayodhya",
+  "Agra",
+  "Manali",
+  "Shimla",
+  "Mussoorie",
+  "Darjeeling",
+  "Rishikesh",
+  "Haridwar",
+  "Ujjain",
+  "Amritsar",
+  "Bhopal",
+  "Gwalior",
+  "Jabalpur",
+  "Khajuraho",
+  "Orchha",
+  "Pachmarhi",
+  "Maheshwar",
+  "Lucknow",
+  "Mathura",
+  "Vrindavan",
+  "Kanpur",
+  "Jhansi",
+  "Chitrakoot",
+  "Kochi",
+  "Thiruvananthapuram",
+  "Munnar",
+  "Alappuzha",
+  "Kozhikode",
+  "Wayanad",
+  "Varkala"
+] as const;
+
+export function categoryBySlug(slug: string) {
+  return categories.find((category) => category.slug === slug || category.key === slug);
+}
+
+export function categoryHref(citySlug: string, categoryKey: CategoryKey) {
+  const category = categories.find((item) => item.key === categoryKey);
+  return `/cities/${citySlug}/${category?.slug || categoryKey}`;
+}
 
 export const directory: DirectoryItem[] = [
   {

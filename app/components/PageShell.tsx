@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SiteFooter from "@/app/components/SiteFooter";
 import LogoMark from "@/app/components/Logo";
+import PageShellNav from "@/app/components/PageShellNav";
 
 export default function PageShell({ children }: { children: React.ReactNode }) {
   return (
@@ -16,14 +17,7 @@ export default function PageShell({ children }: { children: React.ReactNode }) {
               <span className="brandTagline">Your Need. Your Mitra.</span>
             </span>
           </Link>
-          <nav className="subpageLinks" aria-label="Site navigation">
-            <Link href="/">Home</Link>
-            <Link href="/chat">City Chat</Link>
-            <Link href="/travel-plan">Travel Plan</Link>
-            <Link href="/blog">Blogs</Link>
-            <Link href="/offers">Offers</Link>
-            <Link href="/pro">Pro</Link>
-          </nav>
+          <PageShellNav />
         </div>
       </header>
       <main id="main" className="pageShellMain">

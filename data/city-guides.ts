@@ -1,3 +1,6 @@
+import { expandedCityGuides } from "@/data/expanded-city-guides";
+import { regionalCityGuides } from "@/data/regional-city-guides";
+
 export type CityGuide = {
   slug: string;
   name: string;
@@ -8,6 +11,12 @@ export type CityGuide = {
   gettingAround: string;
   budgetNote: string;
   keyAreas: Array<{ name: string; knownFor: string }>;
+  localBrief: {
+    title: string;
+    description: string;
+  };
+  halfDayPlan: string[];
+  localChecks: string[];
   tips: string[];
 };
 
@@ -30,6 +39,22 @@ export const cityGuides: CityGuide[] = [
       { name: "Sadar Bazaar", knownFor: "household goods and toys at wholesale volume" },
       { name: "South Extension", knownFor: "branded fashion, premium sarees, planned family shopping" },
       { name: "Karol Bagh", knownFor: "jewellery, mid-range shopping, and food in one stretch" }
+    ],
+    localBrief: {
+      title: "Why Delhi needs a cluster-first plan",
+      description:
+        "Delhi's useful stops sit in dense, specialised pockets rather than along one tourist line. A good day is one wholesale cluster, one food break, and one backup hospital or metro exit saved before you start moving."
+    },
+    halfDayPlan: [
+      "08:30 — Reach Chandni Chowk by metro and enter from the lane closest to your buying list.",
+      "10:30 — Compare three shops before committing; keep packaging and porter time in the plan.",
+      "12:00 — Break for paratha, chaat, or a quick tea stop instead of crossing the city hungry.",
+      "13:00 — Exit by metro or e-rickshaw to the nearest main road; avoid dragging goods through peak lanes."
+    ],
+    localChecks: [
+      "Confirm market closing day before travelling.",
+      "Save the nearest metro gate, not just the market name.",
+      "Ask whether the quoted price includes GST, packing, and transport to pickup point."
     ],
     tips: [
       "Carry a bag with wheels for wholesale runs; rickshaw pickup points sit outside the densest lanes.",
@@ -57,6 +82,22 @@ export const cityGuides: CityGuide[] = [
       { name: "Linking Road, Bandra", knownFor: "street fashion, shoes, and bargain accessories" },
       { name: "Dadar Flower Market", knownFor: "pre-dawn flower wholesale, photography gold" }
     ],
+    localBrief: {
+      title: "Mumbai planning starts with the train line",
+      description:
+        "Mumbai rewards plans that stay on one rail corridor. The difference between a smooth day and a tiring one is not distance on the map, but whether your markets, hotel, and dinner sit on the same local-train spine."
+    },
+    halfDayPlan: [
+      "07:30 — Start at Dadar Flower Market or Crawford Market before the heat and delivery rush.",
+      "10:00 — Move toward Lamington Road or Fort depending on your buying list.",
+      "12:30 — Take lunch near the same station; avoid switching lines with bags.",
+      "14:00 — Use a taxi only for the final leg, not for the full cross-city move."
+    ],
+    localChecks: [
+      "Avoid peak local-train hours if carrying luggage or purchases.",
+      "Keep a rain backup from June to September.",
+      "Choose hotels by station access before sea view."
+    ],
     tips: [
       "Avoid local trains 8–11am and 5–9pm with luggage; the crowd is not negotiable.",
       "Lamington Road shops quote better prices for assembled lists than single parts.",
@@ -82,6 +123,22 @@ export const cityGuides: CityGuide[] = [
       { name: "Commercial Street", knownFor: "fashion mix from street stalls to brand stores" },
       { name: "KR Market", knownFor: "flowers and produce wholesale before sunrise" },
       { name: "Indiranagar 100 Ft Road", knownFor: "cafés, breweries, and boutique shopping" }
+    ],
+    localBrief: {
+      title: "Bengaluru is a one-zone-per-day city",
+      description:
+        "The city looks compact until traffic turns a 7 km hop into a full reset. Keep errands inside Chickpet, Indiranagar, Whitefield, or Koramangala instead of stitching three fashionable areas into one impossible plan."
+    },
+    halfDayPlan: [
+      "08:00 — Start with breakfast at a darshini near your first neighbourhood.",
+      "09:00 — Cover Chickpet for sarees or SP Road for electronics while shops are still workable.",
+      "12:00 — Move only within the same zone for lunch or a coffee break.",
+      "14:00 — Keep the next stop near a metro line if you must cross town."
+    ],
+    localChecks: [
+      "Check rain even on clear mornings; short showers change traffic fast.",
+      "Ask shops about warranty and bill format before electronics purchases.",
+      "Avoid planning airport-side stops unless your flight is the same day."
     ],
     tips: [
       "Plan one zone per day; crossing town twice costs two hours minimum after 4pm.",
@@ -109,6 +166,22 @@ export const cityGuides: CityGuide[] = [
       { name: "MI Road", knownFor: "fixed-price stores and famous lassi stops" },
       { name: "Sanganer", knownFor: "block printing workshops and paper craft at source" }
     ],
+    localBrief: {
+      title: "Jaipur works best as forts plus one bazaar belt",
+      description:
+        "The easy mistake is mixing Amber Fort, block printing, jewellery, and dinner without accounting for heat. Do the fort circuit early, then treat the walled-city bazaars as one walkable shopping session."
+    },
+    halfDayPlan: [
+      "07:30 — Reach Amber Fort before tour buses and summer heat.",
+      "10:30 — Return toward the walled city and pause near MI Road.",
+      "12:00 — Shop Johari, Bapu, or Tripolia based on one chosen category.",
+      "14:00 — Save Sanganer or Bagru for a separate craft-focused half-day."
+    ],
+    localChecks: [
+      "Confirm gemstone certification on expensive purchases.",
+      "Carry water and cash for smaller craft lanes.",
+      "Use fixed-price stores first to learn realistic price bands."
+    ],
     tips: [
       "Amber Fort by 8am beats both heat and tour-bus crowds.",
       "Ask for hallmarking on silver and gold; reputable Johari shops expect it.",
@@ -134,6 +207,22 @@ export const cityGuides: CityGuide[] = [
       { name: "Chauta Bazaar", knownFor: "old-city retail, bangles, and festive shopping" },
       { name: "Ghod Dod Road", knownFor: "cafés, brands, and evening family outings" },
       { name: "Dumas Road", knownFor: "seaside snacks and late-night food runs" }
+    ],
+    localBrief: {
+      title: "Surat is trade-first, not sightseeing-first",
+      description:
+        "The city's strongest value is textile depth: dozens of market buildings with different price bands and fabric types. A useful Surat plan starts with buyer intent, bill format, and transport for parcels."
+    },
+    halfDayPlan: [
+      "09:30 — Start at Ring Road textile belt with a clear fabric or saree target.",
+      "11:00 — Compare two market buildings before finalising bulk or family purchases.",
+      "13:00 — Arrange parcel movement before lunch; carrying bales yourself slows the day.",
+      "16:00 — Shift to Ghod Dod Road or Dumas Road for food after market work is done."
+    ],
+    localChecks: [
+      "Ask about minimum quantity and GST invoice before price negotiation.",
+      "Confirm Sunday or festival closures for textile markets.",
+      "Photograph parcel labels before sending goods to transport."
     ],
     tips: [
       "Carry GST details if buying in bulk; billed wholesale rates beat cash quotes.",
@@ -161,6 +250,22 @@ export const cityGuides: CityGuide[] = [
       { name: "Banjara Hills Road No. 12", knownFor: "premium dining and boutiques" },
       { name: "Necklace Road", knownFor: "lakefront evenings and family time" }
     ],
+    localBrief: {
+      title: "Hyderabad is two cities in one day",
+      description:
+        "Old City and HITEC-side Hyderabad both matter, but they should not be squeezed into one rushed loop. Keep Charminar, pearls, bangles, and biryani together; keep business hotels, malls, and premium dining for the western half."
+    },
+    halfDayPlan: [
+      "08:30 — Start around Charminar before the old-city lanes tighten.",
+      "10:00 — Shop Laad Bazaar or Pathergatti with a fixed category in mind.",
+      "12:30 — Eat nearby rather than crossing to HITEC City for lunch.",
+      "16:00 — Move west only if dinner or hotel check-in is already planned there."
+    ],
+    localChecks: [
+      "Verify pearl quality and return rules before payment.",
+      "Keep extra cab time for old-city exits after evening.",
+      "Check whether a biryani stop is dine-in friendly or takeaway-heavy."
+    ],
     tips: [
       "Golconda Fort late afternoon, then Charminar at dusk when the lights rise.",
       "Ask pearl sellers for the scratch test and certification on bigger buys.",
@@ -186,6 +291,22 @@ export const cityGuides: CityGuide[] = [
       { name: "Old Town & Leh Palace", knownFor: "heritage walk with valley views" },
       { name: "Changspa Road", knownFor: "cafés, travel agents, and trip-planning evenings" },
       { name: "Skara", knownFor: "quieter stays with mountain-facing guesthouses" }
+    ],
+    localBrief: {
+      title: "Leh planning begins with altitude, not attractions",
+      description:
+        "At 3,500 metres, the right first day is intentionally slow. CityMitra treats hospitals, petrol pumps, permits, and acclimatisation as core route data because a beautiful Ladakh plan fails quickly without them."
+    },
+    halfDayPlan: [
+      "Day 1 morning — Check in, hydrate, and avoid ambitious drives.",
+      "Day 1 evening — Walk Main Bazaar slowly for supplies, SIM help, and light food.",
+      "Day 2 morning — Visit Leh Palace or Shanti Stupa only if you feel normal.",
+      "Day 2 afternoon — Confirm permits, fuel, vehicle condition, and hospital pin before high-pass routes."
+    ],
+    localChecks: [
+      "Save SNM Hospital and the nearest oxygen support before leaving town.",
+      "Fuel up before Nubra, Pangong, or Tso Moriri routes.",
+      "Do not ignore headache, nausea, or unusual breathlessness."
     ],
     tips: [
       "Day 1: rest. Day 2: local monasteries. Day 3+: high passes. Do not invert this.",
@@ -213,6 +334,22 @@ export const cityGuides: CityGuide[] = [
       { name: "Chowk", knownFor: "old-city bazaar and traditional sweets" },
       { name: "Company Garden", knownFor: "green break with colonial-era walks" }
     ],
+    localBrief: {
+      title: "Prayagraj changes shape around the river",
+      description:
+        "Normal-day Prayagraj is compact and inexpensive; Mela-season Prayagraj becomes a temporary city. A good guide has to separate those two realities instead of pretending the same route works year-round."
+    },
+    halfDayPlan: [
+      "06:00 — Take a Sangam boat ride before queues and heat build.",
+      "08:30 — Eat khasta-kachori in Chowk or near Katra.",
+      "10:30 — Visit Anand Bhavan or Civil Lines depending on interest.",
+      "13:00 — Keep the afternoon light; riverfront and Mela routes change with season."
+    ],
+    localChecks: [
+      "Fix boat pricing before boarding and clarify duration.",
+      "During Mela, follow sector maps and police routes over default GPS.",
+      "Book rooms far ahead for Magh Mela and Kumbh windows."
+    ],
     tips: [
       "Fix boat prices on the ghat steps before stepping in — per-boat, not per-person.",
       "Anand Bhavan and the university area pair well as one afternoon walk.",
@@ -238,6 +375,22 @@ export const cityGuides: CityGuide[] = [
       { name: "Vishwanath Gali", knownFor: "temple lane shopping and street snacks" },
       { name: "Thateri Bazaar", knownFor: "brassware and ritual items" },
       { name: "Sarai Mohana", knownFor: "handloom silk weaving at source" }
+    ],
+    localBrief: {
+      title: "Varanasi is a walking route, not a cab route",
+      description:
+        "The ghats and lanes are the product here. The best plan limits vehicles to station or airport transfers, then uses walking, boats, and short autos outside the old-city core."
+    },
+    halfDayPlan: [
+      "05:30 — Start with a sunrise boat from Assi or Dashashwamedh.",
+      "07:30 — Walk the ghats slowly, then take breakfast near the old lanes.",
+      "10:00 — Visit silk or brassware lanes with authenticity checks ready.",
+      "17:00 — Return for Ganga aarti; choose steps or boat view before crowds settle."
+    ],
+    localChecks: [
+      "Check whether temple entry rules allow your phone, bag, or camera.",
+      "For silk, ask handloom versus power-loom clearly before price talk.",
+      "Book boats by route and duration, not just a vague round trip."
     ],
     tips: [
       "Sunrise boat from Assi to Manikarnika covers the full ghat arc in one ride.",
@@ -265,6 +418,22 @@ export const cityGuides: CityGuide[] = [
       { name: "MT Cloth Market", knownFor: "fabric and garment wholesale" },
       { name: "Vijay Nagar", knownFor: "malls, cafés, and the new-city evening scene" }
     ],
+    localBrief: {
+      title: "Indore's strongest route is built around food timing",
+      description:
+        "The city is compact, but its best experiences run on meal clocks: poha in the morning, Chappan through the day, and Sarafa after jewellery shutters fall."
+    },
+    halfDayPlan: [
+      "08:00 — Start with poha-jalebi near your stay or Rajwada side.",
+      "10:00 — Cover Rajwada and MT Cloth Market before lunch.",
+      "16:00 — Use Chappan Dukan for snacks if travelling with family.",
+      "21:00 — Save Sarafa for late-night grazing, not a rushed dinner stop."
+    ],
+    localChecks: [
+      "Do not plan Sarafa too early; the food market wakes after evening trade.",
+      "Pair Ujjain as a separate morning, not an Indore afterthought.",
+      "Carry cash for smaller food stalls even where UPI is common."
+    ],
     tips: [
       "Sarafa peaks 10pm–midnight; go hungry and graze, don't commit to one stall.",
       "Poha-jalebi is the breakfast ritual — any busy stall does it right.",
@@ -290,6 +459,22 @@ export const cityGuides: CityGuide[] = [
       { name: "Saryu Ghats / Naya Ghat", knownFor: "evening aarti and boat rides" },
       { name: "Kanak Bhawan", knownFor: "quieter darshan and architecture" },
       { name: "Ram ki Paidi", knownFor: "lit-up riverfront walks after dark" }
+    ],
+    localBrief: {
+      title: "Ayodhya is a queue-management city",
+      description:
+        "The distance between temples is not the hard part; security, lockers, footwear counters, and festival traffic are. A practical Ayodhya plan protects time around darshan rather than overloading stops."
+    },
+    halfDayPlan: [
+      "05:30 — Start with Hanuman Garhi if following the traditional order.",
+      "07:00 — Move to Ram Mandir darshan with minimal carry and ID ready.",
+      "10:30 — Visit Kanak Bhawan when the main queue pressure eases.",
+      "17:00 — Reach Saryu ghat early for aarti and riverfront walking."
+    ],
+    localChecks: [
+      "Confirm phone, bag, and locker rules before joining the queue.",
+      "Book stays early for Ram Navami, Diwali, and long weekends.",
+      "Keep footwear tokens and meeting points clear for family groups."
     ],
     tips: [
       "Hanuman Garhi first, then Ram Mandir — the traditional order, and the better queue maths.",
@@ -317,13 +502,31 @@ export const cityGuides: CityGuide[] = [
       { name: "Sadar Bazaar", knownFor: "leather goods and evening food stalls" },
       { name: "Kinari Bazaar", knownFor: "old-city wedding and craft shopping" }
     ],
+    localBrief: {
+      title: "Agra is won or lost at sunrise",
+      description:
+        "Most low-value Agra plans are just a monument list. The useful version starts with Taj timing, then adds Fort, Mehtab Bagh, food, and craft shopping in the order that light, heat, and crowds allow."
+    },
+    halfDayPlan: [
+      "05:45 — Enter the Taj Mahal at the earliest available slot.",
+      "08:30 — Breakfast in Tajganj instead of heading straight back to the highway.",
+      "10:00 — Visit Agra Fort while the morning is still workable.",
+      "16:30 — Keep Mehtab Bagh for sunset if staying overnight."
+    ],
+    localChecks: [
+      "Remember the Taj Mahal is closed on Fridays.",
+      "Ask marble sellers to show inlay process before discussing price.",
+      "Use official ticket channels and carry ID for entry."
+    ],
     tips: [
       "The Taj is closed on Fridays — build the whole itinerary around this.",
       "West gate queues at dawn move fastest; east gate suits pre-booked tickets.",
       "Real petha comes from Panchhi outlets, not lookalike storefronts.",
       "Mughlai dinner at a Tajganj rooftop beats the highway buffet circuit."
     ]
-  }
+  },
+  ...expandedCityGuides,
+  ...regionalCityGuides
 ];
 
 export function getCityGuide(slug: string) {

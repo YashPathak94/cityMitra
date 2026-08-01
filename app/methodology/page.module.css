@@ -1,0 +1,29 @@
+.methodGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-block: 24px;
+}
+
+.methodGrid section {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  padding: 18px;
+}
+
+.methodGrid h3 {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.methodGrid p {
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .methodGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,12 +1,32 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, BadgeCheck, Bus, CalendarDays, Lightbulb, MapPinned, Wallet } from "lucide-react";
+import {
+  ArrowRight,
+  Award,
+  BadgeCheck,
+  BookOpen,
+  Bus,
+  CalendarDays,
+  ClipboardCheck,
+  ExternalLink,
+  Landmark,
+  Lightbulb,
+  MapPinned,
+  Route,
+  Sparkles,
+  Users,
+  Wallet
+} from "lucide-react";
 import { cityGuides, getCityGuide } from "@/data/city-guides";
+import { cityThemeLabels, getCityEditorial } from "@/data/city-editorials";
 import { categories, directory } from "@/data/city-directory";
 import CityAskWidget from "@/app/components/CityAskWidget";
 import PageShell from "@/app/components/PageShell";
 import ShareRow from "@/app/components/ShareRow";
+import { mapSearchUrl } from "@/lib/maps";
+import { categoryUrl } from "@/lib/city-category-guides";
+import styles from "./editorial.module.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ctmitra.com";
 
@@ -39,6 +59,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
 
   if (!guide) notFound();
 
+  const editorial = getCityEditorial(guide.slug);
   const verifiedPicks = directory.filter((item) => item.city === guide.name).slice(0, 6);
 
   const jsonLd = {
@@ -49,6 +70,8 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
     author: { "@type": "Organization", name: "CityMitra" },
     publisher: { "@type": "Organization", name: "CityMitra", url: siteUrl },
     mainEntityOfPage: `${siteUrl}/cities/${guide.slug}`,
+    dateModified: "2026-07-25",
+    isAccessibleForFree: true,
     about: { "@type": "City", name: guide.name, containedInPlace: { "@type": "State", name: guide.state } }
   };
 
@@ -58,7 +81,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
         <header
           className="guideHero"
           style={{
-            backgroundImage: `linear-gradient(110deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.45)), url("/api/city-image?city=${encodeURIComponent(guide.name)}&topic=city")`
+            backgroundImage: `linear-gradient(110deg, rgba(15, 23, 42, 0.84), rgba(15, 23, 42, 0.48)), url("/api/city-image?city=${encodeURIComponent(guide.name)}&category=city&topic=city")`
           }}
         >
           <nav className="guideCrumbs" aria-label="Breadcrumb">
@@ -71,6 +94,90 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
         </header>
 
         <ShareRow title={`${guide.name} city guide on CityMitra — markets, food, transport & local tips`} />
+
+        {editorial && (
+          <section className={styles.pulse} aria-labelledby="city-pulse-title">
+            <div className={styles.pulseHeader}>
+              <div>
+                <span className="sectionKicker">City pulse · Human-written</span>
+                <h2 id="city-pulse-title">{editorial.heading}</h2>
+              </div>
+              <div className={styles.pulseThemes}>
+                {editorial.themes.map((theme) => <span key={theme}>{cityThemeLabels[theme]}</span>)}
+              </div>
+            </div>
+
+            <div className={styles.pulseGrid}>
+              <article>
+                <span><Sparkles size={17} /> The vibe</span>
+                <p>{editorial.vibe}</p>
+              </article>
+              <article>
+                <span><BookOpen size={17} /> Culture in motion</span>
+                <p>{editorial.culture}</p>
+              </article>
+              <article>
+                <span><Users size={17} /> People energy</span>
+                <p>{editorial.people}</p>
+              </article>
+              <article>
+                <span><Award size={17} /> What the city contributes</span>
+                <p>{editorial.contribution}</p>
+              </article>
+            </div>
+
+            <div className={styles.microMoments}>
+              <div>
+                <span className={styles.sectionLabel}>Three small moments worth noticing</span>
+                <p>The kind of city memory that rarely appears in a “top 10” list.</p>
+              </div>
+              <div>
+                {editorial.microMoments.map((moment) => (
+                  <a href={mapSearchUrl(`${moment} ${guide.name}`, null)} target="_blank" rel="noreferrer" key={moment}>
+                    {moment}<ArrowRight size={14} />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.respect}>
+              <strong>Travel with context</strong>
+              <p>{editorial.respect}</p>
+            </div>
+
+            <div className={styles.editorialMeta}>
+              <span>Editorial review: 25 July 2026 · Original CityMitra planning notes</span>
+              <div>
+                <Link href="/methodology">How we research</Link>
+                {editorial.sources?.map((source) => (
+                  <a href={source.href} target="_blank" rel="noreferrer" key={source.href}>
+                    {source.label}<ExternalLink size={12} />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className={styles.categoryDirectory} aria-label={`Explore categories in ${guide.name}`}>
+          <div>
+            <span className="sectionKicker">50 local categories</span>
+            <h2>Go from city overview to the exact thing you need.</h2>
+            <p>Every category opens a dedicated {guide.name} guide with neighbourhood context, Maps-ready discovery, nearby mode, and the CityMitra concierge.</p>
+          </div>
+          <div className={styles.categoryLinks}>
+            {categories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <Link href={categoryUrl(guide.slug, category.key)} key={category.key}>
+                  <Icon size={17} />
+                  <span>{category.label}</span>
+                  <ArrowRight size={14} />
+                </Link>
+              );
+            })}
+          </div>
+        </section>
 
         <section className="guideIntro">
           {guide.intro.map((paragraph, index) => (
@@ -109,6 +216,36 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
               </li>
             ))}
           </ul>
+        </section>
+
+        <section className={styles.localEditorial}>
+          <div>
+            <span className={styles.sectionLabel}>Local brief</span>
+            <h2>{guide.localBrief.title}</h2>
+            <p>{guide.localBrief.description}</p>
+          </div>
+          <div>
+            <span className={styles.sectionLabel}>
+              <Route size={15} />
+              Practical half-day route
+            </span>
+            <ol>
+              {guide.halfDayPlan.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </div>
+          <div>
+            <span className={styles.sectionLabel}>
+              <ClipboardCheck size={15} />
+              Checks before you leave
+            </span>
+            <ul>
+              {guide.localChecks.map((check) => (
+                <li key={check}>{check}</li>
+              ))}
+            </ul>
+          </div>
         </section>
 
         {verifiedPicks.length > 0 && (
