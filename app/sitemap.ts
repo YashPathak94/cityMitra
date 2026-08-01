@@ -4,11 +4,12 @@ import { categories } from "@/data/city-directory";
 import { blogPosts } from "@/data/blog-posts";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ctmitra.com";
+const editorialUpdated = new Date("2026-08-01T00:00:00+05:30");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [
     { url: siteUrl, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
-    { url: `${siteUrl}/cities`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${siteUrl}/cities`, lastModified: editorialUpdated, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/blog`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
     { url: `${siteUrl}/travel-plan`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteUrl}/offers`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
@@ -24,7 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const guidePages: MetadataRoute.Sitemap = cityGuides.map((guide) => ({
     url: `${siteUrl}/cities/${guide.slug}`,
-    lastModified: new Date(),
+    lastModified: editorialUpdated,
     changeFrequency: "weekly",
     priority: 0.8
   }));
@@ -32,7 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const categoryPages: MetadataRoute.Sitemap = cityGuides.flatMap((guide) =>
     categories.map((category) => ({
       url: `${siteUrl}/cities/${guide.slug}/${category.slug}`,
-      lastModified: new Date(),
+      lastModified: editorialUpdated,
       changeFrequency: "weekly" as const,
       priority: category.key === "markets" ? 0.85 : 0.72
     }))

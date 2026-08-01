@@ -8,6 +8,9 @@ import {
   BookOpen,
   Bus,
   CalendarDays,
+  Camera,
+  Clock3,
+  Compass,
   ClipboardCheck,
   ExternalLink,
   Landmark,
@@ -15,13 +18,17 @@ import {
   MapPinned,
   Route,
   Sparkles,
+  Utensils,
   Users,
   Wallet
 } from "lucide-react";
 import { cityGuides, getCityGuide } from "@/data/city-guides";
 import { cityThemeLabels, getCityEditorial } from "@/data/city-editorials";
+import { experienceImageUrl, experienceSearchQuery, getCityExperiences } from "@/data/city-experiences";
+import { getCityFoodGuide } from "@/data/city-food-guides";
 import { categories, directory } from "@/data/city-directory";
 import CityAskWidget from "@/app/components/CityAskWidget";
+import CityCategoryTabs from "@/app/components/CityCategoryTabs";
 import PageShell from "@/app/components/PageShell";
 import ShareRow from "@/app/components/ShareRow";
 import { mapSearchUrl } from "@/lib/maps";
@@ -39,16 +46,26 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const guide = getCityGuide(slug);
 
   if (!guide) return { title: "City guide not found" };
+  const foodGuide = getCityFoodGuide(guide.name);
 
   return {
-    title: `${guide.name} City Guide — Markets, Areas, Tips`,
-    description: `${guide.tagline} Best time to visit, key market areas, transport, and practical local tips for ${guide.name}.`,
+    title: `${guide.name} City Guide — Food, Local Spots, Routes & Tips`,
+    description: `${guide.tagline} Explore ${guide.name} food signatures, local spots, famous places, neighbourhoods, transport, practical routes, and checks before leaving.`,
+    keywords: [
+      `${guide.name} city guide`,
+      `things to do in ${guide.name}`,
+      `food in ${guide.name}`,
+      `restaurants in ${guide.name}`,
+      ...(foodGuide?.picks.map((pick) => `${pick.dish} ${guide.name}`) || [])
+    ],
     alternates: { canonical: `/cities/${guide.slug}` },
+    robots: { index: true, follow: true },
     openGraph: {
       title: `${guide.name} City Guide | CityMitra`,
       description: guide.tagline,
       url: `${siteUrl}/cities/${guide.slug}`,
-      type: "article"
+      type: "article",
+      images: [{ url: `${siteUrl}/api/city-image?city=${encodeURIComponent(guide.name)}&topic=city`, width: 1200, height: 630 }]
     }
   };
 }
@@ -60,24 +77,48 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
   if (!guide) notFound();
 
   const editorial = getCityEditorial(guide.slug);
+  const foodGuide = getCityFoodGuide(guide.name);
+  const cityExperiences = getCityExperiences(guide.name);
   const verifiedPicks = directory.filter((item) => item.city === guide.name).slice(0, 6);
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: `${guide.name} City Guide`,
-    description: guide.tagline,
-    author: { "@type": "Organization", name: "CityMitra" },
-    publisher: { "@type": "Organization", name: "CityMitra", url: siteUrl },
-    mainEntityOfPage: `${siteUrl}/cities/${guide.slug}`,
-    dateModified: "2026-07-25",
-    isAccessibleForFree: true,
-    about: { "@type": "City", name: guide.name, containedInPlace: { "@type": "State", name: guide.state } }
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: `${guide.name} City Guide`,
+        description: guide.tagline,
+        author: { "@type": "Organization", name: "CityMitra Editorial Desk" },
+        publisher: { "@type": "Organization", name: "CityMitra", url: siteUrl },
+        mainEntityOfPage: `${siteUrl}/cities/${guide.slug}`,
+        dateModified: "2026-08-01",
+        isAccessibleForFree: true,
+        about: { "@type": "City", name: guide.name, containedInPlace: { "@type": "State", name: guide.state } }
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "City Guides", item: `${siteUrl}/cities` },
+          { "@type": "ListItem", position: 2, name: guide.name, item: `${siteUrl}/cities/${guide.slug}` }
+        ]
+      },
+      {
+        "@type": "ItemList",
+        name: `${guide.name} local shortlist`,
+        itemListElement: cityExperiences.map((item, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: item.name,
+          description: `${item.vibe} ${item.whyGo}`,
+          url: mapSearchUrl(experienceSearchQuery(item), null)
+        }))
+      }
+    ]
   };
 
   return (
     <PageShell>
-      <article className="guidePage">
+      <article className={`guidePage ${styles.page}`}>
         <header
           className="guideHero"
           style={{
@@ -146,9 +187,10 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
             </div>
 
             <div className={styles.editorialMeta}>
-              <span>Editorial review: 25 July 2026 · Original CityMitra planning notes</span>
+              <span>CityMitra Editorial Desk · Reviewed 1 August 2026 · Original planning notes</span>
               <div>
                 <Link href="/methodology">How we research</Link>
+                <Link href="/contact">Suggest a correction</Link>
                 {editorial.sources?.map((source) => (
                   <a href={source.href} target="_blank" rel="noreferrer" key={source.href}>
                     {source.label}<ExternalLink size={12} />
@@ -165,18 +207,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
             <h2>Go from city overview to the exact thing you need.</h2>
             <p>Every category opens a dedicated {guide.name} guide with neighbourhood context, Maps-ready discovery, nearby mode, and the CityMitra concierge.</p>
           </div>
-          <div className={styles.categoryLinks}>
-            {categories.map((category) => {
-              const Icon = category.icon;
-              return (
-                <Link href={categoryUrl(guide.slug, category.key)} key={category.key}>
-                  <Icon size={17} />
-                  <span>{category.label}</span>
-                  <ArrowRight size={14} />
-                </Link>
-              );
-            })}
-          </div>
+          <CityCategoryTabs city={guide.name} citySlug={guide.slug} />
         </section>
 
         <section className="guideIntro">
@@ -248,6 +279,75 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
           </div>
         </section>
 
+        <section className={styles.localBoard} aria-labelledby="local-board-title">
+          <div className={styles.boardHeader}>
+            <div>
+              <span className="sectionKicker">Eat · See · Do</span>
+              <h2 id="local-board-title">A sharper {guide.name} shortlist.</h2>
+            </div>
+            <p>
+              Original CityMitra context, not copied reviews or invented ratings. Open the live listing to verify
+              current hours, phone, menu, access, photos, and recent traveller feedback.
+            </p>
+          </div>
+
+          <div className={styles.experienceGrid}>
+            {cityExperiences.map((item, index) => {
+              const Icon = item.kind === "restaurant" ? Utensils : item.kind === "famous" ? Landmark : item.kind === "local" ? Camera : Compass;
+              const label = item.kind === "restaurant" ? "Food anchor" : item.kind === "famous" ? "First-timer icon" : item.kind === "local" ? "Local mood" : "Do this";
+              return (
+                <article className={styles.experienceCard} key={`${item.kind}-${item.name}`}>
+                  <a
+                    className={styles.experienceImage}
+                    href={mapSearchUrl(experienceSearchQuery(item), null)}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Open live map for ${item.name}`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={experienceImageUrl(item)} alt={`${item.name} in ${guide.name}`} loading={index < 2 ? "eager" : "lazy"} />
+                    <span><Icon size={14} /> {label}</span>
+                  </a>
+                  <div className={styles.experienceBody}>
+                    <span className={styles.experienceArea}><MapPinned size={14} /> {item.area}</span>
+                    <h3>{item.name}</h3>
+                    <p>{item.vibe}</p>
+                    <strong>{item.whyGo}</strong>
+                    <div className={styles.experienceTiming}><Clock3 size={14} /> {item.bestTime}</div>
+                    <a href={mapSearchUrl(experienceSearchQuery(item), null)} target="_blank" rel="noreferrer">
+                      Verify live and route <ExternalLink size={13} />
+                    </a>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          {foodGuide && (
+            <div className={styles.foodRadar}>
+              <div>
+                <span><Utensils size={16} /> Food radar</span>
+                <h3>Three {guide.name} flavours worth searching locally.</h3>
+                <p>{foodGuide.note}</p>
+              </div>
+              <div className={styles.foodPicks}>
+                {foodGuide.picks.map((pick, index) => (
+                  <a
+                    href={mapSearchUrl(`${pick.dish} near ${pick.area} ${guide.name}`, null)}
+                    target="_blank"
+                    rel="noreferrer"
+                    key={`${pick.dish}-${pick.area}`}
+                  >
+                    <b>0{index + 1}</b>
+                    <span><strong>{pick.dish}</strong><small>{pick.area}</small></span>
+                    <ArrowRight size={15} />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
         {verifiedPicks.length > 0 && (
           <section className="guidePicks">
             <h2>Curated picks in {guide.name}</h2>
@@ -291,7 +391,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ slug
           </Link>
         </section>
       </article>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     </PageShell>
   );
 }

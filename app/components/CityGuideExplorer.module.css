@@ -1,12 +1,12 @@
 .explorer {
   display: grid;
-  gap: 18px;
+  gap: 13px;
 }
 
 .toolbar {
   display: grid;
   gap: 12px;
-  padding-block: 16px;
+  padding-block: 12px;
   border-block: 1px solid var(--line);
 }
 
@@ -86,6 +86,50 @@
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 600;
+}
+
+.grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.cardWrap,
+.cardWrap :global(.guideCard) {
+  height: 100%;
+}
+
+.cardWrap :global(.guideCard) {
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+}
+
+.cardWrap :global(.guideCardImage) {
+  min-height: 134px;
+  padding: 11px;
+}
+
+.cardWrap :global(.guideCardBody) {
+  gap: 6px;
+  padding: 14px;
+}
+
+.cardWrap :global(.guideCardBody h2) {
+  font-size: 1.12rem;
+}
+
+.cardWrap :global(.guideCardBody p) {
+  font-size: 0.8rem;
+  line-height: 1.46;
+}
+
+.cardWrap :global(.guideCardBody small) {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .cardThemes {

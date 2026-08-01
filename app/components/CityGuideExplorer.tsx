@@ -75,12 +75,13 @@ export default function CityGuideExplorer({ guides }: { guides: CityGuide[] }) {
         <span>Neighbourhoods, local rhythm, culture, nearby needs, and practical routes.</span>
       </div>
 
-      <motion.div className="guideGrid" layout>
+      <motion.div className={`guideGrid ${styles.grid}`} layout>
         <AnimatePresence mode="popLayout">
           {visibleGuides.map((guide) => {
             const editorial = cityEditorials[guide.slug];
             return (
               <motion.div
+                className={styles.cardWrap}
                 key={guide.slug}
                 layout
                 initial={reduceMotion ? false : { opacity: 0, y: 12 }}

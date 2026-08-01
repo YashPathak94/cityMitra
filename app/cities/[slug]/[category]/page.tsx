@@ -44,7 +44,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title,
     description,
+    keywords: [
+      `${data.category.label} in ${data.city.name}`,
+      `best ${data.category.label.toLowerCase()} ${data.city.name}`,
+      `${data.category.label.toLowerCase()} near me in ${data.city.name}`,
+      ...data.city.keyAreas.slice(0, 3).map((area) => `${data.category.label.toLowerCase()} near ${area.name}`)
+    ],
     alternates: { canonical },
+    robots: { index: true, follow: true },
     openGraph: {
       title: `${data.category.label} in ${data.city.name} | CityMitra`,
       description,
@@ -84,6 +91,8 @@ export default async function CityCategoryPage({ params }: { params: Promise<{ s
         name: `${data.category.label} in ${data.city.name}`,
         description: data.intro,
         url: canonical,
+        dateModified: "2026-08-01",
+        isAccessibleForFree: true,
         about: [
           { "@type": "City", name: data.city.name },
           { "@type": "Thing", name: data.category.label }
@@ -97,6 +106,14 @@ export default async function CityCategoryPage({ params }: { params: Promise<{ s
             description: item.summary
           }))
         }
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "City Guides", item: `${siteUrl}/cities` },
+          { "@type": "ListItem", position: 2, name: data.city.name, item: `${siteUrl}/cities/${data.city.slug}` },
+          { "@type": "ListItem", position: 3, name: data.category.label, item: canonical }
+        ]
       },
       {
         "@type": "FAQPage",
@@ -284,6 +301,10 @@ export default async function CityCategoryPage({ params }: { params: Promise<{ s
             {data.profile.verify.map((item) => <span key={item}><BadgeCheck size={18} /> {item}</span>)}
           </div>
           <Link className={styles.methodLink} href="/methodology">How CityMitra researches and labels local information <ArrowRight size={15} /></Link>
+          <div className={styles.reviewLine}>
+            <span>CityMitra Editorial Desk · Reviewed 1 August 2026</span>
+            <Link href="/contact">Suggest a correction</Link>
+          </div>
         </section>
 
         <section className={styles.moreSection}>
