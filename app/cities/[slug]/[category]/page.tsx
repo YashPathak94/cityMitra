@@ -17,10 +17,11 @@ import {
   Sparkles
 } from "lucide-react";
 import CategoryNearbyActions from "@/app/components/CategoryNearbyActions";
-import CityAskWidget from "@/app/components/CityAskWidget";
+import CategoryConcierge from "@/app/components/CategoryConcierge";
 import PageShell from "@/app/components/PageShell";
 import ShareRow from "@/app/components/ShareRow";
 import { categories } from "@/data/city-directory";
+import { getCityEditorial } from "@/data/city-editorials";
 import { cityGuides } from "@/data/city-guides";
 import { categoryUrl, cityCategoryStaticParams, getCityCategoryGuide } from "@/lib/city-category-guides";
 import { mapSearchUrl } from "@/lib/maps";
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!data) return { title: "City category guide not found" };
 
   const title = `${data.category.label} in ${data.city.name} — Local Guide & Nearby Options`;
-  const description = `${data.profile.promise} Compare ${data.category.label.toLowerCase()} areas in ${data.city.name}, check what matters, open nearby Maps results, and ask the CityMitra concierge.`;
+  const description = `${data.profile.promise} ${data.city.localBrief.title}. Compare ${data.category.label.toLowerCase()} areas in ${data.city.name}, check what matters, open nearby Maps results, and ask the CityMitra concierge.`;
   const canonical = `/cities/${data.city.slug}/${data.category.slug}`;
 
   return {
@@ -68,6 +69,7 @@ export default async function CityCategoryPage({ params }: { params: Promise<{ s
   if (!data) notFound();
 
   const CategoryIcon = data.category.icon;
+  const cityEditorial = getCityEditorial(data.city.slug);
   const canonical = `${siteUrl}/cities/${data.city.slug}/${data.category.slug}`;
   const faq = [
     {
@@ -282,15 +284,41 @@ export default async function CityCategoryPage({ params }: { params: Promise<{ s
             <h2>Turn discovery into a plan.</h2>
             <p>Ask for a shortlist, route order, budget filter, family-friendly option or a backup near your next stop.</p>
           </div>
-          <CityAskWidget
+          <CategoryConcierge
+            categoryKey={data.category.key}
+            categoryLabel={data.category.label}
             city={data.city.name}
-            suggestions={[
-              `Compare ${data.category.label.toLowerCase()} near ${data.city.keyAreas[0].name}`,
-              `Give me a budget and premium ${data.category.label.toLowerCase()} option in ${data.city.name}`,
-              `Build a time-saving route with a nearby backup`
-            ]}
           />
         </section>
+
+        {cityEditorial && (
+          <section className={styles.cityLensSection}>
+            <div className={styles.sectionHead}>
+              <div>
+                <span className={styles.kicker}>The {data.city.name} lens</span>
+                <h2>Why {data.category.label.toLowerCase()} searches here need local context.</h2>
+              </div>
+              <p>{data.uniqueSummary}</p>
+            </div>
+            <div className={styles.cityLensGrid}>
+              <article>
+                <span>City rhythm</span>
+                <h3>{cityEditorial.label}</h3>
+                <p>{cityEditorial.vibe} For {data.category.label.toLowerCase()}, compare {data.profile.compare.slice(0, 3).join(", ").toLowerCase()}.</p>
+              </article>
+              <article>
+                <span>Neighbourhood logic</span>
+                <h3>{data.city.keyAreas[0].name} is only the first layer</h3>
+                <p>{data.city.keyAreas.slice(0, 3).map((area) => `${area.name} for ${area.knownFor}`).join("; ")}.</p>
+              </article>
+              <article>
+                <span>Move with context</span>
+                <h3>{data.city.localBrief.title}</h3>
+                <p>{data.city.gettingAround} {cityEditorial.respect}</p>
+              </article>
+            </div>
+          </section>
+        )}
 
         <section className={styles.verifySection}>
           <div className={styles.sectionHead}>

@@ -132,7 +132,7 @@ export default function DirectoryExplorer({
     onSelectCategory(nextCategory);
     const cityGuide = cityGuides.find((guide) => guide.name.toLowerCase() === city.toLowerCase());
     if (cityGuide) {
-      router.push(categoryHref(cityGuide.slug, nextCategory));
+      router.push(`${categoryHref(cityGuide.slug, nextCategory)}?concierge=1`);
       return;
     }
     revealResults();

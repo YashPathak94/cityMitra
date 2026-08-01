@@ -25,6 +25,7 @@ import AiTeaser from "@/app/components/AiTeaser";
 import CinematicHero from "@/app/components/CinematicHero";
 import DirectoryExplorer from "@/app/components/DirectoryExplorer";
 import FeedbackBand from "@/app/components/FeedbackBand";
+import HomeDynamicConcierge from "@/app/components/HomeDynamicConcierge";
 import LocationPrompt from "@/app/components/LocationPrompt";
 import TravelFundTeaser from "@/app/components/TravelFundTeaser";
 import WelcomeIntro from "@/app/components/WelcomeIntro";
@@ -46,6 +47,7 @@ export default function Home() {
   const [categoryFrameIndex, setCategoryFrameIndex] = useState(0);
   const [nearbyFrameIndex, setNearbyFrameIndex] = useState(0);
   const [frameResetKey, setFrameResetKey] = useState(`${city}-${category}`);
+  const [conciergeRequest, setConciergeRequest] = useState<{ city: string; category: CategoryKey; nonce: number } | null>(null);
 
   if (frameResetKey !== `${city}-${category}`) {
     setFrameResetKey(`${city}-${category}`);
@@ -132,6 +134,10 @@ export default function Home() {
 
   function selectCategory(nextCategory: CategoryKey, label = "selector") {
     setCategory(nextCategory);
+    const isListedCity = cityGuides.some((item) => item.name.toLowerCase() === city.toLowerCase());
+    if (!isListedCity) {
+      setConciergeRequest({ city, category: nextCategory, nonce: Date.now() });
+    }
     trackActivity({ type: "category_change", city, category: nextCategory, label });
   }
 
@@ -240,8 +246,11 @@ export default function Home() {
     trackActivity({ type: "search_submit", city: activeCity, category: detectedCategory || category, label: trimmedSearch });
     const guide = cityGuides.find((item) => item.name.toLowerCase() === activeCity.toLowerCase());
     if (guide && detectedCategory) {
-      router.push(categoryHref(guide.slug, detectedCategory));
+      router.push(`${categoryHref(guide.slug, detectedCategory)}?concierge=1`);
       return;
+    }
+    if (detectedCategory) {
+      setConciergeRequest({ city: activeCity, category: detectedCategory, nonce: Date.now() });
     }
     document.getElementById("directory")?.scrollIntoView({ behavior: "smooth" });
   }
@@ -329,6 +338,7 @@ export default function Home() {
         <FeedbackBand city={city} />
       </Reveal>
 
+      <HomeDynamicConcierge request={conciergeRequest} />
       <SiteFooter city={city} category={category} />
       </main>
     </MotionConfig>

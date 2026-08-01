@@ -97,7 +97,7 @@ export default function CityCategoryTabs({ city, citySlug }: { city: string; cit
             const Icon = category.icon;
             return (
               <Link
-                href={`/cities/${citySlug}/${category.slug}`}
+                href={`/cities/${citySlug}/${category.slug}?concierge=1`}
                 key={category.key}
                 style={{ "--category-color": category.tint } as CSSProperties}
               >

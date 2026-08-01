@@ -39,6 +39,7 @@
 .zoneSection,
 .nearbyBand,
 .conciergeBand,
+.cityLensSection,
 .verifySection,
 .moreSection,
 .faqSection {
@@ -489,6 +490,50 @@
   border-radius: 8px;
 }
 
+.cityLensSection {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.cityLensGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.cityLensGrid article {
+  min-width: 0;
+  border-right: 1px solid var(--line);
+  padding: 20px;
+}
+
+.cityLensGrid article:last-child {
+  border-right: 0;
+}
+
+.cityLensGrid span {
+  color: var(--category-tint);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.cityLensGrid h3 {
+  margin: 16px 0 8px;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.cityLensGrid p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.62;
+}
+
 .verifySection {
   border-block: 1px solid var(--line);
 }
@@ -652,15 +697,21 @@
   }
 
   .factBand,
-  .decisionGrid {
+  .decisionGrid,
+  .cityLensGrid {
     grid-template-columns: 1fr;
   }
 
   .factBand > div,
-  .decisionGrid > div {
+  .decisionGrid > div,
+  .cityLensGrid article {
     min-height: 0;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+  }
+
+  .cityLensGrid article:last-child {
+    border-bottom: 0;
   }
 
   .decisionGrid > div {
@@ -689,6 +740,7 @@
   .zoneSection,
   .nearbyBand,
   .conciergeBand,
+  .cityLensSection,
   .verifySection,
   .moreSection,
   .faqSection {
@@ -730,6 +782,7 @@
   .zoneSection,
   .nearbyBand,
   .conciergeBand,
+  .cityLensSection,
   .verifySection,
   .moreSection,
   .faqSection {

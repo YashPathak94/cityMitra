@@ -1,12 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { categories, CategoryKey } from "@/data/city-directory";
-import { buildBookingOptions, BookingCategory, bookingCategoryLabels, categoryToBooking } from "@/lib/booking";
-import { buildGeneratedResults } from "@/lib/city-intel";
+import { useState } from "react";
+import { CategoryKey } from "@/data/city-directory";
+import { buildBookingOptions, BookingCategory, bookingCategoryLabels } from "@/lib/booking";
 import { trackActivity } from "@/lib/tracking";
-import ConciergePip, { LocalPicks } from "@/app/components/ConciergePip";
+import ConciergePip from "@/app/components/ConciergePip";
 import { ConciergeGroup } from "@/app/components/ConciergeCard";
 import { useCountUp } from "@/app/components/motion/useCountUp";
 
@@ -33,22 +32,11 @@ function BentoStat({ target, suffix, label }: { target: number; suffix?: string;
 // gradient stat band. All booking/pip/tracking behavior is unchanged.
 export default function AiTeaser({ city, category }: AiTeaserProps) {
   const router = useRouter();
-  const [pip, setPip] = useState<{ groups: ConciergeGroup[]; local: LocalPicks | null } | null>(null);
-  const initialised = useRef(false);
-
-  function localPicksFor(categoryKey: CategoryKey): LocalPicks {
-    const label = categories.find((item) => item.key === categoryKey)?.label || "Top picks";
-    const items = buildGeneratedResults(city, categoryKey, 12).map((result) => ({
-      name: result.name,
-      area: result.area,
-      query: result.query
-    }));
-    return { label, city, items };
-  }
+  const [pip, setPip] = useState<{ groups: ConciergeGroup[] } | null>(null);
 
   function openBooking(bookingCategory: BookingCategory) {
     const options = buildBookingOptions(bookingCategory, { city, destination: city });
-    setPip({ groups: options.length ? [{ category: bookingCategory, label: bookingCategoryLabels[bookingCategory], options }] : [], local: null });
+    setPip({ groups: options.length ? [{ category: bookingCategory, label: bookingCategoryLabels[bookingCategory], options }] : [] });
     trackActivity({ type: "concierge_quick_action", city, category, label: bookingCategory });
   }
 
@@ -56,22 +44,6 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
     trackActivity({ type: "open_chat", city, category, label: "bento" });
     router.push("/chat");
   }
-
-  // Open the concierge only when the user actively switches category — never on
-  // first load or when returning from /chat (those don't change the category),
-  // and not when the city changes on its own (location restore/geolocation).
-  useEffect(() => {
-    if (!initialised.current) {
-      initialised.current = true;
-      return;
-    }
-    const booking = categoryToBooking[category];
-    const groups: ConciergeGroup[] = booking
-      ? [{ category: booking, label: bookingCategoryLabels[booking], options: buildBookingOptions(booking, { city, destination: city }) }]
-      : [];
-    setPip({ groups, local: localPicksFor(category) });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category]);
 
   return (
     <section className="aiBand" id="ai">
@@ -163,7 +135,6 @@ export default function AiTeaser({ city, category }: AiTeaserProps) {
 
       <ConciergePip
         groups={pip?.groups ?? null}
-        localPicks={pip?.local ?? null}
         city={city}
         onClose={() => setPip(null)}
         onOpen={(provider, bookingCategory) => trackActivity({ type: "concierge_open", city, category, label: `${bookingCategory}:${provider}` })}

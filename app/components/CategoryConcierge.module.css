@@ -1,0 +1,111 @@
+.launcher {
+  display: grid;
+  gap: 13px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  padding: 18px;
+  box-shadow: 0 18px 45px rgba(37, 99, 235, 0.09);
+}
+
+.identity {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.mark {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  border-radius: 8px;
+  background: #101828;
+  color: #fff;
+  box-shadow: inset 3px 0 0 #f05a28;
+}
+
+.identity div {
+  display: grid;
+  gap: 2px;
+}
+
+.identity span:not(.mark) {
+  color: #667085;
+  font-size: 0.67rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.identity strong {
+  color: #101828;
+  font-size: 1rem;
+}
+
+.launcher > p {
+  margin: 0;
+  color: #667085;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions button,
+.actions a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #d8dde7;
+  border-radius: 7px;
+  padding: 9px 13px;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.actions button {
+  border-color: #101828;
+  background: #101828;
+  color: #fff;
+}
+
+.actions a {
+  background: #fff;
+  color: #2563eb;
+}
+
+.actions button:hover,
+.actions button:focus-visible {
+  background: #f05a28;
+  border-color: #f05a28;
+}
+
+.actions a:hover,
+.actions a:focus-visible {
+  border-color: #2563eb;
+}
+
+@media (max-width: 520px) {
+  .launcher {
+    padding: 15px;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .actions button,
+  .actions a {
+    width: 100%;
+  }
+}
